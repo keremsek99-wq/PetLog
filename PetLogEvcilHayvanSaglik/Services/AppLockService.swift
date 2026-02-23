@@ -45,6 +45,7 @@ class AppLockService {
         case .faceID: return "Face ID"
         case .touchID: return "Touch ID"
         case .opticID: return "Optic ID"
+        case .none: return "Biyometrik"
         @unknown default: return "Biyometrik"
         }
     }

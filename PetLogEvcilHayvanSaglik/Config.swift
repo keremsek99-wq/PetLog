@@ -1,6 +1,6 @@
 import Foundation
 
-enum Config {
+enum PetLogConfig {
     // MARK: - RevenueCat
     static let revenueCatAPIKey = "test_nlMaoFdttUQrSADewHdtaBzEYFk"
     static let entitlementID = "PetLog Premium"

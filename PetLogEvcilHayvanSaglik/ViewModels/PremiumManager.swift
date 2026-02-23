@@ -29,7 +29,7 @@ class PremiumManager {
     static func configure() {
         #if canImport(RevenueCat)
         Purchases.logLevel = .debug
-        Purchases.configure(withAPIKey: Config.revenueCatAPIKey)
+        Purchases.configure(withAPIKey: PetLogConfig.revenueCatAPIKey)
         #endif
     }
 
@@ -40,7 +40,7 @@ class PremiumManager {
         do {
             let info = try await Purchases.shared.customerInfo()
             self.customerInfo = info
-            self.isPremium = info.entitlements[Config.entitlementID]?.isActive == true
+            self.isPremium = info.entitlements[PetLogConfig.entitlementID]?.isActive == true
         } catch {
             print("PremiumManager: Failed to fetch customer info: \(error)")
         }
@@ -54,7 +54,7 @@ class PremiumManager {
         do {
             let result = try await Purchases.shared.purchase(package: package)
             self.customerInfo = result.customerInfo
-            self.isPremium = result.customerInfo.entitlements[Config.entitlementID]?.isActive == true
+            self.isPremium = result.customerInfo.entitlements[PetLogConfig.entitlementID]?.isActive == true
             return self.isPremium
         } catch let error as ErrorCode {
             if error == .purchaseCancelledError {
@@ -77,7 +77,7 @@ class PremiumManager {
         do {
             let info = try await Purchases.shared.restorePurchases()
             self.customerInfo = info
-            self.isPremium = info.entitlements[Config.entitlementID]?.isActive == true
+            self.isPremium = info.entitlements[PetLogConfig.entitlementID]?.isActive == true
             return self.isPremium
         } catch {
             print("PremiumManager: Restore failed: \(error)")
