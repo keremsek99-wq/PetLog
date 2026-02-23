@@ -296,6 +296,18 @@ struct HealthView: View {
                 "Dişleri sürekli büyür, saman ile aşınması gerekir",
                 "Sindirim sağlığı için yüksek lifli diyet şarttır"
             ]
+        case .fish:
+            return [
+                "Balıklar türe göre 2-20 yıl yaşayabilir",
+                "Su sıcaklığı ve pH dengesi kritik öneme sahiptir",
+                "Akvaryum boyutu balık sayısına uygun olmalıdır"
+            ]
+        case .reptile:
+            return [
+                "Sürüngenler türe göre 10-50+ yıl yaşayabilir",
+                "UVB ışık ve ısı kaynağı zorunludur",
+                "Doğru nem oranı deri sağlığı için kritiktir"
+            ]
         case .other:
             return [
                 "Türüne uygun beslenme ve bakım rehberine başvurun",
@@ -331,6 +343,18 @@ struct HealthView: View {
                 "Diş problemleri: Yanlış bakımda sık görülür",
                 "Sıcak çarpması: 26°C üzerinde risk artar"
             ]
+        case .fish:
+            return [
+                "Beyaz nokta hastalığı (Ich): Stresle tetiklenir",
+                "Yüzgeç çürümesi: Kötü su kalitesinin belirtisi",
+                "Amonyak zehirlenmesi: Filtre bakımı kritiktir"
+            ]
+        case .reptile:
+            return [
+                "Metabolik kemik hastalığı: Kalsiyum eksikliği",
+                "Solunum enfeksiyonları: Yanlış sıcaklıkta yaygın",
+                "Deri dökülme sorunları: Nem oranı yetersizliği"
+            ]
         case .other:
             return [
                 "Türe özel hastalıklar için veterinerinize danışın",
@@ -365,6 +389,18 @@ struct HealthView: View {
                 "6 ayda bir diş kontrolü",
                 "Yıllık genel kontrol",
                 "Kısırlaştırma değerlendirmesi"
+            ]
+        case .fish:
+            return [
+                "Haftalık su parametresi testi",
+                "Aylık filtre bakımı",
+                "Mevsimsel su sıcaklığı ayarı"
+            ]
+        case .reptile:
+            return [
+                "6 ayda bir veteriner kontrolü",
+                "Yıllık dışkı parazit analizi",
+                "UVB lamba yenileme (6-12 ay)"
             ]
         case .other:
             return [
