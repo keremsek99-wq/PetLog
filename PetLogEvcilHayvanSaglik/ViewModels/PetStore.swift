@@ -255,7 +255,7 @@ class PetStore {
                         petName: pet.name
                     ))
                 }
-            } else if !pet.vetVisits.isEmpty == false {
+            } else if pet.vetVisits.isEmpty {
                 insights.append(Insight(
                     type: .vetVisitReminder,
                     severity: .info,

@@ -1,4 +1,5 @@
 import SwiftUI
+import PhotosUI
 
 struct OnboardingView: View {
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
@@ -127,6 +128,8 @@ struct OnboardingAddPetSheet: View {
     @State private var birthdate: Date = Calendar.current.date(byAdding: .year, value: -1, to: Date()) ?? Date()
     @State private var sex: PetSex = .unknown
     @State private var isNeutered: Bool = false
+    @State private var selectedPhotoItem: PhotosPickerItem? = nil
+    @State private var photoData: Data? = nil
 
     var body: some View {
         NavigationStack {
@@ -135,14 +138,19 @@ struct OnboardingAddPetSheet: View {
                     HStack {
                         Spacer()
                         VStack(spacing: 12) {
-                            Image(systemName: species.icon)
-                                .font(.system(size: 48))
-                                .foregroundStyle(.blue)
-                                .frame(width: 80, height: 80)
-                                .background(Color.blue.opacity(0.12))
-                                .clipShape(Circle())
+                            PhotosPicker(selection: $selectedPhotoItem, matching: .images) {
+                                onboardingAvatarView
+                            }
+                            .onChange(of: selectedPhotoItem) { _, newValue in
+                                loadPhoto(from: newValue)
+                            }
                             Text("Hayvanınızı tanıyalım!")
                                 .font(.headline)
+                            if photoData == nil {
+                                Text("Fotoğraf eklemek için dokunun")
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
                         Spacer()
                     }
@@ -159,6 +167,7 @@ struct OnboardingAddPetSheet: View {
                     }
                     .onChange(of: species) { _, _ in
                         breed = ""
+                        customBreed = ""
                     }
 
                     breedPicker
@@ -184,6 +193,7 @@ struct OnboardingAddPetSheet: View {
                     Button("Başla") {
                         let resolvedBreed = (breed == "__other__") ? customBreed.trimmingCharacters(in: .whitespaces) : breed
                         let pet = Pet(name: name.trimmingCharacters(in: .whitespaces), species: species, breed: resolvedBreed, birthdate: birthdate, sex: sex, isNeutered: isNeutered)
+                        pet.photoData = photoData
                         store.addPet(pet)
                         onComplete()
                         dismiss()
@@ -210,6 +220,57 @@ struct OnboardingAddPetSheet: View {
             }
             if breed == "__other__" {
                 TextField("Irk adı girin", text: $customBreed)
+            }
+        }
+    }
+
+    // MARK: - Avatar View
+
+    @ViewBuilder
+    private var onboardingAvatarView: some View {
+        if let photoData, let uiImage = UIImage(data: photoData) {
+            Image(uiImage: uiImage)
+                .resizable()
+                .scaledToFill()
+                .frame(width: 80, height: 80)
+                .clipShape(Circle())
+                .overlay(Circle().stroke(Color.blue.opacity(0.3), lineWidth: 2))
+                .overlay(alignment: .bottomTrailing) {
+                    Image(systemName: "camera.circle.fill")
+                        .font(.caption)
+                        .foregroundStyle(.blue)
+                        .background(Circle().fill(.white).padding(2))
+                }
+        } else {
+            ZStack {
+                Circle()
+                    .fill(Color.blue.opacity(0.12))
+                    .frame(width: 80, height: 80)
+                Image(systemName: species.icon)
+                    .font(.system(size: 40))
+                    .foregroundStyle(.blue)
+            }
+            .overlay(alignment: .bottomTrailing) {
+                Image(systemName: "camera.circle.fill")
+                    .font(.caption)
+                    .foregroundStyle(.blue)
+                    .background(Circle().fill(.white).padding(2))
+            }
+        }
+    }
+
+    // MARK: - Photo Loading
+
+    private func loadPhoto(from item: PhotosPickerItem?) {
+        guard let item else { return }
+        Task {
+            if let data = try? await item.loadTransferable(type: Data.self) {
+                if let uiImage = UIImage(data: data),
+                   let compressed = uiImage.jpegData(compressionQuality: 0.5) {
+                    await MainActor.run {
+                        photoData = compressed
+                    }
+                }
             }
         }
     }

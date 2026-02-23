@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import WidgetKit
 
 @main
 struct PetOSPetHealthFinanceApp: App {
@@ -7,6 +8,8 @@ struct PetOSPetHealthFinanceApp: App {
     init() {
         PremiumManager.configure()
     }
+
+    @AppStorage("iCloudSyncEnabled") private var iCloudSyncEnabled = false
 
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
@@ -18,7 +21,22 @@ struct PetOSPetHealthFinanceApp: App {
             Expense.self,
             FoodInventory.self,
         ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+
+        let iCloudEnabled = UserDefaults.standard.bool(forKey: "iCloudSyncEnabled")
+        let modelConfiguration: ModelConfiguration
+        if iCloudEnabled {
+            modelConfiguration = ModelConfiguration(
+                schema: schema,
+                isStoredInMemoryOnly: false,
+                cloudKitDatabase: .automatic
+            )
+        } else {
+            modelConfiguration = ModelConfiguration(
+                schema: schema,
+                isStoredInMemoryOnly: false,
+                cloudKitDatabase: .none
+            )
+        }
 
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
@@ -40,6 +58,7 @@ struct PetOSPetHealthFinanceApp: App {
                     switch newPhase {
                     case .background:
                         appLock.lockIfNeeded()
+                        updateWidgetData()
                     case .active:
                         scheduleNotificationsIfNeeded()
                     default:
@@ -61,5 +80,20 @@ struct PetOSPetHealthFinanceApp: App {
 
             NotificationService.shared.scheduleAllReminders(for: pets)
         }
+    }
+
+    private func updateWidgetData() {
+        let context = sharedModelContainer.mainContext
+        let descriptor = FetchDescriptor<Pet>(sortBy: [SortDescriptor(\.createdAt)])
+        guard let pets = try? context.fetch(descriptor), let selectedPet = pets.first else { return }
+
+        let now = Date()
+        let startOfMonth = Calendar.current.date(from: Calendar.current.dateComponents([.year, .month], from: now)) ?? now
+        let monthlySpending = selectedPet.expenses
+            .filter { $0.date >= startOfMonth }
+            .reduce(0) { $0 + $1.amount }
+
+        WidgetDataService.updateWidgetData(pet: selectedPet, monthlySpending: monthlySpending)
+        WidgetCenter.shared.reloadAllTimelines()
     }
 }
