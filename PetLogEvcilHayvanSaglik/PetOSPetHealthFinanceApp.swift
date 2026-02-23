@@ -3,6 +3,11 @@ import SwiftData
 
 @main
 struct PetOSPetHealthFinanceApp: App {
+
+    init() {
+        PremiumManager.configure()
+    }
+
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Pet.self,
@@ -12,7 +17,6 @@ struct PetOSPetHealthFinanceApp: App {
             VetVisit.self,
             Expense.self,
             FoodInventory.self,
-            Insight.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 

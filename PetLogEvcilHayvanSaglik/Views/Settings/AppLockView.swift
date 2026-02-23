@@ -3,6 +3,8 @@ import SwiftUI
 struct AppLockOverlay: View {
     let appLock: AppLockService
 
+    @State private var hasAttemptedAuth = false
+
     var body: some View {
         if appLock.isLocked {
             ZStack {
@@ -14,13 +16,15 @@ struct AppLockOverlay: View {
 
                     Image(systemName: appLock.biometricIcon)
                         .font(.system(size: 56))
-                        .foregroundStyle(.blue)
-                        .symbolEffect(.pulse, isActive: true)
+                        .foregroundStyle(appLock.authenticationFailed ? .red : .blue)
+                        .symbolEffect(.pulse, isActive: !appLock.authenticationFailed)
 
                     VStack(spacing: 8) {
                         Text("PetLog Kilitli")
                             .font(.title2.bold())
-                        Text("Devam etmek için kimliğinizi doğrulayın")
+                        Text(appLock.authenticationFailed
+                             ? "Kimlik doğrulama başarısız oldu"
+                             : "Devam etmek için kimliğinizi doğrulayın")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
@@ -28,31 +32,49 @@ struct AppLockOverlay: View {
 
                     Spacer()
 
-                    Button {
-                        Task {
-                            _ = await appLock.authenticate()
+                    VStack(spacing: 12) {
+                        Button {
+                            Task {
+                                _ = await appLock.authenticate()
+                            }
+                        } label: {
+                            Label("Kilidi Aç", systemImage: appLock.biometricIcon)
+                                .font(.headline)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
                         }
-                    } label: {
-                        Label("Kilidi Aç", systemImage: appLock.biometricIcon)
-                            .font(.headline)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 14)
+                        .buttonStyle(.borderedProminent)
+
+                        if appLock.authenticationFailed {
+                            Button {
+                                appLock.disableLockDueToError()
+                            } label: {
+                                Text("Kilidi Devre Dışı Bırak")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.red)
+                            }
+                        }
                     }
-                    .buttonStyle(.borderedProminent)
                     .padding(.horizontal, 40)
                     .padding(.bottom, 48)
                 }
             }
-            .task {
-                _ = await appLock.authenticate()
+            .onAppear {
+                guard !hasAttemptedAuth else { return }
+                hasAttemptedAuth = true
+                Task {
+                    _ = await appLock.authenticate()
+                }
             }
         }
     }
 }
 
 struct NotificationSettingsView: View {
+    var premiumManager: PremiumManager = .shared
     @State private var notificationService = NotificationService.shared
     @State private var isRequesting = false
+    @State private var showPaywall = false
 
     var body: some View {
         List {
@@ -94,12 +116,43 @@ struct NotificationSettingsView: View {
                 .padding(.vertical, 4)
             }
 
-            Section("Hatırlatma Türleri") {
+            Section("Temel Hatırlatmalar") {
                 Label("Aşı hatırlatmaları", systemImage: "syringe.fill")
                 Label("İlaç hatırlatmaları", systemImage: "pills.fill")
-                Label("Mama bitiş uyarısı", systemImage: "takeoutbag.and.cup.and.straw.fill")
-                Label("Kilo kontrol hatırlatması", systemImage: "scalemass.fill")
-                Label("Aylık harcama özeti", systemImage: "chart.pie.fill")
+            }
+
+            Section {
+                if premiumManager.hasFullAccess {
+                    Label("Mama bitiş uyarısı", systemImage: "takeoutbag.and.cup.and.straw.fill")
+                    Label("Kilo kontrol hatırlatması", systemImage: "scalemass.fill")
+                    Label("Aylık harcama özeti", systemImage: "chart.pie.fill")
+                } else {
+                    Button {
+                        showPaywall = true
+                    } label: {
+                        HStack(spacing: 14) {
+                            Image(systemName: "crown.fill")
+                                .foregroundStyle(.orange)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Gelişmiş Hatırlatmalar")
+                                    .font(.subheadline.weight(.medium))
+                                    .foregroundStyle(.primary)
+                                Text("Mama bitiş, kilo kontrol, harcama özeti")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            Spacer()
+                            Image(systemName: "lock.fill")
+                                .foregroundStyle(.orange)
+                        }
+                    }
+                }
+            } header: {
+                Text("Gelişmiş Hatırlatmalar")
+            } footer: {
+                if !premiumManager.hasFullAccess {
+                    Text("Premium ile mama bitiş, kilo kontrol ve aylık harcama hatırlatmalarını açın.")
+                }
             }
 
             Section {
@@ -117,6 +170,9 @@ struct NotificationSettingsView: View {
         .navigationBarTitleDisplayMode(.inline)
         .task {
             await notificationService.checkAuthorization()
+        }
+        .sheet(isPresented: $showPaywall) {
+            PetLogPaywallView(premiumManager: premiumManager)
         }
     }
 }

@@ -23,7 +23,7 @@ struct InsightsView: View {
             }
             .navigationTitle("Öneriler")
             .sheet(isPresented: $showPaywall) {
-                PaywallView(premiumManager: premiumManager)
+                PetLogPaywallView(premiumManager: premiumManager)
             }
         }
     }

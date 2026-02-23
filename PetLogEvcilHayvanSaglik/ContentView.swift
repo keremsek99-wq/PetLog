@@ -33,7 +33,7 @@ struct ContentView: View {
                 DashboardView(store: store, premiumManager: premiumManager)
             }
             Tab("Sağlık", systemImage: "heart.fill", value: .health) {
-                HealthView(store: store)
+                HealthView(store: store, premiumManager: premiumManager)
             }
             Tab("Finans", systemImage: "chart.pie.fill", value: .finance) {
                 FinanceView(store: store, premiumManager: premiumManager)

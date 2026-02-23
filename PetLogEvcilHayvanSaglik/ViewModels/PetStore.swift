@@ -10,9 +10,19 @@ class PetStore {
     var selectedPet: Pet?
     var isLoading: Bool = false
 
+    static let freePetLimit = 1
+
     init(modelContext: ModelContext) {
         self.modelContext = modelContext
         loadSelectedPet()
+    }
+
+    private func save() {
+        do {
+            try modelContext.save()
+        } catch {
+            print("PetStore save error: \(error)")
+        }
     }
 
     private func loadSelectedPet() {
@@ -29,13 +39,19 @@ class PetStore {
 
     func addPet(_ pet: Pet) {
         modelContext.insert(pet)
+        save()
         if selectedPet == nil {
             selectedPet = pet
         }
     }
 
+    func canAddMorePets(isPremium: Bool) -> Bool {
+        isPremium || allPets().count < Self.freePetLimit
+    }
+
     func deletePet(_ pet: Pet) {
         modelContext.delete(pet)
+        save()
         if selectedPet?.id == pet.id {
             selectedPet = allPets().first
         }
@@ -45,18 +61,21 @@ class PetStore {
         let log = WeightLog(date: date, weightKg: weightKg, notes: notes)
         log.pet = pet
         modelContext.insert(log)
+        save()
     }
 
     func addVaccine(to pet: Pet, name: String, dateAdministered: Date, dueDate: Date?, vet: String, notes: String) {
         let record = VaccineRecord(name: name, dateAdministered: dateAdministered, dueDate: dueDate, veterinarian: vet, notes: notes)
         record.pet = pet
         modelContext.insert(record)
+        save()
     }
 
     func addMedication(to pet: Pet, name: String, dosage: String, schedule: MedicationSchedule, startDate: Date, endDate: Date?, notes: String) {
         let med = Medication(name: name, dosage: dosage, schedule: schedule, startDate: startDate, endDate: endDate, notes: notes)
         med.pet = pet
         modelContext.insert(med)
+        save()
     }
 
     func addVetVisit(to pet: Pet, date: Date, reason: String, diagnosis: String, cost: Double, vet: String, notes: String) {
@@ -68,26 +87,29 @@ class PetStore {
             expense.pet = pet
             modelContext.insert(expense)
         }
+        save()
     }
 
     func addExpense(to pet: Pet, category: ExpenseCategory, amount: Double, date: Date, merchant: String, notes: String, isRecurring: Bool) {
         let expense = Expense(category: category, amount: amount, date: date, merchant: merchant, notes: notes, isRecurring: isRecurring)
         expense.pet = pet
         modelContext.insert(expense)
+        save()
     }
 
     func addFood(to pet: Pet, brand: String, bagSizeKg: Double, dailyGrams: Double, startedAt: Date, reorderLink: String) {
         let food = FoodInventory(brand: brand, bagSizeKg: bagSizeKg, dailyGrams: dailyGrams, startedAt: startedAt, reorderLink: reorderLink)
         food.pet = pet
         modelContext.insert(food)
+        save()
     }
 
-    func deleteWeightLog(_ log: WeightLog) { modelContext.delete(log) }
-    func deleteVaccine(_ record: VaccineRecord) { modelContext.delete(record) }
-    func deleteMedication(_ med: Medication) { modelContext.delete(med) }
-    func deleteVetVisit(_ visit: VetVisit) { modelContext.delete(visit) }
-    func deleteExpense(_ expense: Expense) { modelContext.delete(expense) }
-    func deleteFood(_ food: FoodInventory) { modelContext.delete(food) }
+    func deleteWeightLog(_ log: WeightLog) { modelContext.delete(log); save() }
+    func deleteVaccine(_ record: VaccineRecord) { modelContext.delete(record); save() }
+    func deleteMedication(_ med: Medication) { modelContext.delete(med); save() }
+    func deleteVetVisit(_ visit: VetVisit) { modelContext.delete(visit); save() }
+    func deleteExpense(_ expense: Expense) { modelContext.delete(expense); save() }
+    func deleteFood(_ food: FoodInventory) { modelContext.delete(food); save() }
 
     func monthlySpending(for pet: Pet) -> Double {
         let calendar = Calendar.current

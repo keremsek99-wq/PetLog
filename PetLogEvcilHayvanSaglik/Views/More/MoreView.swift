@@ -1,5 +1,6 @@
 import SwiftUI
 import LocalAuthentication
+import RevenueCatUI
 
 struct MoreView: View {
     let store: PetStore
@@ -9,6 +10,7 @@ struct MoreView: View {
     @State private var showDeleteAlert = false
     @State private var showPaywall = false
     @State private var showExportOptions = false
+    @State private var showCustomerCenter = false
     @State private var appLock = AppLockService.shared
 
     var body: some View {
@@ -74,7 +76,7 @@ struct MoreView: View {
                                         .foregroundStyle(.secondary)
                                 }
                                 Spacer()
-                                Text("₺129/ay")
+                                Text("PRO")
                                     .font(.subheadline.weight(.semibold))
                                     .foregroundStyle(.blue)
                             }
@@ -111,12 +113,18 @@ struct MoreView: View {
                             }
                         }
                         .padding(.vertical, 4)
+
+                        Button {
+                            showCustomerCenter = true
+                        } label: {
+                            Label("Aboneliği Yönet", systemImage: "gearshape.fill")
+                        }
                     }
                 }
 
                 Section("Hayvan Yönetimi") {
                     NavigationLink {
-                        PetListView(store: store)
+                        PetListView(store: store, premiumManager: premiumManager)
                     } label: {
                         Label("Hayvanlarım", systemImage: "pawprint.fill")
                     }
@@ -135,14 +143,30 @@ struct MoreView: View {
                     } label: {
                         Label("Bildirim Ayarları", systemImage: "bell.badge.fill")
                     }
-                    Toggle(isOn: $appLock.isAppLockEnabled) {
+                    Toggle(isOn: Binding(
+                        get: { appLock.isAppLockEnabled },
+                        set: { newValue in
+                            if newValue {
+                                Task {
+                                    let success = await appLock.authenticate()
+                                    if success {
+                                        appLock.isAppLockEnabled = true
+                                    }
+                                }
+                            } else {
+                                appLock.isAppLockEnabled = false
+                                appLock.isLocked = false
+                            }
+                        }
+                    )) {
                         Label(appLock.biometricType != .none ? appLock.biometricName : "Uygulama Kilidi", systemImage: appLock.biometricIcon)
                     }
+                    .disabled(!appLock.canAuthenticate)
                 }
 
                 Section("Veriler") {
                     NavigationLink {
-                        DataExportFullView(store: store)
+                        DataExportFullView(store: store, premiumManager: premiumManager)
                     } label: {
                         Label("Veri Dışa Aktar", systemImage: "square.and.arrow.up")
                     }
@@ -181,7 +205,10 @@ struct MoreView: View {
             }
             .navigationTitle("Daha Fazla")
             .sheet(isPresented: $showPaywall) {
-                PaywallView(premiumManager: premiumManager)
+                PetLogPaywallView(premiumManager: premiumManager)
+            }
+            .sheet(isPresented: $showCustomerCenter) {
+                CustomerCenterView()
             }
             .alert("Tüm Veriler Silinsin mi?", isPresented: $showDeleteAlert) {
                 Button("İptal", role: .cancel) {}
@@ -202,7 +229,9 @@ struct MoreView: View {
 
 struct PetListView: View {
     let store: PetStore
+    let premiumManager: PremiumManager
     @State private var showAddPet = false
+    @State private var showPaywall = false
 
     var body: some View {
         List {
@@ -244,7 +273,11 @@ struct PetListView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
-                    showAddPet = true
+                    if store.canAddMorePets(isPremium: premiumManager.hasFullAccess) {
+                        showAddPet = true
+                    } else {
+                        showPaywall = true
+                    }
                 } label: {
                     Image(systemName: "plus")
                 }
@@ -253,12 +286,17 @@ struct PetListView: View {
         .sheet(isPresented: $showAddPet) {
             AddPetSheet(store: store)
         }
+        .sheet(isPresented: $showPaywall) {
+            PetLogPaywallView(premiumManager: premiumManager)
+        }
     }
 }
 
 struct DataExportFullView: View {
     let store: PetStore
+    let premiumManager: PremiumManager
     @State private var exportType: ExportType = .summary
+    @State private var showPaywall = false
 
     private var pet: Pet? { store.selectedPet }
 
@@ -295,12 +333,38 @@ struct DataExportFullView: View {
                             Label("Özet Paylaş", systemImage: "square.and.arrow.up")
                         }
                     case .json:
-                        ShareLink(item: DataExportService.shared.exportJSON(for: pet, store: store)) {
-                            Label("JSON Dışa Aktar", systemImage: "doc.badge.arrow.up")
+                        if premiumManager.hasFullAccess {
+                            ShareLink(item: DataExportService.shared.exportJSON(for: pet, store: store)) {
+                                Label("JSON Dışa Aktar", systemImage: "doc.badge.arrow.up")
+                            }
+                        } else {
+                            Button {
+                                showPaywall = true
+                            } label: {
+                                HStack {
+                                    Label("JSON Dışa Aktar", systemImage: "doc.badge.arrow.up")
+                                    Spacer()
+                                    Image(systemName: "lock.fill")
+                                        .foregroundStyle(.orange)
+                                }
+                            }
                         }
                     case .csv:
-                        ShareLink(item: DataExportService.shared.exportCSV(for: pet)) {
-                            Label("CSV Dışa Aktar (Harcamalar)", systemImage: "tablecells")
+                        if premiumManager.hasFullAccess {
+                            ShareLink(item: DataExportService.shared.exportCSV(for: pet)) {
+                                Label("CSV Dışa Aktar (Harcamalar)", systemImage: "tablecells")
+                            }
+                        } else {
+                            Button {
+                                showPaywall = true
+                            } label: {
+                                HStack {
+                                    Label("CSV Dışa Aktar (Harcamalar)", systemImage: "tablecells")
+                                    Spacer()
+                                    Image(systemName: "lock.fill")
+                                        .foregroundStyle(.orange)
+                                }
+                            }
                         }
                     }
                 }
@@ -308,6 +372,9 @@ struct DataExportFullView: View {
         }
         .navigationTitle("Veri Dışa Aktar")
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $showPaywall) {
+            PetLogPaywallView(premiumManager: premiumManager)
+        }
     }
 
     private func generateSummaryText(_ pet: Pet) -> String {

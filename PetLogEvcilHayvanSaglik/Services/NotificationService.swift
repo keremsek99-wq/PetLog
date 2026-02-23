@@ -33,14 +33,24 @@ class NotificationService {
     func scheduleAllReminders(for pets: [Pet]) {
         UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
 
+        let isPremium = PremiumManager.shared.hasFullAccess
+
         for pet in pets {
+            // Free: aşı + ilaç hatırlatmaları
             scheduleVaccineReminders(for: pet)
             scheduleMedicationReminders(for: pet)
-            scheduleFoodRunoutReminder(for: pet)
-            scheduleWeightCheckReminder(for: pet)
+
+            // Premium: mama bitiş, kilo kontrol
+            if isPremium {
+                scheduleFoodRunoutReminder(for: pet)
+                scheduleWeightCheckReminder(for: pet)
+            }
         }
 
-        scheduleMonthlySpendingSummary()
+        // Premium: aylık harcama özeti
+        if isPremium {
+            scheduleMonthlySpendingSummary()
+        }
     }
 
     private func scheduleVaccineReminders(for pet: Pet) {

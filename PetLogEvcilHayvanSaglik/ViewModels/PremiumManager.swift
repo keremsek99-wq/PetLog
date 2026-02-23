@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import RevenueCat
 
 @Observable
 @MainActor
@@ -7,77 +8,105 @@ class PremiumManager {
     static let shared = PremiumManager()
 
     var isPremium: Bool = false
-    var currentPlan: PremiumPlan?
-    var trialEndDate: Date?
-
-    var isTrialActive: Bool {
-        guard let trialEndDate else { return false }
-        return Date() < trialEndDate && !isPremium
-    }
+    var currentOffering: Offering?
+    var customerInfo: CustomerInfo?
 
     var hasFullAccess: Bool {
-        isPremium || isTrialActive
+        isPremium
     }
 
     private init() {
-        isPremium = UserDefaults.standard.bool(forKey: "isPremium")
-        if let trialEnd = UserDefaults.standard.object(forKey: "trialEndDate") as? Date {
-            trialEndDate = trialEnd
+        Task {
+            await checkSubscriptionStatus()
         }
     }
 
-    func startTrial() {
-        trialEndDate = Calendar.current.date(byAdding: .day, value: 7, to: Date())
-        UserDefaults.standard.set(trialEndDate, forKey: "trialEndDate")
+    // MARK: - Configure SDK
+
+    static func configure() {
+        Purchases.logLevel = .debug
+        Purchases.configure(withAPIKey: Config.revenueCatAPIKey)
     }
 
-    func purchase(plan: PremiumPlan) {
-        isPremium = true
-        currentPlan = plan
-        UserDefaults.standard.set(true, forKey: "isPremium")
+    // MARK: - Subscription Status
+
+    func checkSubscriptionStatus() async {
+        do {
+            let info = try await Purchases.shared.customerInfo()
+            self.customerInfo = info
+            self.isPremium = info.entitlements[Config.entitlementID]?.isActive == true
+        } catch {
+            print("PremiumManager: Failed to fetch customer info: \(error)")
+        }
     }
 
-    func restorePurchase() {
-        isPremium = UserDefaults.standard.bool(forKey: "isPremium")
+    // MARK: - Fetch Offerings
+
+    func fetchOfferings() async {
+        do {
+            let offerings = try await Purchases.shared.offerings()
+            self.currentOffering = offerings.current
+        } catch {
+            print("PremiumManager: Failed to fetch offerings: \(error)")
+        }
+    }
+
+    // MARK: - Purchase
+
+    func purchase(package: Package) async -> Bool {
+        do {
+            let result = try await Purchases.shared.purchase(package: package)
+            self.customerInfo = result.customerInfo
+            self.isPremium = result.customerInfo.entitlements[Config.entitlementID]?.isActive == true
+            return self.isPremium
+        } catch let error as ErrorCode {
+            if error == .purchaseCancelledError {
+                print("PremiumManager: Purchase cancelled")
+            } else {
+                print("PremiumManager: Purchase failed: \(error)")
+            }
+            return false
+        } catch {
+            print("PremiumManager: Purchase failed: \(error)")
+            return false
+        }
+    }
+
+    // MARK: - Restore
+
+    func restorePurchases() async -> Bool {
+        do {
+            let info = try await Purchases.shared.restorePurchases()
+            self.customerInfo = info
+            self.isPremium = info.entitlements[Config.entitlementID]?.isActive == true
+            return self.isPremium
+        } catch {
+            print("PremiumManager: Restore failed: \(error)")
+            return false
+        }
     }
 }
 
+// MARK: - Product Helpers
+
 nonisolated enum PremiumPlan: String, CaseIterable, Sendable {
     case monthly
-    case annual
-
-    var price: String {
-        switch self {
-        case .monthly: return "₺129"
-        case .annual: return "₺1.090"
-        }
-    }
-
-    var monthlyEquivalent: String {
-        switch self {
-        case .monthly: return "₺129/ay"
-        case .annual: return "₺90/ay"
-        }
-    }
+    case yearly
+    case lifetime
 
     var title: String {
         switch self {
         case .monthly: return "Aylık"
-        case .annual: return "Yıllık"
+        case .yearly: return "Yıllık"
+        case .lifetime: return "Ömür Boyu"
         }
     }
 
     var subtitle: String {
         switch self {
         case .monthly: return "Her ay yenilenir"
-        case .annual: return "2 ay bedava · en avantajlı"
-        }
-    }
-
-    var period: String {
-        switch self {
-        case .monthly: return "/ay"
-        case .annual: return "/yıl"
+        case .yearly: return "2 ay bedava · en avantajlı"
+        case .lifetime: return "Tek seferlik ödeme"
         }
     }
 }

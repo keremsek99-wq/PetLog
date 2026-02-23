@@ -179,8 +179,8 @@ struct OnboardingAddPetSheet: View {
                     Button("Başla") {
                         let pet = Pet(name: name.trimmingCharacters(in: .whitespaces), species: species, breed: breed, birthdate: birthdate, sex: sex, isNeutered: isNeutered)
                         store.addPet(pet)
-                        dismiss()
                         onComplete()
+                        dismiss()
                     }
                     .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
                     .fontWeight(.semibold)

@@ -48,7 +48,7 @@ struct PremiumBanner: View {
             }
             .buttonStyle(.plain)
             .sheet(isPresented: $showPaywall) {
-                PaywallView(premiumManager: premiumManager)
+                PetLogPaywallView(premiumManager: premiumManager)
             }
         }
     }
@@ -87,7 +87,7 @@ struct PremiumLockOverlay: View {
             .background(.ultraThinMaterial)
             .clipShape(.rect(cornerRadius: 14))
             .sheet(isPresented: $showPaywall) {
-                PaywallView(premiumManager: premiumManager)
+                PetLogPaywallView(premiumManager: premiumManager)
             }
         }
     }

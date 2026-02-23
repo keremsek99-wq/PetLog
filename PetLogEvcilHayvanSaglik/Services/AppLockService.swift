@@ -12,14 +12,22 @@ class AppLockService {
         get { UserDefaults.standard.bool(forKey: "appLockEnabled") }
         set { UserDefaults.standard.set(newValue, forKey: "appLockEnabled") }
     }
+    var authenticationFailed: Bool = false
 
     var biometricType: LABiometryType = .none
+    private var isAuthenticating: Bool = false
 
     private init() {
         checkBiometricAvailability()
-        if isAppLockEnabled {
+        if isAppLockEnabled && canAuthenticate {
             isLocked = true
         }
+    }
+
+    var canAuthenticate: Bool {
+        let context = LAContext()
+        var error: NSError?
+        return context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error)
     }
 
     func checkBiometricAvailability() {
@@ -50,6 +58,10 @@ class AppLockService {
     }
 
     func authenticate() async -> Bool {
+        guard isLocked, !isAuthenticating else { return !isLocked }
+        isAuthenticating = true
+        defer { isAuthenticating = false }
+
         let context = LAContext()
         context.localizedCancelTitle = "İptal"
 
@@ -65,6 +77,7 @@ class AppLockService {
             )
             if success {
                 isLocked = false
+                authenticationFailed = false
             }
             return success
         } catch {
@@ -81,16 +94,26 @@ class AppLockService {
             )
             if success {
                 isLocked = false
+                authenticationFailed = false
+            } else {
+                authenticationFailed = true
             }
             return success
         } catch {
+            authenticationFailed = true
             return false
         }
     }
 
     func lockIfNeeded() {
-        if isAppLockEnabled {
-            isLocked = true
-        }
+        guard isAppLockEnabled, canAuthenticate else { return }
+        isLocked = true
+        authenticationFailed = false
+    }
+
+    func disableLockDueToError() {
+        isAppLockEnabled = false
+        isLocked = false
+        authenticationFailed = false
     }
 }

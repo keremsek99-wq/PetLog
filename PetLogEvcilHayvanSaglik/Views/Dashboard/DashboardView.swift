@@ -11,6 +11,7 @@ struct DashboardView: View {
     @State private var showAddVetVisit = false
     @State private var showAddFood = false
     @State private var showAddPet = false
+    @State private var showPaywall = false
 
     private var pet: Pet? { store.selectedPet }
 
@@ -48,6 +49,9 @@ struct DashboardView: View {
             }
             .sheet(isPresented: $showAddPet) {
                 AddPetSheet(store: store)
+            }
+            .sheet(isPresented: $showPaywall) {
+                PetLogPaywallView(premiumManager: premiumManager)
             }
         }
     }
@@ -178,23 +182,44 @@ struct DashboardView: View {
         SummaryCard(title: "Mama Stoku", icon: "takeoutbag.and.cup.and.straw.fill", iconColor: .orange) {
             if let food = pet.currentFood {
                 VStack(alignment: .leading, spacing: 10) {
-                    HStack(alignment: .firstTextBaseline) {
-                        Text("\(food.daysUntilRunout)")
-                            .font(.system(.title, design: .rounded, weight: .bold))
-                            .foregroundStyle(food.daysUntilRunout <= 3 ? .red : (food.daysUntilRunout <= 7 ? .orange : .primary))
-                        Text("gün kaldı")
-                            .font(.body)
-                            .foregroundStyle(.secondary)
-                        Spacer()
-                        Text(food.brand)
-                            .font(.caption)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color(.tertiarySystemGroupedBackground))
-                            .clipShape(Capsule())
+                    if premiumManager.hasFullAccess {
+                        HStack(alignment: .firstTextBaseline) {
+                            Text("\(food.daysUntilRunout)")
+                                .font(.system(.title, design: .rounded, weight: .bold))
+                                .foregroundStyle(food.daysUntilRunout <= 3 ? .red : (food.daysUntilRunout <= 7 ? .orange : .primary))
+                            Text("gün kaldı")
+                                .font(.body)
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                            Text(food.brand)
+                                .font(.caption)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Color(.tertiarySystemGroupedBackground))
+                                .clipShape(Capsule())
+                        }
+                        ProgressView(value: food.percentageRemaining)
+                            .tint(food.daysUntilRunout <= 3 ? .red : (food.daysUntilRunout <= 7 ? .orange : .green))
+                    } else {
+                        Button {
+                            showPaywall = true
+                        } label: {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(food.brand)
+                                        .font(.subheadline.weight(.medium))
+                                        .foregroundStyle(.primary)
+                                    Text("Detaylar için Premium'a geçin")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                                Spacer()
+                                Image(systemName: "lock.fill")
+                                    .foregroundStyle(.orange)
+                            }
+                        }
+                        .buttonStyle(.plain)
                     }
-                    ProgressView(value: food.percentageRemaining)
-                        .tint(food.daysUntilRunout <= 3 ? .red : (food.daysUntilRunout <= 7 ? .orange : .green))
                 }
             } else {
                 Button {
@@ -277,7 +302,11 @@ struct DashboardView: View {
             }
             Divider()
             Button {
-                showAddPet = true
+                if store.canAddMorePets(isPremium: premiumManager.hasFullAccess) {
+                    showAddPet = true
+                } else {
+                    showPaywall = true
+                }
             } label: {
                 Label("Hayvan Ekle", systemImage: "plus")
             }

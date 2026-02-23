@@ -1,8 +1,6 @@
 import Foundation
-import SwiftData
 
-@Model
-class Insight {
+struct Insight: Identifiable {
     var id: UUID
     var type: InsightType
     var severity: InsightSeverity

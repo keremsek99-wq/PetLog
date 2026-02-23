@@ -38,7 +38,7 @@ struct FinanceView: View {
                 if let pet { AddExpenseSheet(store: store, pet: pet) }
             }
             .sheet(isPresented: $showPaywall) {
-                PaywallView(premiumManager: premiumManager)
+                PetLogPaywallView(premiumManager: premiumManager)
             }
         }
     }

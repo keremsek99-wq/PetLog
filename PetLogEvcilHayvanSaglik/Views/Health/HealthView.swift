@@ -3,12 +3,14 @@ import SwiftData
 
 struct HealthView: View {
     let store: PetStore
+    let premiumManager: PremiumManager
 
     @State private var selectedSection: HealthSection = .weight
     @State private var showAddWeight = false
     @State private var showAddVaccine = false
     @State private var showAddMedication = false
     @State private var showAddVetVisit = false
+    @State private var showPaywall = false
 
     private var pet: Pet? { store.selectedPet }
 
@@ -41,6 +43,9 @@ struct HealthView: View {
             .sheet(isPresented: $showAddVetVisit) {
                 if let pet { AddVetVisitSheet(store: store, pet: pet) }
             }
+            .sheet(isPresented: $showPaywall) {
+                PetLogPaywallView(premiumManager: premiumManager)
+            }
         }
     }
 
@@ -66,6 +71,8 @@ struct HealthView: View {
                         medsSection(pet)
                     case .vetVisits:
                         vetVisitsSection(pet)
+                    case .breedHealth:
+                        breedHealthSection(pet)
                     }
                 }
                 .padding(.horizontal)
@@ -182,6 +189,191 @@ struct HealthView: View {
                 .symbolRenderingMode(.hierarchical)
         }
     }
+
+    // MARK: - Breed Health Section (Premium)
+
+    private func breedHealthSection(_ pet: Pet) -> some View {
+        VStack(spacing: 16) {
+            if premiumManager.hasFullAccess {
+                VStack(alignment: .leading, spacing: 12) {
+                    breedHealthCard(
+                        title: "İrk Bilgisi",
+                        icon: "pawprint.fill",
+                        color: .blue,
+                        items: breedInfoItems(for: pet)
+                    )
+                    breedHealthCard(
+                        title: "Sağlık Riskleri",
+                        icon: "exclamationmark.triangle.fill",
+                        color: .orange,
+                        items: healthRiskItems(for: pet)
+                    )
+                    breedHealthCard(
+                        title: "Önerilen Kontroller",
+                        icon: "checkmark.shield.fill",
+                        color: .green,
+                        items: recommendedCheckItems(for: pet)
+                    )
+                }
+            } else {
+                VStack(spacing: 16) {
+                    Image(systemName: "heart.text.clipboard.fill")
+                        .font(.system(size: 48))
+                        .foregroundStyle(.orange.opacity(0.6))
+                    Text("İrk Bazlı Sağlık Analizi")
+                        .font(.title3.weight(.semibold))
+                    Text("\(pet.species.rawValue) türüne özel sağlık riskleri, önerilen kontroller ve bakım ipuplarını görün.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                    Button {
+                        showPaywall = true
+                    } label: {
+                        Label("Premium ile Aç", systemImage: "lock.open.fill")
+                            .font(.subheadline.weight(.semibold))
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 10)
+                            .background(Color.blue)
+                            .foregroundStyle(.white)
+                            .clipShape(Capsule())
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 32)
+            }
+        }
+    }
+
+    private func breedHealthCard(title: String, icon: String, color: Color, items: [String]) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 8) {
+                Image(systemName: icon)
+                    .foregroundStyle(color)
+                Text(title)
+                    .font(.headline)
+            }
+            ForEach(items, id: \.self) { item in
+                HStack(alignment: .top, spacing: 8) {
+                    Circle()
+                        .fill(color.opacity(0.5))
+                        .frame(width: 6, height: 6)
+                        .padding(.top, 6)
+                    Text(item)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(.secondarySystemGroupedBackground))
+        .clipShape(.rect(cornerRadius: 12))
+    }
+
+    private func breedInfoItems(for pet: Pet) -> [String] {
+        switch pet.species {
+        case .dog:
+            return [
+                "Köpekler ortalama 10-13 yıl yaşar, ırka göre değişir",
+                "Düzenli diş bakımı kalp sağlığı için kritiktir",
+                "Günlük egzersiz ihtiyacı ırka ve yaşa bağlıdır"
+            ]
+        case .cat:
+            return [
+                "Kediler ortalama 15-20 yıl yaşar",
+                "Ev kedileri dış kedilerden daha uzun yaşar",
+                "Düzenli tırnak bakımı ve diş kontrollüe gidin"
+            ]
+        case .bird:
+            return [
+                "Kuşlar türe göre 5-80 yıl yaşayabilir",
+                "Kafes büyüklüğü ve sosyal etkileşim önemlidir",
+                "Hava kalitesi kuş sağlığı için kritiktir"
+            ]
+        case .rabbit:
+            return [
+                "Tavşanlar ortalama 8-12 yıl yaşar",
+                "Dişleri sürekli büyür, saman ile aşınması gerekir",
+                "Sindirim sağlığı için yüksek lifli diyet şarttır"
+            ]
+        case .other:
+            return [
+                "Türüne uygun beslenme ve bakım rehberine başvurun",
+                "Düzenli veteriner kontrolleri önemlidir",
+                "Yaşam alanı sıcaklığı ve nem oranını kontrol edin"
+            ]
+        }
+    }
+
+    private func healthRiskItems(for pet: Pet) -> [String] {
+        switch pet.species {
+        case .dog:
+            return [
+                "Obezite: Düzenli kilo takibi yapın",
+                "Eklem sorunları: Büyük ırklarda yaygın",
+                "Kulak enfeksiyonları: Haftalık temizlik önerilir"
+            ]
+        case .cat:
+            return [
+                "Böbrek hastalığı: Yaşlı kedilerde sık görülür",
+                "Diyabet: Aşırı kilolu kedilerde risk artar",
+                "İdrar yolu enfeksiyonları: Su tüketimini takip edin"
+            ]
+        case .bird:
+            return [
+                "Tüy dökülmesi: Stres ve beslenme eksikliği belirtisi",
+                "Solunum yolu hastalıkları: Hava temizliği kritik",
+                "Aşırı gagalama: Psikolojik sorun belirtisi olabilir"
+            ]
+        case .rabbit:
+            return [
+                "GI Staz: Sindirim durması acil durumdur",
+                "Diş problemleri: Yanlış bakımda sık görülür",
+                "Sıcak çarpması: 26°C üzerinde risk artar"
+            ]
+        case .other:
+            return [
+                "Türe özel hastalıklar için veterinerinize danışın",
+                "Beslenme eksiklikleri düzenli kontrol gerektirir",
+                "Stres belirtilerini takip edin"
+            ]
+        }
+    }
+
+    private func recommendedCheckItems(for pet: Pet) -> [String] {
+        switch pet.species {
+        case .dog:
+            return [
+                "Yıllık genel sağlık kontrolü",
+                "6 ayda bir diş kontrolü",
+                "Aşı takvimi takibi (kuduz, karma)"
+            ]
+        case .cat:
+            return [
+                "Yıllık genel kontrol ve kan testi",
+                "Yaşlı kedilerde 6 ayda bir böbrek kontrolü",
+                "Yıllık aşı takibi"
+            ]
+        case .bird:
+            return [
+                "Yıllık genel kontrol",
+                "Tüy ve gaga sağlığı değerlendirmesi",
+                "Dışkı analizi (parazit kontrolü)"
+            ]
+        case .rabbit:
+            return [
+                "6 ayda bir diş kontrolü",
+                "Yıllık genel kontrol",
+                "Kısırlaştırma değerlendirmesi"
+            ]
+        case .other:
+            return [
+                "Yıllık veteriner kontrolü",
+                "Türe uygun aşı programı",
+                "Beslenme değerlendirmesi"
+            ]
+        }
+    }
 }
 
 nonisolated enum HealthSection: String, CaseIterable, Sendable {
@@ -189,4 +381,5 @@ nonisolated enum HealthSection: String, CaseIterable, Sendable {
     case vaccines = "Aşılar"
     case meds = "İlaçlar"
     case vetVisits = "Ziyaretler"
+    case breedHealth = "İrk Sağlığı"
 }
