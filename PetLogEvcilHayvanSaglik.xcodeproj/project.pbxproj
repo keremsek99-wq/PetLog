@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		A1B2C3D401000001 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = A1B2C3D402000001 /* RevenueCat */; };
+		A1B2C3D401000002 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = A1B2C3D402000002 /* RevenueCatUI */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		105FC58A2E9EAD3200EA8BCF /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,6 +57,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A1B2C3D401000001 /* RevenueCat in Frameworks */,
+				A1B2C3D401000002 /* RevenueCatUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +119,8 @@
 			);
 			name = PetLogEvcilHayvanSaglik;
 			packageProductDependencies = (
+				A1B2C3D402000001 /* RevenueCat */,
+				A1B2C3D402000002 /* RevenueCatUI */,
 			);
 			productName = PetLogEvcilHayvanSaglik;
 			productReference = 105FC57A2E9EAD3100EA8BCF /* PetLogEvcilHayvanSaglik.app */;
@@ -199,6 +208,9 @@
 			productRefGroup = 105FC57B2E9EAD3100EA8BCF /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
+			packageReferences = (
+				A1B2C3D403000001 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
+			);
 			targets = (
 				105FC5792E9EAD3100EA8BCF /* PetLogEvcilHayvanSaglik */,
 				105FC5882E9EAD3200EA8BCF /* PetLogEvcilHayvanSaglik */,
@@ -592,6 +604,30 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		A1B2C3D403000001 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/RevenueCat/purchases-ios-spm.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A1B2C3D402000001 /* RevenueCat */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A1B2C3D403000001 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
+			productName = RevenueCat;
+		};
+		A1B2C3D402000002 /* RevenueCatUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A1B2C3D403000001 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
+			productName = RevenueCatUI;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 105FC5722E9EAD3100EA8BCF /* Project object */;
 }
