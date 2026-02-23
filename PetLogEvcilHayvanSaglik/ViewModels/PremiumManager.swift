@@ -1,6 +1,8 @@
 import Foundation
 import SwiftUI
+#if canImport(RevenueCat)
 import RevenueCat
+#endif
 
 @Observable
 @MainActor
@@ -8,29 +10,33 @@ class PremiumManager {
     static let shared = PremiumManager()
 
     var isPremium: Bool = false
-    var currentOffering: Offering?
-    var customerInfo: CustomerInfo?
+    var customerInfo: Any? = nil
 
     var hasFullAccess: Bool {
         isPremium
     }
 
     private init() {
+        #if canImport(RevenueCat)
         Task {
             await checkSubscriptionStatus()
         }
+        #endif
     }
 
     // MARK: - Configure SDK
 
     static func configure() {
+        #if canImport(RevenueCat)
         Purchases.logLevel = .debug
         Purchases.configure(withAPIKey: Config.revenueCatAPIKey)
+        #endif
     }
 
     // MARK: - Subscription Status
 
     func checkSubscriptionStatus() async {
+        #if canImport(RevenueCat)
         do {
             let info = try await Purchases.shared.customerInfo()
             self.customerInfo = info
@@ -38,21 +44,12 @@ class PremiumManager {
         } catch {
             print("PremiumManager: Failed to fetch customer info: \(error)")
         }
-    }
-
-    // MARK: - Fetch Offerings
-
-    func fetchOfferings() async {
-        do {
-            let offerings = try await Purchases.shared.offerings()
-            self.currentOffering = offerings.current
-        } catch {
-            print("PremiumManager: Failed to fetch offerings: \(error)")
-        }
+        #endif
     }
 
     // MARK: - Purchase
 
+    #if canImport(RevenueCat)
     func purchase(package: Package) async -> Bool {
         do {
             let result = try await Purchases.shared.purchase(package: package)
@@ -71,10 +68,12 @@ class PremiumManager {
             return false
         }
     }
+    #endif
 
     // MARK: - Restore
 
     func restorePurchases() async -> Bool {
+        #if canImport(RevenueCat)
         do {
             let info = try await Purchases.shared.restorePurchases()
             self.customerInfo = info
@@ -84,6 +83,9 @@ class PremiumManager {
             print("PremiumManager: Restore failed: \(error)")
             return false
         }
+        #else
+        return false
+        #endif
     }
 }
 
