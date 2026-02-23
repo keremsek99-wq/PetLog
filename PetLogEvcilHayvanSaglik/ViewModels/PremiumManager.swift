@@ -8,9 +8,9 @@ class PremiumManager {
     static let shared = PremiumManager()
 
     // MARK: - Product IDs
-    static let monthlyProductID = "com.petlog.premium.monthly"
-    static let yearlyProductID = "com.petlog.premium.yearly"
-    static let lifetimeProductID = "com.petlog.premium.lifetime"
+    static let monthlyProductID = "com.petlog.premium.month"
+    static let yearlyProductID = "com.petlog.premium.year"
+    static let lifetimeProductID = "com.petlog.premium.lifetme"
     static let allProductIDs: Set<String> = [monthlyProductID, yearlyProductID, lifetimeProductID]
 
     // MARK: - State
