@@ -1,2 +1,0 @@
-# PetLog
-Created by Rork
