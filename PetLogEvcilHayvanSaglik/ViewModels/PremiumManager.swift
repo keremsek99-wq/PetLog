@@ -7,6 +7,12 @@ import StoreKit
 class PremiumManager {
     static let shared = PremiumManager()
 
+    // MARK: - Product IDs
+    static let monthlyProductID = "com.petlog.premium.monthly"
+    static let yearlyProductID = "com.petlog.premium.yearly"
+    static let lifetimeProductID = "com.petlog.premium.lifetime"
+    static let allProductIDs: Set<String> = [monthlyProductID, yearlyProductID, lifetimeProductID]
+
     // MARK: - State
     var isPremium: Bool = false
     var products: [Product] = []
@@ -15,7 +21,7 @@ class PremiumManager {
 
     var hasFullAccess: Bool { isPremium }
 
-    nonisolated(unsafe) private var transactionListener: Task<Void, Error>?
+    nonisolated private var transactionListener: Task<Void, Error>?
 
     // MARK: - Init
 
@@ -44,7 +50,7 @@ class PremiumManager {
     func loadProducts() async {
         isLoading = true
         do {
-            let storeProducts = try await Product.products(for: PetLogConfig.allProductIDs)
+            let storeProducts = try await Product.products(for: PremiumManager.allProductIDs)
             products = storeProducts.sorted { price($0) < price($1) }
         } catch {
             print("PremiumManager: Failed to load products: \(error)")
@@ -133,15 +139,15 @@ class PremiumManager {
     // MARK: - Product Helpers
 
     var monthlyProduct: Product? {
-        products.first { $0.id == PetLogConfig.monthlyProductID }
+        products.first { $0.id == PremiumManager.monthlyProductID }
     }
 
     var yearlyProduct: Product? {
-        products.first { $0.id == PetLogConfig.yearlyProductID }
+        products.first { $0.id == PremiumManager.yearlyProductID }
     }
 
     var lifetimeProduct: Product? {
-        products.first { $0.id == PetLogConfig.lifetimeProductID }
+        products.first { $0.id == PremiumManager.lifetimeProductID }
     }
 }
 

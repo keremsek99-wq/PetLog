@@ -56,7 +56,7 @@ struct PetLogPaywallView: View {
             }
             .onAppear {
                 // Default to yearly
-                selectedPlan = PetLogConfig.yearlyProductID
+                selectedPlan = PremiumManager.yearlyProductID
             }
         }
     }
@@ -149,7 +149,7 @@ struct PetLogPaywallView: View {
 
     private func planCard(_ product: Product) -> some View {
         let isSelected = selectedPlan == product.id
-        let isYearly = product.id == PetLogConfig.yearlyProductID
+        let isYearly = product.id == PremiumManager.yearlyProductID
 
         return Button {
             selectedPlan = product.id
@@ -270,18 +270,18 @@ struct PetLogPaywallView: View {
 
     private func planTitle(for product: Product) -> String {
         switch product.id {
-        case PetLogConfig.monthlyProductID: return "Aylık"
-        case PetLogConfig.yearlyProductID: return "Yıllık"
-        case PetLogConfig.lifetimeProductID: return "Ömür Boyu"
+        case PremiumManager.monthlyProductID: return "Aylık"
+        case PremiumManager.yearlyProductID: return "Yıllık"
+        case PremiumManager.lifetimeProductID: return "Ömür Boyu"
         default: return product.displayName
         }
     }
 
     private func planSubtitle(for product: Product) -> String {
         switch product.id {
-        case PetLogConfig.monthlyProductID: return "Her ay yenilenir"
-        case PetLogConfig.yearlyProductID: return "2 ay bedava"
-        case PetLogConfig.lifetimeProductID: return "Tek seferlik ödeme"
+        case PremiumManager.monthlyProductID: return "Her ay yenilenir"
+        case PremiumManager.yearlyProductID: return "2 ay bedava"
+        case PremiumManager.lifetimeProductID: return "Tek seferlik ödeme"
         default: return product.description
         }
     }
