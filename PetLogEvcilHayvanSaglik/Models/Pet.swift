@@ -20,6 +20,10 @@ class Pet {
     @Relationship(deleteRule: .cascade) var vetVisits: [VetVisit] = []
     @Relationship(deleteRule: .cascade) var expenses: [Expense] = []
     @Relationship(deleteRule: .cascade) var foodInventories: [FoodInventory] = []
+    @Relationship(deleteRule: .cascade) var photoLogs: [PhotoLog] = []
+    @Relationship(deleteRule: .cascade) var feedingLogs: [FeedingLog] = []
+    @Relationship(deleteRule: .cascade) var activityLogs: [ActivityLog] = []
+    @Relationship(deleteRule: .cascade) var documents: [PetDocument] = []
 
     init(name: String, species: PetSpecies, breed: String = "", birthdate: Date, sex: PetSex = .unknown, isNeutered: Bool = false, weightTargetKg: Double? = nil) {
         self.id = UUID()

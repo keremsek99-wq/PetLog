@@ -55,18 +55,18 @@ enum WidgetDataService {
     // MARK: - Convenience (main app only — uses Pet model)
 
     static func updateWidgetData(for pet: Pet, monthlySpending: Double) {
-        let nextVaccine = pet.vaccineRecords.filter { $0.nextDueDate != nil && $0.nextDueDate! > Date() }
-            .sorted { ($0.nextDueDate ?? .distantFuture) < ($1.nextDueDate ?? .distantFuture) }
+        let nextVaccine = pet.vaccineRecords.filter { $0.dueDate != nil && $0.dueDate! > Date() }
+            .sorted { ($0.dueDate ?? .distantFuture) < ($1.dueDate ?? .distantFuture) }
             .first
 
         let currentFood = pet.foodInventories.first
-        let foodDays = currentFood != nil ? max(0, Calendar.current.dateComponents([.day], from: Date(), to: currentFood!.estimatedRunoutDate ?? Date()).day ?? 0) : -1
+        let foodDays = currentFood != nil ? max(0, Calendar.current.dateComponents([.day], from: Date(), to: currentFood!.predictedRunoutDate).day ?? 0) : -1
 
         updateWidgetData(
             petName: pet.name,
             speciesIcon: pet.species.icon,
             nextVaccineName: nextVaccine?.name,
-            nextVaccineDate: nextVaccine?.nextDueDate,
+            nextVaccineDate: nextVaccine?.dueDate,
             foodBrand: currentFood?.brand,
             foodDaysRemaining: foodDays,
             monthlySpending: monthlySpending,

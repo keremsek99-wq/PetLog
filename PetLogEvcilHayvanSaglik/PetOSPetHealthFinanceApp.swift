@@ -20,6 +20,10 @@ struct PetOSPetHealthFinanceApp: App {
             VetVisit.self,
             Expense.self,
             FoodInventory.self,
+            PhotoLog.self,
+            FeedingLog.self,
+            ActivityLog.self,
+            PetDocument.self,
         ])
 
         let iCloudEnabled = UserDefaults.standard.bool(forKey: "iCloudSyncEnabled")

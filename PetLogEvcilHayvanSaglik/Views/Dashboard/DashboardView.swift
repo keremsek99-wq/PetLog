@@ -13,6 +13,10 @@ struct DashboardView: View {
     @State private var showAddPet = false
     @State private var showPaywall = false
     @State private var showAllPets = false
+    @State private var showAddFeeding = false
+    @State private var showAddActivity = false
+    @State private var showAddDocument = false
+    @State private var showPhotoTimeline = false
 
     private var pet: Pet? { store.selectedPet }
     private var hasMultiplePets: Bool { store.allPets().count > 1 }
@@ -71,6 +75,18 @@ struct DashboardView: View {
             }
             .sheet(isPresented: $showPaywall) {
                 PetLogPaywallView(premiumManager: premiumManager)
+            }
+            .sheet(isPresented: $showAddFeeding) {
+                AddFeedingSheet(store: store)
+            }
+            .sheet(isPresented: $showAddActivity) {
+                AddActivitySheet(store: store)
+            }
+            .sheet(isPresented: $showAddDocument) {
+                AddDocumentSheet(store: store, premiumManager: premiumManager)
+            }
+            .sheet(isPresented: $showPhotoTimeline) {
+                PhotoTimelineView(store: store, premiumManager: premiumManager)
             }
         }
     }
@@ -132,18 +148,34 @@ struct DashboardView: View {
     }
 
     private var quickActionsRow: some View {
-        HStack(spacing: 0) {
-            QuickActionButton(title: "Kilo", icon: "scalemass.fill", color: .green) {
-                showAddWeight = true
+        VStack(spacing: 8) {
+            HStack(spacing: 0) {
+                QuickActionButton(title: "Kilo", icon: "scalemass.fill", color: .green) {
+                    showAddWeight = true
+                }
+                QuickActionButton(title: "Mama", icon: "fork.knife", color: .orange) {
+                    showAddFeeding = true
+                }
+                QuickActionButton(title: "Aktivite", icon: "figure.walk", color: .cyan) {
+                    showAddActivity = true
+                }
+                QuickActionButton(title: "Harcama", icon: "turkishlirasign.circle.fill", color: .orange) {
+                    showAddExpense = true
+                }
             }
-            QuickActionButton(title: "Harcama", icon: "turkishlirasign.circle.fill", color: .orange) {
-                showAddExpense = true
-            }
-            QuickActionButton(title: "İlaç", icon: "pills.fill", color: .blue) {
-                showAddMedication = true
-            }
-            QuickActionButton(title: "Veteriner", icon: "cross.case.fill", color: .red) {
-                showAddVetVisit = true
+            HStack(spacing: 0) {
+                QuickActionButton(title: "İlaç", icon: "pills.fill", color: .blue) {
+                    showAddMedication = true
+                }
+                QuickActionButton(title: "Veteriner", icon: "cross.case.fill", color: .red) {
+                    showAddVetVisit = true
+                }
+                QuickActionButton(title: "Fotoğraf", icon: "camera.fill", color: .purple) {
+                    showPhotoTimeline = true
+                }
+                QuickActionButton(title: "Belgeler", icon: "doc.text.fill", color: .teal) {
+                    showAddDocument = true
+                }
             }
         }
         .padding(.vertical, 4)
@@ -151,6 +183,7 @@ struct DashboardView: View {
 
     private func summaryCards(_ pet: Pet) -> some View {
         VStack(spacing: 12) {
+            todayActivityCard(pet)
             weightCard(pet)
             foodCard(pet)
 
@@ -304,6 +337,47 @@ struct DashboardView: View {
                 Text("Yaklaşan aşı yok")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private func todayActivityCard(_ pet: Pet) -> some View {
+        let today = Calendar.current.startOfDay(for: Date())
+        let todayFeedings = pet.feedingLogs.filter { Calendar.current.isDate($0.date, inSameDayAs: today) }
+        let todayActivities = pet.activityLogs.filter { Calendar.current.isDate($0.date, inSameDayAs: today) }
+        let walkMinutes = todayActivities.filter { $0.activityType == .walk }.reduce(0) { $0 + $1.durationMinutes }
+
+        return SummaryCard(title: "Bugünkü Aktivite", icon: "chart.bar.fill", iconColor: .cyan) {
+            HStack(spacing: 16) {
+                VStack(spacing: 2) {
+                    Text("\(todayFeedings.count)")
+                        .font(.system(.title3, design: .rounded, weight: .bold))
+                    Text("öğün")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+                VStack(spacing: 2) {
+                    Text("\(walkMinutes)")
+                        .font(.system(.title3, design: .rounded, weight: .bold))
+                    Text("dk yürüyüş")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+                VStack(spacing: 2) {
+                    Text("\(todayActivities.filter { $0.activityType == .potty }.count)")
+                        .font(.system(.title3, design: .rounded, weight: .bold))
+                    Text("tuvalet")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+                VStack(spacing: 2) {
+                    Text("\(pet.photoLogs.count)")
+                        .font(.system(.title3, design: .rounded, weight: .bold))
+                    Text("fotoğraf")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
             }
         }
     }
