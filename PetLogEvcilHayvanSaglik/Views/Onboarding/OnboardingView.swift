@@ -121,8 +121,9 @@ struct OnboardingAddPetSheet: View {
 
     @Environment(\.dismiss) private var dismiss
     @State private var name: String = ""
-    @State private var species: PetSpecies = .dog
+    @State private var species: PetSpecies = .unspecified
     @State private var breed: String = ""
+    @State private var customBreed: String = ""
     @State private var birthdate: Date = Calendar.current.date(byAdding: .year, value: -1, to: Date()) ?? Date()
     @State private var sex: PetSex = .unknown
     @State private var isNeutered: Bool = false
@@ -156,7 +157,11 @@ struct OnboardingAddPetSheet: View {
                             Label(s.rawValue, systemImage: s.icon).tag(s)
                         }
                     }
-                    TextField("Irk (isteğe bağlı)", text: $breed)
+                    .onChange(of: species) { _, _ in
+                        breed = ""
+                    }
+
+                    breedPicker
                 }
 
                 Section("Detaylar") {
@@ -177,7 +182,8 @@ struct OnboardingAddPetSheet: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Başla") {
-                        let pet = Pet(name: name.trimmingCharacters(in: .whitespaces), species: species, breed: breed, birthdate: birthdate, sex: sex, isNeutered: isNeutered)
+                        let resolvedBreed = (breed == "__other__") ? customBreed.trimmingCharacters(in: .whitespaces) : breed
+                        let pet = Pet(name: name.trimmingCharacters(in: .whitespaces), species: species, breed: resolvedBreed, birthdate: birthdate, sex: sex, isNeutered: isNeutered)
                         store.addPet(pet)
                         onComplete()
                         dismiss()
@@ -185,6 +191,25 @@ struct OnboardingAddPetSheet: View {
                     .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
                     .fontWeight(.semibold)
                 }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var breedPicker: some View {
+        let knownBreeds = BreedDatabase.breeds(for: species)
+        if knownBreeds.isEmpty {
+            TextField("Irk (isteğe bağlı)", text: $breed)
+        } else {
+            Picker("Irk", selection: $breed) {
+                Text("Seçiniz").tag("")
+                ForEach(knownBreeds, id: \.name) { breedInfo in
+                    Text(breedInfo.name).tag(breedInfo.name)
+                }
+                Text("Diğer").tag("__other__")
+            }
+            if breed == "__other__" {
+                TextField("Irk adı girin", text: $customBreed)
             }
         }
     }

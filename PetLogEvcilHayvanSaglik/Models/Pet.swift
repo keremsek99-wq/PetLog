@@ -64,6 +64,7 @@ class Pet {
 }
 
 nonisolated enum PetSpecies: String, Codable, CaseIterable, Sendable {
+    case unspecified = "Belirtilmemiş"
     case dog = "Köpek"
     case cat = "Kedi"
     case bird = "Kuş"
@@ -74,6 +75,7 @@ nonisolated enum PetSpecies: String, Codable, CaseIterable, Sendable {
 
     var icon: String {
         switch self {
+        case .unspecified: return "questionmark.circle.fill"
         case .dog: return "dog.fill"
         case .cat: return "cat.fill"
         case .bird: return "bird.fill"

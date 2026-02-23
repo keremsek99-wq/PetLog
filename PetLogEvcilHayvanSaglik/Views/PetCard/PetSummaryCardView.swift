@@ -39,25 +39,36 @@ struct PetSummaryCardView: View {
     private var headerSection: some View {
         VStack(spacing: 14) {
             ZStack {
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [.blue.opacity(0.15), .blue.opacity(0.05)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
+                if let photoData = pet.photoData, let uiImage = UIImage(data: photoData) {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 88, height: 88)
+                        .clipShape(Circle())
+                        .overlay(Circle().stroke(Color.blue.opacity(0.2), lineWidth: 2))
+                } else {
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [.blue.opacity(0.15), .blue.opacity(0.05)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
                         )
-                    )
-                    .frame(width: 88, height: 88)
-                Image(systemName: pet.species.icon)
-                    .font(.system(size: 40))
-                    .foregroundStyle(.blue)
+                        .frame(width: 88, height: 88)
+                    Image(systemName: pet.species.icon)
+                        .font(.system(size: 40))
+                        .foregroundStyle(.blue)
+                }
             }
 
             VStack(spacing: 4) {
                 Text(pet.name)
                     .font(.title.bold())
                 HStack(spacing: 8) {
-                    Text(pet.species.rawValue)
+                    if pet.species != .unspecified {
+                        Text(pet.species.rawValue)
+                    }
                     if !pet.breed.isEmpty {
                         Text("·").foregroundStyle(.tertiary)
                         Text(pet.breed)

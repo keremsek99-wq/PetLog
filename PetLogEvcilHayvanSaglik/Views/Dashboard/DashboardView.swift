@@ -12,14 +12,33 @@ struct DashboardView: View {
     @State private var showAddFood = false
     @State private var showAddPet = false
     @State private var showPaywall = false
+    @State private var showAllPets = false
 
     private var pet: Pet? { store.selectedPet }
+    private var hasMultiplePets: Bool { store.allPets().count > 1 }
 
     var body: some View {
         NavigationStack {
             Group {
                 if let pet {
-                    petDashboard(pet)
+                    VStack(spacing: 0) {
+                        if hasMultiplePets {
+                            Picker("Görünüm", selection: $showAllPets) {
+                                Text(pet.name).tag(false)
+                                Text("Tüm Hayvanlar").tag(true)
+                            }
+                            .pickerStyle(.segmented)
+                            .padding(.horizontal)
+                            .padding(.vertical, 8)
+                        }
+
+                        if showAllPets {
+                            AllPetsOverviewView(store: store, premiumManager: premiumManager)
+                        } else {
+                            petDashboard(pet)
+                        }
+                    }
+                    .background(Color(.systemGroupedBackground))
                 } else {
                     noPetState
                 }
@@ -67,24 +86,34 @@ struct DashboardView: View {
             .padding(.horizontal)
             .padding(.bottom, 24)
         }
-        .background(Color(.systemGroupedBackground))
     }
 
     private func petHeader(_ pet: Pet) -> some View {
         HStack(spacing: 14) {
-            ZStack {
-                Circle()
-                    .fill(Color.blue.opacity(0.12))
+            if let photoData = pet.photoData, let uiImage = UIImage(data: photoData) {
+                Image(uiImage: uiImage)
+                    .resizable()
+                    .scaledToFill()
                     .frame(width: 56, height: 56)
-                Image(systemName: pet.species.icon)
-                    .font(.title2)
-                    .foregroundStyle(.blue)
+                    .clipShape(Circle())
+                    .overlay(Circle().stroke(Color.blue.opacity(0.2), lineWidth: 1.5))
+            } else {
+                ZStack {
+                    Circle()
+                        .fill(Color.blue.opacity(0.12))
+                        .frame(width: 56, height: 56)
+                    Image(systemName: pet.species.icon)
+                        .font(.title2)
+                        .foregroundStyle(.blue)
+                }
             }
             VStack(alignment: .leading, spacing: 2) {
                 Text(pet.name)
                     .font(.title2.weight(.bold))
                 HStack(spacing: 6) {
-                    Text(pet.species.rawValue)
+                    if pet.species != .unspecified {
+                        Text(pet.species.rawValue)
+                    }
                     if !pet.breed.isEmpty {
                         Text("·")
                             .foregroundStyle(.tertiary)

@@ -271,18 +271,27 @@ struct HealthView: View {
     }
 
     private func breedInfoItems(for pet: Pet) -> [String] {
+        if let info = BreedDatabase.breedInfo(species: pet.species, breedName: pet.breed) {
+            return [
+                "Yaşam süresi: \(info.lifespan)",
+                "Boyut: \(info.size)"
+            ] + info.careNotes
+        }
+        // Fallback: generic species info
         switch pet.species {
         case .dog:
             return [
                 "Köpekler ortalama 10-13 yıl yaşar, ırka göre değişir",
                 "Düzenli diş bakımı kalp sağlığı için kritiktir",
-                "Günlük egzersiz ihtiyacı ırka ve yaşa bağlıdır"
+                "Günlük egzersiz ihtiyacı ırka ve yaşa bağlıdır",
+                "💡 Irk seçerek detaylı bilgi alabilirsiniz"
             ]
         case .cat:
             return [
                 "Kediler ortalama 15-20 yıl yaşar",
                 "Ev kedileri dış kedilerden daha uzun yaşar",
-                "Düzenli tırnak bakımı ve diş kontrollüe gidin"
+                "Düzenli tırnak bakımı ve diş kontrolleri önemlidir",
+                "💡 Irk seçerek detaylı bilgi alabilirsiniz"
             ]
         case .bird:
             return [
@@ -308,16 +317,20 @@ struct HealthView: View {
                 "UVB ışık ve ısı kaynağı zorunludur",
                 "Doğru nem oranı deri sağlığı için kritiktir"
             ]
-        case .other:
+        case .unspecified, .other:
             return [
                 "Türüne uygun beslenme ve bakım rehberine başvurun",
                 "Düzenli veteriner kontrolleri önemlidir",
-                "Yaşam alanı sıcaklığı ve nem oranını kontrol edin"
+                "💡 Tür ve ırk seçerek detaylı bilgi alabilirsiniz"
             ]
         }
     }
 
     private func healthRiskItems(for pet: Pet) -> [String] {
+        if let info = BreedDatabase.breedInfo(species: pet.species, breedName: pet.breed) {
+            return info.healthRisks
+        }
+        // Fallback: generic species risks
         switch pet.species {
         case .dog:
             return [
@@ -355,7 +368,7 @@ struct HealthView: View {
                 "Solunum enfeksiyonları: Yanlış sıcaklıkta yaygın",
                 "Deri dökülme sorunları: Nem oranı yetersizliği"
             ]
-        case .other:
+        case .unspecified, .other:
             return [
                 "Türe özel hastalıklar için veterinerinize danışın",
                 "Beslenme eksiklikleri düzenli kontrol gerektirir",
@@ -365,6 +378,10 @@ struct HealthView: View {
     }
 
     private func recommendedCheckItems(for pet: Pet) -> [String] {
+        if let info = BreedDatabase.breedInfo(species: pet.species, breedName: pet.breed) {
+            return info.recommendedChecks
+        }
+        // Fallback: generic species checks
         switch pet.species {
         case .dog:
             return [
@@ -402,7 +419,7 @@ struct HealthView: View {
                 "Yıllık dışkı parazit analizi",
                 "UVB lamba yenileme (6-12 ay)"
             ]
-        case .other:
+        case .unspecified, .other:
             return [
                 "Yıllık veteriner kontrolü",
                 "Türe uygun aşı programı",

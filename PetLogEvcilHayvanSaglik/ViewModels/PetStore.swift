@@ -57,6 +57,18 @@ class PetStore {
         }
     }
 
+    func updatePet(_ pet: Pet, name: String, species: PetSpecies, breed: String, birthdate: Date, sex: PetSex, isNeutered: Bool, weightTargetKg: Double?, photoData: Data?) {
+        pet.name = name
+        pet.species = species
+        pet.breed = breed
+        pet.birthdate = birthdate
+        pet.sex = sex
+        pet.isNeutered = isNeutered
+        pet.weightTargetKg = weightTargetKg
+        pet.photoData = photoData
+        save()
+    }
+
     func addWeightLog(to pet: Pet, weightKg: Double, date: Date, notes: String) {
         let log = WeightLog(date: date, weightKg: weightKg, notes: notes)
         log.pet = pet
@@ -139,6 +151,7 @@ class PetStore {
     func generateInsights(for pet: Pet) -> [Insight] {
         var insights: [Insight] = []
 
+        // Food runout warning
         if let food = pet.currentFood, food.daysUntilRunout <= 7 {
             let severity: InsightSeverity = food.daysUntilRunout <= 3 ? .urgent : .warning
             insights.append(Insight(
@@ -151,6 +164,7 @@ class PetStore {
             ))
         }
 
+        // Overdue vaccines
         let overdueVaccines = pet.vaccineRecords.filter { $0.isOverdue }
         for vaccine in overdueVaccines {
             insights.append(Insight(
@@ -163,6 +177,7 @@ class PetStore {
             ))
         }
 
+        // Weight trend detection
         let sortedWeights = pet.weightLogs.sorted { $0.date < $1.date }
         if sortedWeights.count >= 3 {
             let recent = sortedWeights.suffix(3)
@@ -182,6 +197,23 @@ class PetStore {
             }
         }
 
+        // Weight target tracking
+        if let target = pet.weightTargetKg, let current = pet.latestWeight {
+            let deviation = abs(current - target) / target
+            if deviation > 0.15 {
+                let direction = current > target ? "üzerinde" : "altında"
+                insights.append(Insight(
+                    type: .weightTrend,
+                    severity: .warning,
+                    title: "Hedef Kilodan Sapma",
+                    body: "\(pet.name)'in güncel kilosu (\(String(format: "%.1f", current)) kg) hedef kilonun (\(String(format: "%.1f", target)) kg) %\(Int(deviation * 100)) \(direction).",
+                    recommendedAction: "Beslenme planını gözden geçirin ve veterinerinize danışın.",
+                    petName: pet.name
+                ))
+            }
+        }
+
+        // High monthly spending
         let monthlySpend = monthlySpending(for: pet)
         if monthlySpend > 5000 {
             insights.append(Insight(
@@ -194,6 +226,7 @@ class PetStore {
             ))
         }
 
+        // Upcoming vaccines
         let dueSoonVaccines = pet.vaccineRecords.filter { $0.isDueSoon }
         for vaccine in dueSoonVaccines {
             insights.append(Insight(
@@ -202,6 +235,51 @@ class PetStore {
                 title: "Yaklaşan Aşı: \(vaccine.name)",
                 body: "\(pet.name)'in \(vaccine.name) aşısı \(vaccine.dueDate?.formatted(date: .abbreviated, time: .omitted) ?? "yakında") yapılmalı.",
                 recommendedAction: "Veteriner randevusu alın.",
+                petName: pet.name
+            ))
+        }
+
+        // Vet visit reminder (no visit in 6+ months)
+        let lastVisitDate = pet.vetVisits.sorted { $0.date > $1.date }.first?.date
+        let sixMonthsAgo = Calendar.current.date(byAdding: .month, value: -6, to: Date())
+        if let sixMonthsAgo {
+            if let lastVisit = lastVisitDate {
+                if lastVisit < sixMonthsAgo {
+                    let monthsSince = Calendar.current.dateComponents([.month], from: lastVisit, to: Date()).month ?? 0
+                    insights.append(Insight(
+                        type: .vetVisitReminder,
+                        severity: .info,
+                        title: "Veteriner Kontrolü Zamanı",
+                        body: "\(pet.name)'in son veteriner ziyaretinden \(monthsSince) ay geçti.",
+                        recommendedAction: "Düzenli kontroller için randevu alın.",
+                        petName: pet.name
+                    ))
+                }
+            } else if !pet.vetVisits.isEmpty == false {
+                insights.append(Insight(
+                    type: .vetVisitReminder,
+                    severity: .info,
+                    title: "İlk Veteriner Kontrolü",
+                    body: "\(pet.name) için henüz veteriner ziyareti kaydedilmemiş.",
+                    recommendedAction: "Düzenli sağlık kontrolleri için veterinerinize başvurun.",
+                    petName: pet.name
+                ))
+            }
+        }
+
+        // Medication ending soon
+        let endingSoonMeds = pet.activeMedications.filter { med in
+            guard let endDate = med.endDate else { return false }
+            let fiveDays = Calendar.current.date(byAdding: .day, value: 5, to: Date()) ?? Date()
+            return endDate <= fiveDays && endDate >= Date()
+        }
+        for med in endingSoonMeds {
+            insights.append(Insight(
+                type: .missedMedication,
+                severity: .warning,
+                title: "İlaç Bitiyor: \(med.name)",
+                body: "\(pet.name)'in \(med.name) ilacı \(med.endDate?.formatted(date: .abbreviated, time: .omitted) ?? "yakında") sona erecek.",
+                recommendedAction: "Veterinerinize danışarak ilaç yenileme veya sonlandırma kararı verin.",
                 petName: pet.name
             ))
         }

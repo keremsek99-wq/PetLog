@@ -238,17 +238,13 @@ struct PetListView: View {
     let premiumManager: PremiumManager
     @State private var showAddPet = false
     @State private var showPaywall = false
+    @State private var editingPet: Pet? = nil
 
     var body: some View {
         List {
             ForEach(store.allPets(), id: \.id) { pet in
                 HStack(spacing: 12) {
-                    Image(systemName: pet.species.icon)
-                        .font(.title3)
-                        .foregroundStyle(.blue)
-                        .frame(width: 36, height: 36)
-                        .background(Color.blue.opacity(0.12))
-                        .clipShape(Circle())
+                    petAvatar(pet)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(pet.name)
                             .font(.headline)
@@ -266,11 +262,18 @@ struct PetListView: View {
                 .onTapGesture {
                     store.selectedPet = pet
                 }
-            }
-            .onDelete { offsets in
-                let pets = store.allPets()
-                for index in offsets {
-                    store.deletePet(pets[index])
+                .swipeActions(edge: .trailing) {
+                    Button(role: .destructive) {
+                        store.deletePet(pet)
+                    } label: {
+                        Label("Sil", systemImage: "trash")
+                    }
+                    Button {
+                        editingPet = pet
+                    } label: {
+                        Label("Düzenle", systemImage: "pencil")
+                    }
+                    .tint(.blue)
                 }
             }
         }
@@ -292,8 +295,30 @@ struct PetListView: View {
         .sheet(isPresented: $showAddPet) {
             AddPetSheet(store: store)
         }
+        .sheet(item: $editingPet) { pet in
+            AddPetSheet(store: store, editingPet: pet)
+        }
         .sheet(isPresented: $showPaywall) {
             PetLogPaywallView(premiumManager: premiumManager)
+        }
+    }
+
+    private func petAvatar(_ pet: Pet) -> some View {
+        Group {
+            if let photoData = pet.photoData, let uiImage = UIImage(data: photoData) {
+                Image(uiImage: uiImage)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 36, height: 36)
+                    .clipShape(Circle())
+            } else {
+                Image(systemName: pet.species.icon)
+                    .font(.title3)
+                    .foregroundStyle(.blue)
+                    .frame(width: 36, height: 36)
+                    .background(Color.blue.opacity(0.12))
+                    .clipShape(Circle())
+            }
         }
     }
 }
