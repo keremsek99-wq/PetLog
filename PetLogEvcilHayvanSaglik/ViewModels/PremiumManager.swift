@@ -21,7 +21,7 @@ class PremiumManager {
 
     var hasFullAccess: Bool { isPremium }
 
-    nonisolated private var transactionListener: Task<Void, Error>?
+    @ObservationIgnored private var transactionListener: Task<Void, Error>?
 
     // MARK: - Init
 
