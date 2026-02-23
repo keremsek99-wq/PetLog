@@ -1,6 +1,6 @@
 import Foundation
 
-enum PetLogConfig {
+nonisolated enum PetLogConfig {
     // MARK: - StoreKit Product Identifiers
     // Bu ID'leri App Store Connect'te oluşturduğun ürünlerle eşleştir
     static let monthlyProductID = "com.petlog.premium.monthly"

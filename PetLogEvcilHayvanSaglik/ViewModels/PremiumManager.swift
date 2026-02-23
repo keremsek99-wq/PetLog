@@ -15,7 +15,7 @@ class PremiumManager {
 
     var hasFullAccess: Bool { isPremium }
 
-    private var transactionListener: Task<Void, Error>?
+    nonisolated(unsafe) private var transactionListener: Task<Void, Error>?
 
     // MARK: - Init
 
