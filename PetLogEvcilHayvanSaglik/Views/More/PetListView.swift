@@ -1,1 +1,91 @@
-import SwiftUI\r\n\r\nstruct PetListView: View {\r\n    let store: PetStore\r\n    let premiumManager: PremiumManager\r\n    @State private var showAddPet = false\r\n    @State private var showPaywall = false\r\n    @State private var editingPet: Pet? = nil\r\n\r\n    var body: some View {\r\n        List {\r\n            ForEach(store.allPets(), id: \\.id) { pet in\r\n                HStack(spacing: 12) {\r\n                    petAvatar(pet)\r\n                    VStack(alignment: .leading, spacing: 2) {\r\n                        Text(pet.name)\r\n                            .font(.headline)\r\n                        Text("\\(pet.species.rawValue) · \\(pet.breed.isEmpty ? "Irk belirtilmemiş" : pet.breed) · \\(pet.age)")\r\n                            .font(.caption)\r\n                            .foregroundStyle(.secondary)\r\n                    }\r\n                    Spacer()\r\n                    if store.selectedPet?.id == pet.id {\r\n                        Image(systemName: "checkmark.circle.fill")\r\n                            .foregroundStyle(.blue)\r\n                    }\r\n                }\r\n                .contentShape(Rectangle())\r\n                .onTapGesture {\r\n                    store.selectedPet = pet\r\n                }\r\n                .swipeActions(edge: .trailing) {\r\n                    Button(role: .destructive) {\r\n                        store.deletePet(pet)\r\n                    } label: {\r\n                        Label("Sil", systemImage: "trash")\r\n                    }\r\n                    Button {\r\n                        editingPet = pet\r\n                    } label: {\r\n                        Label("Düzenle", systemImage: "pencil")\r\n                    }\r\n                    .tint(.blue)\r\n                }\r\n            }\r\n        }\r\n        .navigationTitle("Hayvanlarım")\r\n        .navigationBarTitleDisplayMode(.inline)\r\n        .toolbar {\r\n            ToolbarItem(placement: .topBarTrailing) {\r\n                Button {\r\n                    if store.canAddMorePets(isPremium: premiumManager.hasFullAccess) {\r\n                        showAddPet = true\r\n                    } else {\r\n                        showPaywall = true\r\n                    }\r\n                } label: {\r\n                    Image(systemName: "plus")\r\n                }\r\n            }\r\n        }\r\n        .sheet(isPresented: $showAddPet) {\r\n            AddPetSheet(store: store)\r\n        }\r\n        .sheet(item: $editingPet) { pet in\r\n            AddPetSheet(store: store, editingPet: pet)\r\n        }\r\n        .sheet(isPresented: $showPaywall) {\r\n            PetLogPaywallView(premiumManager: premiumManager)\r\n        }\r\n    }\r\n\r\n    private func petAvatar(_ pet: Pet) -> some View {\r\n        Group {\r\n            if let photoData = pet.photoData, let uiImage = UIImage(data: photoData) {\r\n                Image(uiImage: uiImage)\r\n                    .resizable()\r\n                    .scaledToFill()\r\n                    .frame(width: 36, height: 36)\r\n                    .clipShape(Circle())\r\n            } else {\r\n                Image(systemName: pet.species.icon)\r\n                    .font(.title3)\r\n                    .foregroundStyle(.blue)\r\n                    .frame(width: 36, height: 36)\r\n                    .background(Color.blue.opacity(0.12))\r\n                    .clipShape(Circle())\r\n            }\r\n        }\r\n    }\r\n}\r\n
+import SwiftUI
+
+struct PetListView: View {
+    let store: PetStore
+    let premiumManager: PremiumManager
+    @State private var showAddPet = false
+    @State private var showPaywall = false
+    @State private var editingPet: Pet? = nil
+
+    var body: some View {
+        List {
+            ForEach(store.allPets(), id: \.id) { pet in
+                HStack(spacing: 12) {
+                    petAvatar(pet)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(pet.name)
+                            .font(.headline)
+                        Text("\(pet.species.rawValue) · \(pet.breed.isEmpty ? "Irk belirtilmemiş" : pet.breed) · \(pet.age)")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    if store.selectedPet?.id == pet.id {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundStyle(.blue)
+                    }
+                }
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    store.selectedPet = pet
+                }
+                .swipeActions(edge: .trailing) {
+                    Button(role: .destructive) {
+                        store.deletePet(pet)
+                    } label: {
+                        Label("Sil", systemImage: "trash")
+                    }
+                    Button {
+                        editingPet = pet
+                    } label: {
+                        Label("Düzenle", systemImage: "pencil")
+                    }
+                    .tint(.blue)
+                }
+            }
+        }
+        .navigationTitle("Hayvanlarım")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    if store.canAddMorePets(isPremium: premiumManager.hasFullAccess) {
+                        showAddPet = true
+                    } else {
+                        showPaywall = true
+                    }
+                } label: {
+                    Image(systemName: "plus")
+                }
+            }
+        }
+        .sheet(isPresented: $showAddPet) {
+            AddPetSheet(store: store)
+        }
+        .sheet(item: $editingPet) { pet in
+            AddPetSheet(store: store, editingPet: pet)
+        }
+        .sheet(isPresented: $showPaywall) {
+            PetLogPaywallView(premiumManager: premiumManager)
+        }
+    }
+
+    private func petAvatar(_ pet: Pet) -> some View {
+        Group {
+            if let photoData = pet.photoData, let uiImage = UIImage(data: photoData) {
+                Image(uiImage: uiImage)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 36, height: 36)
+                    .clipShape(Circle())
+            } else {
+                Image(systemName: pet.species.icon)
+                    .font(.title3)
+                    .foregroundStyle(.blue)
+                    .frame(width: 36, height: 36)
+                    .background(Color.blue.opacity(0.12))
+                    .clipShape(Circle())
+            }
+        }
+    }
+}

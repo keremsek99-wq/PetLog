@@ -93,7 +93,7 @@ struct PetOSPetHealthFinanceApp: App {
             .filter { $0.date >= startOfMonth }
             .reduce(0) { $0 + $1.amount }
 
-        WidgetDataService.updateWidgetData(pet: selectedPet, monthlySpending: monthlySpending)
+        WidgetDataService.updateWidgetData(for: selectedPet, monthlySpending: monthlySpending)
         WidgetCenter.shared.reloadAllTimelines()
     }
 }

@@ -1,1 +1,213 @@
-import WidgetKit\r\nimport SwiftUI\r\n\r\n// MARK: - Timeline Provider\r\n\r\nstruct PetLogProvider: TimelineProvider {\r\n    func placeholder(in context: Context) -> PetLogEntry {\r\n        PetLogEntry(date: Date(), data: .placeholder)\r\n    }\r\n\r\n    func getSnapshot(in context: Context, completion: @escaping (PetLogEntry) -> Void) {\r\n        let data = WidgetDataService.readWidgetData()\r\n        completion(PetLogEntry(date: Date(), data: data))\r\n    }\r\n\r\n    func getTimeline(in context: Context, completion: @escaping (Timeline<PetLogEntry>) -> Void) {\r\n        let data = WidgetDataService.readWidgetData()\r\n        let entry = PetLogEntry(date: Date(), data: data)\r\n        // Refresh every 2 hours\r\n        let nextUpdate = Calendar.current.date(byAdding: .hour, value: 2, to: Date())!\r\n        let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))\r\n        completion(timeline)\r\n    }\r\n}\r\n\r\n// MARK: - Entry\r\n\r\nstruct PetLogEntry: TimelineEntry {\r\n    let date: Date\r\n    let data: WidgetDataService.WidgetData\r\n}\r\n\r\n// MARK: - Vaccine Widget View\r\n\r\nstruct VaccineWidgetView: View {\r\n    var entry: PetLogEntry\r\n    @Environment(\\.widgetFamily) var family\r\n\r\n    var body: some View {\r\n        VStack(alignment: .leading, spacing: 8) {\r\n            HStack(spacing: 6) {\r\n                Image(systemName: \"syringe.fill\")\r\n                    .font(.caption.weight(.semibold))\r\n                    .foregroundStyle(.purple)\r\n                Text(\"Sonraki Aşı\")\r\n                    .font(.caption.weight(.medium))\r\n                    .foregroundStyle(.secondary)\r\n            }\r\n\r\n            if let vaccineName = entry.data.nextVaccineName {\r\n                Text(vaccineName)\r\n                    .font(.headline)\r\n                    .lineLimit(1)\r\n\r\n                if let date = entry.data.nextVaccineDate {\r\n                    let daysUntil = Calendar.current.dateComponents([.day], from: Date(), to: date).day ?? 0\r\n                    HStack(spacing: 4) {\r\n                        Text(\"\\(daysUntil)\")\r\n                            .font(.system(.title2, design: .rounded, weight: .bold))\r\n                            .foregroundStyle(daysUntil <= 7 ? .orange : .primary)\r\n                        Text(\"gün\")\r\n                            .font(.caption)\r\n                            .foregroundStyle(.secondary)\r\n                    }\r\n\r\n                    if family != .systemSmall {\r\n                        Text(date.formatted(date: .abbreviated, time: .omitted))\r\n                            .font(.caption2)\r\n                            .foregroundStyle(.secondary)\r\n                    }\r\n                }\r\n            } else {\r\n                Text(\"Yaklaşan aşı yok\")\r\n                    .font(.subheadline)\r\n                    .foregroundStyle(.secondary)\r\n                Image(systemName: \"checkmark.circle.fill\")\r\n                    .font(.title2)\r\n                    .foregroundStyle(.green)\r\n            }\r\n\r\n            Spacer(minLength: 0)\r\n\r\n            HStack(spacing: 4) {\r\n                Image(systemName: entry.data.petSpeciesIcon)\r\n                    .font(.caption2)\r\n                    .foregroundStyle(.blue)\r\n                Text(entry.data.petName)\r\n                    .font(.caption2)\r\n                    .foregroundStyle(.secondary)\r\n            }\r\n        }\r\n        .frame(maxWidth: .infinity, alignment: .leading)\r\n        .padding()\r\n    }\r\n}\r\n\r\n// MARK: - Food Widget View\r\n\r\nstruct FoodWidgetView: View {\r\n    var entry: PetLogEntry\r\n    @Environment(\\.widgetFamily) var family\r\n\r\n    private var daysColor: Color {\r\n        let days = entry.data.foodDaysRemaining\r\n        if days <= 3 { return .red }\r\n        if days <= 7 { return .orange }\r\n        return .green\r\n    }\r\n\r\n    var body: some View {\r\n        VStack(alignment: .leading, spacing: 8) {\r\n            HStack(spacing: 6) {\r\n                Image(systemName: \"takeoutbag.and.cup.and.straw.fill\")\r\n                    .font(.caption.weight(.semibold))\r\n                    .foregroundStyle(.orange)\r\n                Text(\"Mama Stoku\")\r\n                    .font(.caption.weight(.medium))\r\n                    .foregroundStyle(.secondary)\r\n            }\r\n\r\n            if entry.data.foodDaysRemaining >= 0, let brand = entry.data.foodBrand {\r\n                HStack(alignment: .firstTextBaseline, spacing: 4) {\r\n                    Text(\"\\(entry.data.foodDaysRemaining)\")\r\n                        .font(.system(.title, design: .rounded, weight: .bold))\r\n                        .foregroundStyle(daysColor)\r\n                    Text(\"gün\")\r\n                        .font(.caption)\r\n                        .foregroundStyle(.secondary)\r\n                }\r\n\r\n                Text(brand)\r\n                    .font(.caption)\r\n                    .foregroundStyle(.secondary)\r\n                    .lineLimit(1)\r\n\r\n                if family != .systemSmall {\r\n                    ProgressView(value: Double(entry.data.foodDaysRemaining) / 30.0)\r\n                        .tint(daysColor)\r\n                }\r\n            } else {\r\n                Text(\"Mama takibi yok\")\r\n                    .font(.subheadline)\r\n                    .foregroundStyle(.secondary)\r\n            }\r\n\r\n            Spacer(minLength: 0)\r\n\r\n            HStack(spacing: 4) {\r\n                Image(systemName: entry.data.petSpeciesIcon)\r\n                    .font(.caption2)\r\n                    .foregroundStyle(.blue)\r\n                Text(entry.data.petName)\r\n                    .font(.caption2)\r\n                    .foregroundStyle(.secondary)\r\n            }\r\n        }\r\n        .frame(maxWidth: .infinity, alignment: .leading)\r\n        .padding()\r\n    }\r\n}\r\n\r\n// MARK: - Widget Definitions\r\n\r\nstruct VaccineWidget: Widget {\r\n    let kind = \"VaccineWidget\"\r\n\r\n    var body: some WidgetConfiguration {\r\n        StaticConfiguration(kind: kind, provider: PetLogProvider()) { entry in\r\n            VaccineWidgetView(entry: entry)\r\n                .containerBackground(.fill.tertiary, for: .widget)\r\n        }\r\n        .configurationDisplayName(\"Sonraki Aşı\")\r\n        .description(\"Evcil hayvanınızın bir sonraki aşı tarihini görün.\")\r\n        .supportedFamilies([.systemSmall, .systemMedium])\r\n    }\r\n}\r\n\r\nstruct FoodWidget: Widget {\r\n    let kind = \"FoodWidget\"\r\n\r\n    var body: some WidgetConfiguration {\r\n        StaticConfiguration(kind: kind, provider: PetLogProvider()) { entry in\r\n            FoodWidgetView(entry: entry)\r\n                .containerBackground(.fill.tertiary, for: .widget)\r\n        }\r\n        .configurationDisplayName(\"Mama Stoku\")\r\n        .description(\"Mama ne zaman biteceğini takip edin.\")\r\n        .supportedFamilies([.systemSmall, .systemMedium])\r\n    }\r\n}\r\n\r\n// MARK: - Widget Bundle\r\n\r\n@main\r\nstruct PetLogWidgetBundle: WidgetBundle {\r\n    var body: some Widget {\r\n        VaccineWidget()\r\n        FoodWidget()\r\n    }\r\n}\r\n\r\n// MARK: - Previews\r\n\r\n#Preview(\"Vaccine Widget\", as: .systemSmall) {\r\n    VaccineWidget()\r\n} timeline: {\r\n    PetLogEntry(date: .now, data: .placeholder)\r\n}\r\n\r\n#Preview(\"Food Widget\", as: .systemSmall) {\r\n    FoodWidget()\r\n} timeline: {\r\n    PetLogEntry(date: .now, data: .placeholder)\r\n}\r\n
+import WidgetKit
+import SwiftUI
+
+// MARK: - Timeline Provider
+
+struct PetLogProvider: TimelineProvider {
+    func placeholder(in context: Context) -> PetLogEntry {
+        PetLogEntry(date: Date(), data: .placeholder)
+    }
+
+    func getSnapshot(in context: Context, completion: @escaping (PetLogEntry) -> Void) {
+        let data = WidgetDataService.readWidgetData()
+        completion(PetLogEntry(date: Date(), data: data))
+    }
+
+    func getTimeline(in context: Context, completion: @escaping (Timeline<PetLogEntry>) -> Void) {
+        let data = WidgetDataService.readWidgetData()
+        let entry = PetLogEntry(date: Date(), data: data)
+        let nextUpdate = Calendar.current.date(byAdding: .hour, value: 2, to: Date())!
+        let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
+        completion(timeline)
+    }
+}
+
+// MARK: - Entry
+
+struct PetLogEntry: TimelineEntry {
+    let date: Date
+    let data: WidgetDataService.WidgetData
+}
+
+// MARK: - Vaccine Widget View
+
+struct VaccineWidgetView: View {
+    var entry: PetLogEntry
+    @Environment(\.widgetFamily) var family
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 6) {
+                Image(systemName: "syringe.fill")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.purple)
+                Text("Sonraki Asi")
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(.secondary)
+            }
+
+            if let vaccineName = entry.data.nextVaccineName {
+                Text(vaccineName)
+                    .font(.headline)
+                    .lineLimit(1)
+
+                if let date = entry.data.nextVaccineDate {
+                    let daysUntil = Calendar.current.dateComponents([.day], from: Date(), to: date).day ?? 0
+                    HStack(spacing: 4) {
+                        Text("\(daysUntil)")
+                            .font(.system(.title2, design: .rounded, weight: .bold))
+                            .foregroundStyle(daysUntil <= 7 ? .orange : .primary)
+                        Text("gun")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    if family != .systemSmall {
+                        Text(date.formatted(date: .abbreviated, time: .omitted))
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            } else {
+                Text("Yaklasan asi yok")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.title2)
+                    .foregroundStyle(.green)
+            }
+
+            Spacer(minLength: 0)
+
+            HStack(spacing: 4) {
+                Image(systemName: entry.data.petSpeciesIcon)
+                    .font(.caption2)
+                    .foregroundStyle(.blue)
+                Text(entry.data.petName)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding()
+    }
+}
+
+// MARK: - Food Widget View
+
+struct FoodWidgetView: View {
+    var entry: PetLogEntry
+    @Environment(\.widgetFamily) var family
+
+    private var daysColor: Color {
+        let days = entry.data.foodDaysRemaining
+        if days <= 3 { return .red }
+        if days <= 7 { return .orange }
+        return .green
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 6) {
+                Image(systemName: "takeoutbag.and.cup.and.straw.fill")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.orange)
+                Text("Mama Stoku")
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(.secondary)
+            }
+
+            if entry.data.foodDaysRemaining >= 0, let brand = entry.data.foodBrand {
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                    Text("\(entry.data.foodDaysRemaining)")
+                        .font(.system(.title, design: .rounded, weight: .bold))
+                        .foregroundStyle(daysColor)
+                    Text("gun")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                Text(brand)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+
+                if family != .systemSmall {
+                    ProgressView(value: Double(entry.data.foodDaysRemaining) / 30.0)
+                        .tint(daysColor)
+                }
+            } else {
+                Text("Mama takibi yok")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer(minLength: 0)
+
+            HStack(spacing: 4) {
+                Image(systemName: entry.data.petSpeciesIcon)
+                    .font(.caption2)
+                    .foregroundStyle(.blue)
+                Text(entry.data.petName)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding()
+    }
+}
+
+// MARK: - Widget Definitions
+
+struct VaccineWidget: Widget {
+    let kind = "VaccineWidget"
+
+    var body: some WidgetConfiguration {
+        StaticConfiguration(kind: kind, provider: PetLogProvider()) { entry in
+            VaccineWidgetView(entry: entry)
+                .containerBackground(.fill.tertiary, for: .widget)
+        }
+        .configurationDisplayName("Sonraki Asi")
+        .description("Evcil hayvaninizin bir sonraki asi tarihini gorun.")
+        .supportedFamilies([.systemSmall, .systemMedium])
+    }
+}
+
+struct FoodWidget: Widget {
+    let kind = "FoodWidget"
+
+    var body: some WidgetConfiguration {
+        StaticConfiguration(kind: kind, provider: PetLogProvider()) { entry in
+            FoodWidgetView(entry: entry)
+                .containerBackground(.fill.tertiary, for: .widget)
+        }
+        .configurationDisplayName("Mama Stoku")
+        .description("Mama ne zaman bitecegini takip edin.")
+        .supportedFamilies([.systemSmall, .systemMedium])
+    }
+}
+
+// MARK: - Widget Bundle
+
+@main
+struct PetLogWidgetBundle: WidgetBundle {
+    var body: some Widget {
+        VaccineWidget()
+        FoodWidget()
+    }
+}
+
+// MARK: - Previews
+
+#Preview("Vaccine Widget", as: .systemSmall) {
+    VaccineWidget()
+} timeline: {
+    PetLogEntry(date: .now, data: .placeholder)
+}
+
+#Preview("Food Widget", as: .systemSmall) {
+    FoodWidget()
+} timeline: {
+    PetLogEntry(date: .now, data: .placeholder)
+}

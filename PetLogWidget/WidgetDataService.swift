@@ -1,1 +1,106 @@
-import Foundation\r\n\r\n/// Shared data service for passing data between app and widget via App Group UserDefaults\r\nenum WidgetDataService {\r\n    static let appGroupID = \"group.com.petlog.shared\"\r\n\r\n    // MARK: - Keys\r\n    private static let petNameKey = \"widget_pet_name\"\r\n    private static let petSpeciesIconKey = \"widget_pet_species_icon\"\r\n    private static let nextVaccineNameKey = \"widget_next_vaccine_name\"\r\n    private static let nextVaccineDateKey = \"widget_next_vaccine_date\"\r\n    private static let foodBrandKey = \"widget_food_brand\"\r\n    private static let foodDaysRemainingKey = \"widget_food_days_remaining\"\r\n    private static let monthlySpendingKey = \"widget_monthly_spending\"\r\n    private static let activeMedsCountKey = \"widget_active_meds_count\"\r\n    private static let latestWeightKey = \"widget_latest_weight\"\r\n\r\n    private static var sharedDefaults: UserDefaults? {\r\n        UserDefaults(suiteName: appGroupID)\r\n    }\r\n\r\n    // MARK: - Write (from main app)\r\n\r\n    static func updateWidgetData(pet: Pet, monthlySpending: Double) {\r\n        guard let defaults = sharedDefaults else { return }\r\n\r\n        defaults.set(pet.name, forKey: petNameKey)\r\n        defaults.set(pet.species.icon, forKey: petSpeciesIconKey)\r\n\r\n        // Next vaccine\r\n        if let nextVaccine = pet.nextVaccineDue {\r\n            defaults.set(nextVaccine.name, forKey: nextVaccineNameKey)\r\n            defaults.set(nextVaccine.dueDate?.timeIntervalSince1970, forKey: nextVaccineDateKey)\r\n        } else {\r\n            defaults.removeObject(forKey: nextVaccineNameKey)\r\n            defaults.removeObject(forKey: nextVaccineDateKey)\r\n        }\r\n\r\n        // Food status\r\n        if let food = pet.currentFood {\r\n            defaults.set(food.brand, forKey: foodBrandKey)\r\n            defaults.set(food.daysUntilRunout, forKey: foodDaysRemainingKey)\r\n        } else {\r\n            defaults.removeObject(forKey: foodBrandKey)\r\n            defaults.set(-1, forKey: foodDaysRemainingKey)\r\n        }\r\n\r\n        // Stats\r\n        defaults.set(monthlySpending, forKey: monthlySpendingKey)\r\n        defaults.set(pet.activeMedications.count, forKey: activeMedsCountKey)\r\n        defaults.set(pet.latestWeight ?? -1, forKey: latestWeightKey)\r\n    }\r\n\r\n    // MARK: - Read (from widget)\r\n\r\n    struct WidgetData {\r\n        let petName: String\r\n        let petSpeciesIcon: String\r\n        let nextVaccineName: String?\r\n        let nextVaccineDate: Date?\r\n        let foodBrand: String?\r\n        let foodDaysRemaining: Int\r\n        let monthlySpending: Double\r\n        let activeMedsCount: Int\r\n        let latestWeight: Double?\r\n\r\n        static let placeholder = WidgetData(\r\n            petName: \"Buddy\",\r\n            petSpeciesIcon: \"dog.fill\",\r\n            nextVaccineName: \"Karma Aşı\",\r\n            nextVaccineDate: Calendar.current.date(byAdding: .day, value: 14, to: Date()),\r\n            foodBrand: \"Royal Canin\",\r\n            foodDaysRemaining: 12,\r\n            monthlySpending: 2450,\r\n            activeMedsCount: 1,\r\n            latestWeight: 8.5\r\n        )\r\n    }\r\n\r\n    static func readWidgetData() -> WidgetData {\r\n        guard let defaults = sharedDefaults else { return .placeholder }\r\n\r\n        let petName = defaults.string(forKey: petNameKey) ?? \"—\"\r\n        let speciesIcon = defaults.string(forKey: petSpeciesIconKey) ?? \"pawprint.fill\"\r\n        let vaccineName = defaults.string(forKey: nextVaccineNameKey)\r\n        let vaccineTimestamp = defaults.double(forKey: nextVaccineDateKey)\r\n        let vaccineDate: Date? = vaccineTimestamp > 0 ? Date(timeIntervalSince1970: vaccineTimestamp) : nil\r\n        let foodBrand = defaults.string(forKey: foodBrandKey)\r\n        let foodDays = defaults.integer(forKey: foodDaysRemainingKey)\r\n        let spending = defaults.double(forKey: monthlySpendingKey)\r\n        let medsCount = defaults.integer(forKey: activeMedsCountKey)\r\n        let weight = defaults.double(forKey: latestWeightKey)\r\n\r\n        return WidgetData(\r\n            petName: petName,\r\n            petSpeciesIcon: speciesIcon,\r\n            nextVaccineName: vaccineName,\r\n            nextVaccineDate: vaccineDate,\r\n            foodBrand: foodBrand,\r\n            foodDaysRemaining: foodDays,\r\n            monthlySpending: spending,\r\n            activeMedsCount: medsCount,\r\n            latestWeight: weight > 0 ? weight : nil\r\n        )\r\n    }\r\n}\r\n
+import Foundation
+
+/// Shared data service for passing data between app and widget via App Group UserDefaults
+enum WidgetDataService {
+    static let appGroupID = "group.com.petlog.shared"
+
+    // MARK: - Keys
+    private static let petNameKey = "widget_pet_name"
+    private static let petSpeciesIconKey = "widget_pet_species_icon"
+    private static let nextVaccineNameKey = "widget_next_vaccine_name"
+    private static let nextVaccineDateKey = "widget_next_vaccine_date"
+    private static let foodBrandKey = "widget_food_brand"
+    private static let foodDaysRemainingKey = "widget_food_days_remaining"
+    private static let monthlySpendingKey = "widget_monthly_spending"
+    private static let activeMedsCountKey = "widget_active_meds_count"
+    private static let latestWeightKey = "widget_latest_weight"
+
+    private static var sharedDefaults: UserDefaults? {
+        UserDefaults(suiteName: appGroupID)
+    }
+
+    // MARK: - Write (from main app)
+
+    static func updateWidgetData(petName: String, speciesIcon: String, nextVaccineName: String?, nextVaccineDate: Date?, foodBrand: String?, foodDaysRemaining: Int, monthlySpending: Double, activeMedsCount: Int, latestWeight: Double?) {
+        guard let defaults = sharedDefaults else { return }
+
+        defaults.set(petName, forKey: petNameKey)
+        defaults.set(speciesIcon, forKey: petSpeciesIconKey)
+
+        if let name = nextVaccineName {
+            defaults.set(name, forKey: nextVaccineNameKey)
+        } else {
+            defaults.removeObject(forKey: nextVaccineNameKey)
+        }
+
+        if let date = nextVaccineDate {
+            defaults.set(date.timeIntervalSince1970, forKey: nextVaccineDateKey)
+        } else {
+            defaults.removeObject(forKey: nextVaccineDateKey)
+        }
+
+        if let brand = foodBrand {
+            defaults.set(brand, forKey: foodBrandKey)
+        } else {
+            defaults.removeObject(forKey: foodBrandKey)
+        }
+
+        defaults.set(foodDaysRemaining, forKey: foodDaysRemainingKey)
+        defaults.set(monthlySpending, forKey: monthlySpendingKey)
+        defaults.set(activeMedsCount, forKey: activeMedsCountKey)
+        defaults.set(latestWeight ?? -1, forKey: latestWeightKey)
+    }
+
+    // MARK: - Read (from widget)
+
+    struct WidgetData {
+        let petName: String
+        let petSpeciesIcon: String
+        let nextVaccineName: String?
+        let nextVaccineDate: Date?
+        let foodBrand: String?
+        let foodDaysRemaining: Int
+        let monthlySpending: Double
+        let activeMedsCount: Int
+        let latestWeight: Double?
+
+        static let placeholder = WidgetData(
+            petName: "Buddy",
+            petSpeciesIcon: "dog.fill",
+            nextVaccineName: "Karma Asi",
+            nextVaccineDate: Calendar.current.date(byAdding: .day, value: 14, to: Date()),
+            foodBrand: "Royal Canin",
+            foodDaysRemaining: 12,
+            monthlySpending: 2450,
+            activeMedsCount: 1,
+            latestWeight: 8.5
+        )
+    }
+
+    static func readWidgetData() -> WidgetData {
+        guard let defaults = sharedDefaults else { return .placeholder }
+
+        let petName = defaults.string(forKey: petNameKey) ?? "—"
+        let speciesIcon = defaults.string(forKey: petSpeciesIconKey) ?? "pawprint.fill"
+        let vaccineName = defaults.string(forKey: nextVaccineNameKey)
+        let vaccineTimestamp = defaults.double(forKey: nextVaccineDateKey)
+        let vaccineDate: Date? = vaccineTimestamp > 0 ? Date(timeIntervalSince1970: vaccineTimestamp) : nil
+        let foodBrand = defaults.string(forKey: foodBrandKey)
+        let foodDays = defaults.integer(forKey: foodDaysRemainingKey)
+        let spending = defaults.double(forKey: monthlySpendingKey)
+        let medsCount = defaults.integer(forKey: activeMedsCountKey)
+        let weight = defaults.double(forKey: latestWeightKey)
+
+        return WidgetData(
+            petName: petName,
+            petSpeciesIcon: speciesIcon,
+            nextVaccineName: vaccineName,
+            nextVaccineDate: vaccineDate,
+            foodBrand: foodBrand,
+            foodDaysRemaining: foodDays,
+            monthlySpending: spending,
+            activeMedsCount: medsCount,
+            latestWeight: weight > 0 ? weight : nil
+        )
+    }
+}

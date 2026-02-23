@@ -1,1 +1,59 @@
-import SwiftUI\r\n\r\nstruct TurkeyResourcesView: View {\r\n    var body: some View {\r\n        List {\r\n            Section("Acil Veteriner Hatları") {\r\n                InfoRow(title: "Tarım ve Orman Bakanlığı", detail: "ALO 174", icon: "phone.fill", color: .red)\r\n                InfoRow(title: "HAYTAP Hayvan Hakları", detail: "0212 244 26 14", icon: "phone.fill", color: .green)\r\n            }\r\n\r\n            Section("Faydalı Bilgiler") {\r\n                InfoRow(title: "Evcil Hayvan Pasaportu", detail: "Yurt dışı seyahat için veterinerinizden alın", icon: "doc.text.fill", color: .blue)\r\n                InfoRow(title: "Çip Zorunluluğu", detail: "Tüm kedi ve köpekler için zorunlu", icon: "sensor.fill", color: .purple)\r\n                InfoRow(title: "Kuduz Aşısı", detail: "Yılda bir kez zorunlu", icon: "syringe.fill", color: .orange)\r\n            }\r\n\r\n            Section("Popüler Mama Markaları") {\r\n                InfoRow(title: "ProPlan", detail: "Veteriner önerili premium mama", icon: "fork.knife", color: .orange)\r\n                InfoRow(title: "Royal Canin", detail: "Irka özel mama seçenekleri", icon: "fork.knife", color: .red)\r\n                InfoRow(title: "Acana / Orijen", detail: "Doğal içerikli premium mama", icon: "fork.knife", color: .green)\r\n                InfoRow(title: "Bonacibo", detail: "Türk üretimi kaliteli mama", icon: "fork.knife", color: .teal)\r\n                InfoRow(title: "Jungle", detail: "Türk üretimi ekonomik mama", icon: "fork.knife", color: .brown)\r\n            }\r\n\r\n            Section("Online Alışveriş") {\r\n                InfoRow(title: "PetCity", detail: "petcity.com.tr", icon: "cart.fill", color: .blue)\r\n                InfoRow(title: "PetBurada", detail: "petburada.com", icon: "cart.fill", color: .green)\r\n                InfoRow(title: "Zooplus TR", detail: "zooplus.com.tr", icon: "cart.fill", color: .orange)\r\n            }\r\n        }\r\n        .navigationTitle("Faydalı Bilgiler")\r\n        .navigationBarTitleDisplayMode(.inline)\r\n    }\r\n}\r\n\r\nstruct InfoRow: View {\r\n    let title: String\r\n    let detail: String\r\n    let icon: String\r\n    let color: Color\r\n\r\n    var body: some View {\r\n        HStack(spacing: 12) {\r\n            Image(systemName: icon)\r\n                .font(.subheadline.weight(.medium))\r\n                .foregroundStyle(color)\r\n                .frame(width: 32, height: 32)\r\n                .background(color.opacity(0.12))\r\n                .clipShape(.rect(cornerRadius: 8))\r\n            VStack(alignment: .leading, spacing: 2) {\r\n                Text(title)\r\n                    .font(.subheadline.weight(.medium))\r\n                Text(detail)\r\n                    .font(.caption)\r\n                    .foregroundStyle(.secondary)\r\n            }\r\n        }\r\n    }\r\n}\r\n
+import SwiftUI
+
+struct TurkeyResourcesView: View {
+    var body: some View {
+        List {
+            Section("Acil Veteriner Hatları") {
+                InfoRow(title: "Tarım ve Orman Bakanlığı", detail: "ALO 174", icon: "phone.fill", color: .red)
+                InfoRow(title: "HAYTAP Hayvan Hakları", detail: "0212 244 26 14", icon: "phone.fill", color: .green)
+            }
+
+            Section("Faydalı Bilgiler") {
+                InfoRow(title: "Evcil Hayvan Pasaportu", detail: "Yurt dışı seyahat için veterinerinizden alın", icon: "doc.text.fill", color: .blue)
+                InfoRow(title: "Çip Zorunluluğu", detail: "Tüm kedi ve köpekler için zorunlu", icon: "sensor.fill", color: .purple)
+                InfoRow(title: "Kuduz Aşısı", detail: "Yılda bir kez zorunlu", icon: "syringe.fill", color: .orange)
+            }
+
+            Section("Popüler Mama Markaları") {
+                InfoRow(title: "ProPlan", detail: "Veteriner önerili premium mama", icon: "fork.knife", color: .orange)
+                InfoRow(title: "Royal Canin", detail: "Irka özel mama seçenekleri", icon: "fork.knife", color: .red)
+                InfoRow(title: "Acana / Orijen", detail: "Doğal içerikli premium mama", icon: "fork.knife", color: .green)
+                InfoRow(title: "Bonacibo", detail: "Türk üretimi kaliteli mama", icon: "fork.knife", color: .teal)
+                InfoRow(title: "Jungle", detail: "Türk üretimi ekonomik mama", icon: "fork.knife", color: .brown)
+            }
+
+            Section("Online Alışveriş") {
+                InfoRow(title: "PetCity", detail: "petcity.com.tr", icon: "cart.fill", color: .blue)
+                InfoRow(title: "PetBurada", detail: "petburada.com", icon: "cart.fill", color: .green)
+                InfoRow(title: "Zooplus TR", detail: "zooplus.com.tr", icon: "cart.fill", color: .orange)
+            }
+        }
+        .navigationTitle("Faydalı Bilgiler")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+struct InfoRow: View {
+    let title: String
+    let detail: String
+    let icon: String
+    let color: Color
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(color)
+                .frame(width: 32, height: 32)
+                .background(color.opacity(0.12))
+                .clipShape(.rect(cornerRadius: 8))
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.subheadline.weight(.medium))
+                Text(detail)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+}
