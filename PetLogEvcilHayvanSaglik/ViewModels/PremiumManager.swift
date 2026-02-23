@@ -1,95 +1,147 @@
 import Foundation
 import SwiftUI
-#if canImport(RevenueCat)
-import RevenueCat
-#endif
+import StoreKit
 
 @Observable
 @MainActor
 class PremiumManager {
     static let shared = PremiumManager()
 
-    // MARK: - RevenueCat Config
-    private static let revenueCatAPIKey = "test_nlMaoFdttUQrSADewHdtaBzEYFk"
-    private static let entitlementID = "PetLog Premium"
-
+    // MARK: - State
     var isPremium: Bool = false
-    var customerInfo: Any? = nil
+    var products: [Product] = []
+    var purchasedProductIDs: Set<String> = []
+    var isLoading: Bool = false
 
-    var hasFullAccess: Bool {
-        isPremium
-    }
+    var hasFullAccess: Bool { isPremium }
+
+    private var transactionListener: Task<Void, Error>?
+
+    // MARK: - Init
 
     private init() {
-        #if canImport(RevenueCat)
+        transactionListener = listenForTransactions()
         Task {
-            await checkSubscriptionStatus()
+            await loadProducts()
+            await updatePurchasedProducts()
         }
-        #endif
     }
 
-    // MARK: - Configure SDK
+    deinit {
+        transactionListener?.cancel()
+    }
+
+    // MARK: - Configure (called from App init)
 
     static func configure() {
-        #if canImport(RevenueCat)
-        Purchases.logLevel = .debug
-        Purchases.configure(withAPIKey: PremiumManager.revenueCatAPIKey)
-        #endif
+        // StoreKit 2 doesn't need explicit configuration
+        // Just accessing .shared triggers init
+        _ = PremiumManager.shared
     }
 
-    // MARK: - Subscription Status
+    // MARK: - Load Products
 
-    func checkSubscriptionStatus() async {
-        #if canImport(RevenueCat)
+    func loadProducts() async {
+        isLoading = true
         do {
-            let info = try await Purchases.shared.customerInfo()
-            self.customerInfo = info
-            self.isPremium = info.entitlements[PremiumManager.entitlementID]?.isActive == true
+            let storeProducts = try await Product.products(for: PetLogConfig.allProductIDs)
+            products = storeProducts.sorted { price($0) < price($1) }
         } catch {
-            print("PremiumManager: Failed to fetch customer info: \(error)")
+            print("PremiumManager: Failed to load products: \(error)")
         }
-        #endif
+        isLoading = false
     }
 
     // MARK: - Purchase
 
-    #if canImport(RevenueCat)
-    func purchase(package: Package) async -> Bool {
+    func purchase(_ product: Product) async -> Bool {
         do {
-            let result = try await Purchases.shared.purchase(package: package)
-            self.customerInfo = result.customerInfo
-            self.isPremium = result.customerInfo.entitlements[PremiumManager.entitlementID]?.isActive == true
-            return self.isPremium
-        } catch let error as ErrorCode {
-            if error == .purchaseCancelledError {
-                print("PremiumManager: Purchase cancelled")
-            } else {
-                print("PremiumManager: Purchase failed: \(error)")
+            let result = try await product.purchase()
+            switch result {
+            case .success(let verification):
+                let transaction = checkVerified(verification)
+                if let transaction {
+                    await transaction.finish()
+                    await updatePurchasedProducts()
+                    return true
+                }
+                return false
+            case .userCancelled:
+                return false
+            case .pending:
+                return false
+            @unknown default:
+                return false
             }
-            return false
         } catch {
             print("PremiumManager: Purchase failed: \(error)")
             return false
         }
     }
-    #endif
 
     // MARK: - Restore
 
     func restorePurchases() async -> Bool {
-        #if canImport(RevenueCat)
-        do {
-            let info = try await Purchases.shared.restorePurchases()
-            self.customerInfo = info
-            self.isPremium = info.entitlements[PremiumManager.entitlementID]?.isActive == true
-            return self.isPremium
-        } catch {
-            print("PremiumManager: Restore failed: \(error)")
-            return false
+        try? await AppStore.sync()
+        await updatePurchasedProducts()
+        return isPremium
+    }
+
+    // MARK: - Transaction Listener
+
+    private func listenForTransactions() -> Task<Void, Error> {
+        Task.detached {
+            for await result in Transaction.updates {
+                if let transaction = await self.checkVerified(result) {
+                    await transaction.finish()
+                    await self.updatePurchasedProducts()
+                }
+            }
         }
-        #else
-        return false
-        #endif
+    }
+
+    // MARK: - Update Status
+
+    func updatePurchasedProducts() async {
+        var purchased: Set<String> = []
+
+        for await result in Transaction.currentEntitlements {
+            if let transaction = checkVerified(result) {
+                purchased.insert(transaction.productID)
+            }
+        }
+
+        purchasedProductIDs = purchased
+        isPremium = !purchased.isEmpty
+    }
+
+    // MARK: - Helpers
+
+    private func checkVerified<T>(_ result: VerificationResult<T>) -> T? {
+        switch result {
+        case .verified(let safe):
+            return safe
+        case .unverified(_, _):
+            return nil
+        }
+    }
+
+    private func price(_ product: Product) -> Decimal {
+        product.price
+    }
+
+    // MARK: - Product Helpers
+
+    var monthlyProduct: Product? {
+        products.first { $0.id == PetLogConfig.monthlyProductID }
+    }
+
+    var yearlyProduct: Product? {
+        products.first { $0.id == PetLogConfig.yearlyProductID }
+    }
+
+    var lifetimeProduct: Product? {
+        products.first { $0.id == PetLogConfig.lifetimeProductID }
     }
 }
 

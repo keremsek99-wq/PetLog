@@ -1,8 +1,5 @@
 import SwiftUI
 import LocalAuthentication
-#if canImport(RevenueCatUI)
-import RevenueCatUI
-#endif
 
 struct MoreView: View {
     let store: PetStore
@@ -210,11 +207,7 @@ struct MoreView: View {
                 PetLogPaywallView(premiumManager: premiumManager)
             }
             .sheet(isPresented: $showCustomerCenter) {
-                #if canImport(RevenueCatUI)
-                CustomerCenterView()
-                #else
                 PetLogPaywallView(premiumManager: premiumManager)
-                #endif
             }
             .alert("Tüm Veriler Silinsin mi?", isPresented: $showDeleteAlert) {
                 Button("İptal", role: .cancel) {}

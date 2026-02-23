@@ -1,12 +1,15 @@
 import Foundation
 
 enum PetLogConfig {
-    // MARK: - RevenueCat
-    static let revenueCatAPIKey = "test_nlMaoFdttUQrSADewHdtaBzEYFk"
-    static let entitlementID = "PetLog Premium"
+    // MARK: - StoreKit Product Identifiers
+    // Bu ID'leri App Store Connect'te oluşturduğun ürünlerle eşleştir
+    static let monthlyProductID = "com.petlog.premium.monthly"
+    static let yearlyProductID = "com.petlog.premium.yearly"
+    static let lifetimeProductID = "com.petlog.premium.lifetime"
 
-    // MARK: - Product Identifiers
-    static let monthlyProductID = "monthly"
-    static let yearlyProductID = "yearly"
-    static let lifetimeProductID = "lifetime"
+    static let allProductIDs: Set<String> = [
+        monthlyProductID,
+        yearlyProductID,
+        lifetimeProductID
+    ]
 }
