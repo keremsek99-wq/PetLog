@@ -12,6 +12,7 @@ struct AddMedicationSheet: View {
     @State private var hasEndDate: Bool = false
     @State private var endDate: Date = Date()
     @State private var notes: String = ""
+    @State private var saved = false
 
     var body: some View {
         NavigationStack {
@@ -53,11 +54,13 @@ struct AddMedicationSheet: View {
                     .fontWeight(.semibold)
                 }
             }
+            .sensoryFeedback(.success, trigger: saved)
         }
     }
 
     private func save() {
         store.addMedication(to: pet, name: name, dosage: dosage, schedule: schedule, startDate: startDate, endDate: hasEndDate ? endDate : nil, notes: notes)
+        saved = true
         dismiss()
     }
 }

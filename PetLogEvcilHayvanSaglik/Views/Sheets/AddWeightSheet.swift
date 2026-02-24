@@ -8,6 +8,7 @@ struct AddWeightSheet: View {
     @State private var weightString: String = ""
     @State private var date: Date = Date()
     @State private var notes: String = ""
+    @State private var saved = false
 
     var body: some View {
         NavigationStack {
@@ -45,6 +46,7 @@ struct AddWeightSheet: View {
                     .fontWeight(.semibold)
                 }
             }
+            .sensoryFeedback(.success, trigger: saved)
         }
         .presentationDetents([.medium])
         .presentationDragIndicator(.visible)
@@ -53,6 +55,7 @@ struct AddWeightSheet: View {
     private func save() {
         guard let weight = Double(weightString.replacingOccurrences(of: ",", with: ".")), weight > 0 else { return }
         store.addWeightLog(to: pet, weightKg: weight, date: date, notes: notes)
+        saved = true
         dismiss()
     }
 }

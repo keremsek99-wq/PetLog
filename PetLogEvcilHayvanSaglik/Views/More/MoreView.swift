@@ -14,6 +14,8 @@ struct MoreView: View {
     @State private var showRestartAlert = false
     @State private var showSharePet = false
     @State private var appLock = AppLockService.shared
+    @State private var pdfData: Data?
+    @State private var showPDFShare = false
 
     var body: some View {
         NavigationStack {
@@ -190,6 +192,27 @@ struct MoreView: View {
                 }
 
                 Section("Veriler") {
+                    if let pet = store.selectedPet {
+                        Button {
+                            if premiumManager.hasFullAccess {
+                                pdfData = PDFReportGenerator.generateReport(for: pet, store: store)
+                                showPDFShare = true
+                            } else {
+                                showPaywall = true
+                            }
+                        } label: {
+                            HStack {
+                                Label("PDF Rapor Oluştur", systemImage: "doc.richtext.fill")
+                                Spacer()
+                                if !premiumManager.hasFullAccess {
+                                    Image(systemName: "lock.fill")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                        }
+                        .sensoryFeedback(.success, trigger: showPDFShare)
+                    }
                     NavigationLink {
                         DataExportFullView(store: store, premiumManager: premiumManager)
                     } label: {
@@ -264,6 +287,16 @@ struct MoreView: View {
             .sheet(isPresented: $showSharePet) {
                 if let pet = store.selectedPet {
                     SharePetSheet(pet: pet, store: store)
+                }
+            }
+            .sheet(isPresented: $showPDFShare) {
+                if let data = pdfData {
+                    let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("\(store.selectedPet?.name ?? "PetLog")_Rapor.pdf")
+                    let _ = try? data.write(to: tempURL)
+                    ShareLink(item: tempURL) {
+                        Label("PDF'i Paylaş", systemImage: "square.and.arrow.up")
+                    }
+                    .onDisappear { showPDFShare = false }
                 }
             }
             .alert("Tüm Veriler Silinsin mi?", isPresented: $showDeleteAlert) {

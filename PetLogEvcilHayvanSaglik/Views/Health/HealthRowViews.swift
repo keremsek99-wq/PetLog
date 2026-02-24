@@ -3,6 +3,7 @@ import SwiftUI
 struct WeightLogRow: View {
     let log: WeightLog
     let onDelete: () -> Void
+    @State private var showDeleteAlert = false
 
     var body: some View {
         HStack(spacing: 12) {
@@ -24,7 +25,16 @@ struct WeightLogRow: View {
         .padding(14)
         .background(Color(.secondarySystemGroupedBackground))
         .clipShape(.rect(cornerRadius: 12))
-        .contextMenu {
+        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+            Button(role: .destructive) {
+                showDeleteAlert = true
+            } label: {
+                Label("Sil", systemImage: "trash")
+            }
+        }
+        .sensoryFeedback(.warning, trigger: showDeleteAlert)
+        .alert("Bu kaydı silmek istiyor musunuz?", isPresented: $showDeleteAlert) {
+            Button("İptal", role: .cancel) {}
             Button("Sil", role: .destructive, action: onDelete)
         }
     }
@@ -66,6 +76,11 @@ struct VaccineRow: View {
         .padding(14)
         .background(Color(.secondarySystemGroupedBackground))
         .clipShape(.rect(cornerRadius: 12))
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            Button(role: .destructive, action: onDelete) {
+                Label("Sil", systemImage: "trash")
+            }
+        }
         .contextMenu {
             Button("Sil", role: .destructive, action: onDelete)
         }
@@ -116,6 +131,11 @@ struct MedicationRow: View {
         .padding(14)
         .background(Color(.secondarySystemGroupedBackground))
         .clipShape(.rect(cornerRadius: 12))
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            Button(role: .destructive, action: onDelete) {
+                Label("Sil", systemImage: "trash")
+            }
+        }
         .contextMenu {
             Button("Sil", role: .destructive, action: onDelete)
         }
@@ -153,6 +173,11 @@ struct VetVisitRow: View {
         .padding(14)
         .background(Color(.secondarySystemGroupedBackground))
         .clipShape(.rect(cornerRadius: 12))
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            Button(role: .destructive, action: onDelete) {
+                Label("Sil", systemImage: "trash")
+            }
+        }
         .contextMenu {
             Button("Sil", role: .destructive, action: onDelete)
         }

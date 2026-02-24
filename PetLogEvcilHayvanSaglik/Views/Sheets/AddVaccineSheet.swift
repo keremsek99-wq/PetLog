@@ -11,6 +11,7 @@ struct AddVaccineSheet: View {
     @State private var dueDate: Date = Calendar.current.date(byAdding: .year, value: 1, to: Date()) ?? Date()
     @State private var veterinarian: String = ""
     @State private var notes: String = ""
+    @State private var saved = false
 
     private let commonVaccines = ["Kuduz", "Karma (DHPPi)", "Lösemi (FeLV)", "İç Parazit", "Dış Parazit", "Leptospiroz", "Bordetella"]
 
@@ -68,11 +69,13 @@ struct AddVaccineSheet: View {
                     .fontWeight(.semibold)
                 }
             }
+            .sensoryFeedback(.success, trigger: saved)
         }
     }
 
     private func save() {
         store.addVaccine(to: pet, name: name, dateAdministered: dateAdministered, dueDate: hasDueDate ? dueDate : nil, vet: veterinarian, notes: notes)
+        saved = true
         dismiss()
     }
 }
