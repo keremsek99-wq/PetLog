@@ -13,7 +13,7 @@ struct MonthlyReportView: View {
     private var expenseByCategory: [(String, Double)] {
         var map: [String: Double] = [:]
         for e in currentMonthExpenses {
-            map[e.category, default: 0] += e.amount
+            map[e.category.rawValue, default: 0] += e.amount
         }
         return map.sorted { $0.value > $1.value }
     }
