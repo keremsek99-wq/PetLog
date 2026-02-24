@@ -175,10 +175,10 @@
 			fileSystemSynchronizedGroups = (
 				105FC58C2E9EAD3200EA8BCF /* PetOSPetHealthFinanceTests */,
 			);
-			name = PetLogEvcilHayvanSaglik;
+			name = PetLogEvcilHayvanSaglikTests;
 			packageProductDependencies = (
 			);
-			productName = PetLogEvcilHayvanSaglik;
+			productName = PetLogEvcilHayvanSaglikTests;
 			productReference = 105FC5892E9EAD3200EA8BCF /* PetLogEvcilHayvanSaglikTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
@@ -198,10 +198,10 @@
 			fileSystemSynchronizedGroups = (
 				105FC5962E9EAD3200EA8BCF /* PetOSPetHealthFinanceUITests */,
 			);
-			name = PetLogEvcilHayvanSaglik;
+			name = PetLogEvcilHayvanSaglikUITests;
 			packageProductDependencies = (
 			);
-			productName = PetLogEvcilHayvanSaglik;
+			productName = PetLogEvcilHayvanSaglikUITests;
 			productReference = 105FC5932E9EAD3200EA8BCF /* PetLogEvcilHayvanSaglikUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
