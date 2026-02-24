@@ -16,14 +16,14 @@
 			containerPortal = 105FC5722E9EAD3100EA8BCF /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 105FC5792E9EAD3100EA8BCF;
-			remoteInfo = PetLogEvcilHayvanSaglik;
+			remoteInfo = PetLogEvcilHayvanTakip;
 		};
 		105FC5942E9EAD3200EA8BCF /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 105FC5722E9EAD3100EA8BCF /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 105FC5792E9EAD3100EA8BCF;
-			remoteInfo = PetLogEvcilHayvanSaglik;
+			remoteInfo = PetLogEvcilHayvanTakip;
 		};
 		AABB00012EAAAAAA00000001 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -34,17 +34,31 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		AABB00502EAAAAAA00000001 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				AABB00512EAAAAAA00000001 /* PetLogWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
-		105FC57A2E9EAD3100EA8BCF /* PetLogEvcilHayvanSaglik.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PetLogEvcilHayvanSaglik.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		105FC5892E9EAD3200EA8BCF /* PetLogEvcilHayvanSaglikTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PetLogEvcilHayvanSaglikTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		105FC5932E9EAD3200EA8BCF /* PetLogEvcilHayvanSaglikUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PetLogEvcilHayvanSaglikUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		105FC57A2E9EAD3100EA8BCF /* PetLogEvcilHayvanTakip.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PetLogEvcilHayvanTakip.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		105FC5892E9EAD3200EA8BCF /* PetLogEvcilHayvanTakipTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PetLogEvcilHayvanTakipTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		105FC5932E9EAD3200EA8BCF /* PetLogEvcilHayvanTakipUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PetLogEvcilHayvanTakipUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AABB00202EAAAAAA00000001 /* PetLogWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = PetLogWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		105FC57C2E9EAD3100EA8BCF /* PetLogEvcilHayvanSaglik */ = {
+		105FC57C2E9EAD3100EA8BCF /* PetLogEvcilHayvanTakip */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = PetLogEvcilHayvanSaglik;
+			path = PetLogEvcilHayvanTakip;
 			sourceTree = "<group>";
 		};
 		105FC58C2E9EAD3200EA8BCF /* PetOSPetHealthFinanceTests */ = {
@@ -99,7 +113,7 @@
 		105FC5712E9EAD3100EA8BCF = {
 			isa = PBXGroup;
 			children = (
-				105FC57C2E9EAD3100EA8BCF /* PetLogEvcilHayvanSaglik */,
+				105FC57C2E9EAD3100EA8BCF /* PetLogEvcilHayvanTakip */,
 				AABB00302EAAAAAA00000001 /* PetLogWidget */,
 				105FC58C2E9EAD3200EA8BCF /* PetOSPetHealthFinanceTests */,
 				105FC5962E9EAD3200EA8BCF /* PetOSPetHealthFinanceUITests */,
@@ -110,9 +124,9 @@
 		105FC57B2E9EAD3100EA8BCF /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				105FC57A2E9EAD3100EA8BCF /* PetLogEvcilHayvanSaglik.app */,
-				105FC5892E9EAD3200EA8BCF /* PetLogEvcilHayvanSaglikTests.xctest */,
-				105FC5932E9EAD3200EA8BCF /* PetLogEvcilHayvanSaglikUITests.xctest */,
+				105FC57A2E9EAD3100EA8BCF /* PetLogEvcilHayvanTakip.app */,
+				105FC5892E9EAD3200EA8BCF /* PetLogEvcilHayvanTakipTests.xctest */,
+				105FC5932E9EAD3200EA8BCF /* PetLogEvcilHayvanTakipUITests.xctest */,
 				AABB00202EAAAAAA00000001 /* PetLogWidgetExtension.appex */,
 			);
 			name = Products;
@@ -121,9 +135,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		105FC5792E9EAD3100EA8BCF /* PetLogEvcilHayvanSaglik */ = {
+		105FC5792E9EAD3100EA8BCF /* PetLogEvcilHayvanTakip */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 105FC59D2E9EAD3200EA8BCF /* Build configuration list for PBXNativeTarget "PetLogEvcilHayvanSaglik" */;
+			buildConfigurationList = 105FC59D2E9EAD3200EA8BCF /* Build configuration list for PBXNativeTarget "PetLogEvcilHayvanTakip" */;
 			buildPhases = (
 				105FC5762E9EAD3100EA8BCF /* Sources */,
 				105FC5772E9EAD3100EA8BCF /* Frameworks */,
@@ -136,18 +150,18 @@
 				AABB00022EAAAAAA00000001 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				105FC57C2E9EAD3100EA8BCF /* PetLogEvcilHayvanSaglik */,
+				105FC57C2E9EAD3100EA8BCF /* PetLogEvcilHayvanTakip */,
 			);
-			name = PetLogEvcilHayvanSaglik;
+			name = PetLogEvcilHayvanTakip;
 			packageProductDependencies = (
 			);
-			productName = PetLogEvcilHayvanSaglik;
-			productReference = 105FC57A2E9EAD3100EA8BCF /* PetLogEvcilHayvanSaglik.app */;
+			productName = PetLogEvcilHayvanTakip;
+			productReference = 105FC57A2E9EAD3100EA8BCF /* PetLogEvcilHayvanTakip.app */;
 			productType = "com.apple.product-type.application";
 		};
-		105FC5882E9EAD3200EA8BCF /* PetLogEvcilHayvanSaglik */ = {
+		105FC5882E9EAD3200EA8BCF /* PetLogEvcilHayvanTakip */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 105FC5A02E9EAD3200EA8BCF /* Build configuration list for PBXNativeTarget "PetLogEvcilHayvanSaglik" */;
+			buildConfigurationList = 105FC5A02E9EAD3200EA8BCF /* Build configuration list for PBXNativeTarget "PetLogEvcilHayvanTakip" */;
 			buildPhases = (
 				105FC5852E9EAD3200EA8BCF /* Sources */,
 				105FC5862E9EAD3200EA8BCF /* Frameworks */,
@@ -161,16 +175,16 @@
 			fileSystemSynchronizedGroups = (
 				105FC58C2E9EAD3200EA8BCF /* PetOSPetHealthFinanceTests */,
 			);
-			name = PetLogEvcilHayvanSaglik;
+			name = PetLogEvcilHayvanTakip;
 			packageProductDependencies = (
 			);
-			productName = PetLogEvcilHayvanSaglik;
-			productReference = 105FC5892E9EAD3200EA8BCF /* PetLogEvcilHayvanSaglikTests.xctest */;
+			productName = PetLogEvcilHayvanTakip;
+			productReference = 105FC5892E9EAD3200EA8BCF /* PetLogEvcilHayvanTakipTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		105FC5922E9EAD3200EA8BCF /* PetLogEvcilHayvanSaglik */ = {
+		105FC5922E9EAD3200EA8BCF /* PetLogEvcilHayvanTakip */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 105FC5A32E9EAD3200EA8BCF /* Build configuration list for PBXNativeTarget "PetLogEvcilHayvanSaglik" */;
+			buildConfigurationList = 105FC5A32E9EAD3200EA8BCF /* Build configuration list for PBXNativeTarget "PetLogEvcilHayvanTakip" */;
 			buildPhases = (
 				105FC58F2E9EAD3200EA8BCF /* Sources */,
 				105FC5902E9EAD3200EA8BCF /* Frameworks */,
@@ -184,16 +198,16 @@
 			fileSystemSynchronizedGroups = (
 				105FC5962E9EAD3200EA8BCF /* PetOSPetHealthFinanceUITests */,
 			);
-			name = PetLogEvcilHayvanSaglik;
+			name = PetLogEvcilHayvanTakip;
 			packageProductDependencies = (
 			);
-			productName = PetLogEvcilHayvanSaglik;
-			productReference = 105FC5932E9EAD3200EA8BCF /* PetLogEvcilHayvanSaglikUITests.xctest */;
+			productName = PetLogEvcilHayvanTakip;
+			productReference = 105FC5932E9EAD3200EA8BCF /* PetLogEvcilHayvanTakipUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
-		AABB00102EAAAAAA00000001 /* PetLogWidgetExtension */ = {
+		AABB00102EAAAAAA00000001 /* PetLogEvcilHayvanTakip */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = AABB00602EAAAAAA00000001 /* Build configuration list for PBXNativeTarget "PetLogWidgetExtension" */;
+			buildConfigurationList = AABB00602EAAAAAA00000001 /* Build configuration list for PBXNativeTarget "PetLogEvcilHayvanTakip" */;
 			buildPhases = (
 				AABB00112EAAAAAA00000001 /* Sources */,
 				AABB00402EAAAAAA00000001 /* Frameworks */,
@@ -206,10 +220,10 @@
 			fileSystemSynchronizedGroups = (
 				AABB00302EAAAAAA00000001 /* PetLogWidget */,
 			);
-			name = PetLogWidgetExtension;
+			name = PetLogEvcilHayvanTakip;
 			packageProductDependencies = (
 			);
-			productName = PetLogWidgetExtension;
+			productName = PetLogEvcilHayvanTakip;
 			productReference = AABB00202EAAAAAA00000001 /* PetLogWidgetExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
@@ -239,7 +253,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 105FC5752E9EAD3100EA8BCF /* Build configuration list for PBXProject "PetLogEvcilHayvanSaglik" */;
+			buildConfigurationList = 105FC5752E9EAD3100EA8BCF /* Build configuration list for PBXProject "PetLogEvcilHayvanTakip" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -255,10 +269,10 @@
 			packageReferences = (
 			);
 			targets = (
-				105FC5792E9EAD3100EA8BCF /* PetLogEvcilHayvanSaglik */,
-				AABB00102EAAAAAA00000001 /* PetLogWidgetExtension */,
-				105FC5882E9EAD3200EA8BCF /* PetLogEvcilHayvanSaglik */,
-				105FC5922E9EAD3200EA8BCF /* PetLogEvcilHayvanSaglik */,
+				105FC5792E9EAD3100EA8BCF /* PetLogEvcilHayvanTakip */,
+				AABB00102EAAAAAA00000001 /* PetLogEvcilHayvanTakip */,
+				105FC5882E9EAD3200EA8BCF /* PetLogEvcilHayvanTakip */,
+				105FC5922E9EAD3200EA8BCF /* PetLogEvcilHayvanTakip */,
 			);
 		};
 /* End PBXProject section */
@@ -328,34 +342,20 @@
 /* Begin PBXTargetDependency section */
 		105FC58B2E9EAD3200EA8BCF /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 105FC5792E9EAD3100EA8BCF /* PetLogEvcilHayvanSaglik */;
+			target = 105FC5792E9EAD3100EA8BCF /* PetLogEvcilHayvanTakip */;
 			targetProxy = 105FC58A2E9EAD3200EA8BCF /* PBXContainerItemProxy */;
 		};
 		105FC5952E9EAD3200EA8BCF /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 105FC5792E9EAD3100EA8BCF /* PetLogEvcilHayvanSaglik */;
+			target = 105FC5792E9EAD3100EA8BCF /* PetLogEvcilHayvanTakip */;
 			targetProxy = 105FC5942E9EAD3200EA8BCF /* PBXContainerItemProxy */;
 		};
 		AABB00022EAAAAAA00000001 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = AABB00102EAAAAAA00000001 /* PetLogWidgetExtension */;
+			target = AABB00102EAAAAAA00000001 /* PetLogEvcilHayvanTakip */;
 			targetProxy = AABB00012EAAAAAA00000001 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
-
-/* Begin PBXCopyFilesBuildPhase section */
-		AABB00502EAAAAAA00000001 /* Embed Foundation Extensions */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 13;
-			files = (
-				AABB00512EAAAAAA00000001 /* PetLogWidgetExtension.appex in Embed Foundation Extensions */,
-			);
-			name = "Embed Foundation Extensions";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
 		105FC59B2E9EAD3200EA8BCF /* Debug */ = {
@@ -704,7 +704,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		105FC5752E9EAD3100EA8BCF /* Build configuration list for PBXProject "PetLogEvcilHayvanSaglik" */ = {
+		105FC5752E9EAD3100EA8BCF /* Build configuration list for PBXProject "PetLogEvcilHayvanTakip" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				105FC59B2E9EAD3200EA8BCF /* Debug */,
@@ -713,7 +713,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		105FC59D2E9EAD3200EA8BCF /* Build configuration list for PBXNativeTarget "PetLogEvcilHayvanSaglik" */ = {
+		105FC59D2E9EAD3200EA8BCF /* Build configuration list for PBXNativeTarget "PetLogEvcilHayvanTakip" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				105FC59E2E9EAD3200EA8BCF /* Debug */,
@@ -722,7 +722,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		105FC5A02E9EAD3200EA8BCF /* Build configuration list for PBXNativeTarget "PetLogEvcilHayvanSaglik" */ = {
+		105FC5A02E9EAD3200EA8BCF /* Build configuration list for PBXNativeTarget "PetLogEvcilHayvanTakip" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				105FC5A12E9EAD3200EA8BCF /* Debug */,
@@ -731,7 +731,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		105FC5A32E9EAD3200EA8BCF /* Build configuration list for PBXNativeTarget "PetLogEvcilHayvanSaglik" */ = {
+		105FC5A32E9EAD3200EA8BCF /* Build configuration list for PBXNativeTarget "PetLogEvcilHayvanTakip" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				105FC5A42E9EAD3200EA8BCF /* Debug */,
@@ -740,7 +740,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		AABB00602EAAAAAA00000001 /* Build configuration list for PBXNativeTarget "PetLogWidgetExtension" */ = {
+		AABB00602EAAAAAA00000001 /* Build configuration list for PBXNativeTarget "PetLogEvcilHayvanTakip" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				AABB00612EAAAAAA00000001 /* Debug */,
@@ -750,7 +750,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
 	};
 	rootObject = 105FC5722E9EAD3100EA8BCF /* Project object */;
 }
