@@ -16,9 +16,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "105FC5792E9EAD3100EA8BCF"
-               BuildableName = "PetLogEvcilHayvanTakip.app"
-               BlueprintName = "PetLogEvcilHayvanTakip"
-               ReferencedContainer = "container:PetLogEvcilHayvanTakip.xcodeproj">
+               BuildableName = "PetLogEvcilHayvanSaglik.app"
+               BlueprintName = "PetLogEvcilHayvanSaglik"
+               ReferencedContainer = "container:PetLogEvcilHayvanSaglik.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -36,9 +36,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "105FC5882E9EAD3200EA8BCF"
-               BuildableName = "PetLogEvcilHayvanTakipTests.xctest"
-               BlueprintName = "PetLogEvcilHayvanTakipTests"
-               ReferencedContainer = "container:PetLogEvcilHayvanTakip.xcodeproj">
+               BuildableName = "PetLogEvcilHayvanSaglikTests.xctest"
+               BlueprintName = "PetLogEvcilHayvanSaglikTests"
+               ReferencedContainer = "container:PetLogEvcilHayvanSaglik.xcodeproj">
             </BuildableReference>
          </TestableReference>
          <TestableReference
@@ -47,9 +47,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "105FC5922E9EAD3200EA8BCF"
-               BuildableName = "PetLogEvcilHayvanTakipUITests.xctest"
-               BlueprintName = "PetLogEvcilHayvanTakipUITests"
-               ReferencedContainer = "container:PetLogEvcilHayvanTakip.xcodeproj">
+               BuildableName = "PetLogEvcilHayvanSaglikUITests.xctest"
+               BlueprintName = "PetLogEvcilHayvanSaglikUITests"
+               ReferencedContainer = "container:PetLogEvcilHayvanSaglik.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -69,9 +69,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "105FC5792E9EAD3100EA8BCF"
-            BuildableName = "PetLogEvcilHayvanTakip.app"
-            BlueprintName = "PetLogEvcilHayvanTakip"
-            ReferencedContainer = "container:PetLogEvcilHayvanTakip.xcodeproj">
+            BuildableName = "PetLogEvcilHayvanSaglik.app"
+            BlueprintName = "PetLogEvcilHayvanSaglik"
+            ReferencedContainer = "container:PetLogEvcilHayvanSaglik.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -86,9 +86,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "105FC5792E9EAD3100EA8BCF"
-            BuildableName = "PetLogEvcilHayvanTakip.app"
-            BlueprintName = "PetLogEvcilHayvanTakip"
-            ReferencedContainer = "container:PetLogEvcilHayvanTakip.xcodeproj">
+            BuildableName = "PetLogEvcilHayvanSaglik.app"
+            BlueprintName = "PetLogEvcilHayvanSaglik"
+            ReferencedContainer = "container:PetLogEvcilHayvanSaglik.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
