@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 struct AddBehaviorSheet: View {
     let store: PetStore
