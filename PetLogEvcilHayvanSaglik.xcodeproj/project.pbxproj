@@ -661,7 +661,7 @@
 				);
 				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "app.rork.petos-pet-health-finance.widget";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = PetLogWidgetExtension;
 				SKIP_INSTALL = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -691,7 +691,7 @@
 				);
 				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "app.rork.petos-pet-health-finance.widget";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = PetLogWidgetExtension;
 				SKIP_INSTALL = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
