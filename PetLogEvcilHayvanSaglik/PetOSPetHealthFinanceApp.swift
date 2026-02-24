@@ -24,6 +24,7 @@ struct PetOSPetHealthFinanceApp: App {
             FeedingLog.self,
             ActivityLog.self,
             PetDocument.self,
+            BehaviorLog.self,
         ])
 
         let iCloudEnabled = UserDefaults.standard.bool(forKey: "iCloudSyncEnabled")

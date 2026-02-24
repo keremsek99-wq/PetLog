@@ -17,6 +17,7 @@ struct DashboardView: View {
     @State private var showAddActivity = false
     @State private var showAddDocument = false
     @State private var showPhotoTimeline = false
+    @State private var showAddBehavior = false
 
     private var pet: Pet? { store.selectedPet }
     private var hasMultiplePets: Bool { store.allPets().count > 1 }
@@ -87,6 +88,9 @@ struct DashboardView: View {
             }
             .sheet(isPresented: $showPhotoTimeline) {
                 PhotoTimelineView(store: store, premiumManager: premiumManager)
+            }
+            .sheet(isPresented: $showAddBehavior) {
+                AddBehaviorSheet(store: store)
             }
         }
     }

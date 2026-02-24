@@ -154,6 +154,11 @@ struct MoreView: View {
                     }
                     if let pet = store.selectedPet {
                         birthdayRow(pet)
+                        NavigationLink {
+                            BehaviorHistoryView(pet: pet)
+                        } label: {
+                            Label("Davranış Geçmişi", systemImage: "brain.head.profile.fill")
+                        }
                     }
                 }
 

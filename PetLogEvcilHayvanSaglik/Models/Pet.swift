@@ -24,6 +24,7 @@ class Pet {
     @Relationship(deleteRule: .cascade) var feedingLogs: [FeedingLog] = []
     @Relationship(deleteRule: .cascade) var activityLogs: [ActivityLog] = []
     @Relationship(deleteRule: .cascade) var documents: [PetDocument] = []
+    @Relationship(deleteRule: .cascade) var behaviorLogs: [BehaviorLog] = []
 
     init(name: String, species: PetSpecies, breed: String = "", birthdate: Date, sex: PetSex = .unknown, isNeutered: Bool = false, weightTargetKg: Double? = nil) {
         self.id = UUID()
