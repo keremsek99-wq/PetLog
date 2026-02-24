@@ -12,6 +12,7 @@ struct MoreView: View {
     @State private var showExportOptions = false
     @State private var showCustomerCenter = false
     @State private var showRestartAlert = false
+    @State private var showSharePet = false
     @State private var appLock = AppLockService.shared
 
     var body: some View {
@@ -135,6 +136,24 @@ struct MoreView: View {
                         } label: {
                             Label("Pet Özet Kartı", systemImage: "person.text.rectangle")
                         }
+                        NavigationLink {
+                            BreedHealthView(pet: pet)
+                        } label: {
+                            Label("Irk Sağlık Rehberi", systemImage: "heart.text.clipboard.fill")
+                        }
+                        NavigationLink {
+                            MonthlyReportView(pet: pet, store: store)
+                        } label: {
+                            Label("Aylık Rapor", systemImage: "chart.bar.doc.horizontal.fill")
+                        }
+                        Button {
+                            showSharePet = true
+                        } label: {
+                            Label("Pet Kartı Paylaş", systemImage: "square.and.arrow.up.fill")
+                        }
+                    }
+                    if let pet = store.selectedPet {
+                        birthdayRow(pet)
                     }
                 }
 
@@ -237,6 +256,11 @@ struct MoreView: View {
             .sheet(isPresented: $showCustomerCenter) {
                 PetLogPaywallView(premiumManager: premiumManager)
             }
+            .sheet(isPresented: $showSharePet) {
+                if let pet = store.selectedPet {
+                    SharePetSheet(pet: pet, store: store)
+                }
+            }
             .alert("Tüm Veriler Silinsin mi?", isPresented: $showDeleteAlert) {
                 Button("İptal", role: .cancel) {}
                 Button("Sıfırla", role: .destructive) {
@@ -254,6 +278,36 @@ struct MoreView: View {
                 Button("Tamam") {}
             } message: {
                 Text("iCloud senkronizasyonu değişikliğinin etkili olması için uygulamayı kapatıp yeniden açmanız gerekir.")
+            }
+        }
+    }
+
+    private func birthdayRow(_ pet: Pet) -> some View {
+        let now = Date()
+        let calendar = Calendar.current
+        var nextBirthday = calendar.date(from: DateComponents(
+            year: calendar.component(.year, from: now),
+            month: calendar.component(.month, from: pet.birthdate),
+            day: calendar.component(.day, from: pet.birthdate)
+        )) ?? pet.birthdate
+
+        if nextBirthday < now {
+            nextBirthday = calendar.date(byAdding: .year, value: 1, to: nextBirthday) ?? nextBirthday
+        }
+
+        let daysUntil = calendar.dateComponents([.day], from: calendar.startOfDay(for: now), to: calendar.startOfDay(for: nextBirthday)).day ?? 0
+
+        return HStack {
+            Label("Doğum Günü", systemImage: "birthday.cake.fill")
+            Spacer()
+            if daysUntil == 0 {
+                Text("Bugün! 🎉")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(.orange)
+            } else {
+                Text("\(daysUntil) gün")
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(daysUntil <= 7 ? .orange : .secondary)
             }
         }
     }
