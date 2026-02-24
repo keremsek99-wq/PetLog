@@ -5,7 +5,7 @@ import SwiftUI
 @Observable
 @MainActor
 class PetStore {
-    private let modelContext: ModelContext
+    private(set) var modelContext: ModelContext
 
     var selectedPet: Pet?
     var isLoading: Bool = false
