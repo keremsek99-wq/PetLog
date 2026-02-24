@@ -7,11 +7,11 @@ import StoreKit
 class PremiumManager {
     static let shared = PremiumManager()
 
-    // MARK: - Product IDs (delegated to PetLogConfig)
-    static var monthlyProductID: String { PetLogConfig.monthlyProductID }
-    static var yearlyProductID: String { PetLogConfig.yearlyProductID }
-    static var lifetimeProductID: String { PetLogConfig.lifetimeProductID }
-    static var allProductIDs: Set<String> { PetLogConfig.allProductIDs }
+    // MARK: - Product IDs
+    static let monthlyProductID = "com.petlog.premium.monthly"
+    static let yearlyProductID = "com.petlog.premium.yearly"
+    static let lifetimeProductID = "com.petlog.premium.lifetime"
+    static let allProductIDs: Set<String> = [monthlyProductID, yearlyProductID, lifetimeProductID]
 
     // MARK: - State
     var isPremium: Bool = false
