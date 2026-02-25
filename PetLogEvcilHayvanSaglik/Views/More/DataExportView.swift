@@ -23,6 +23,10 @@ struct DataExportFullView: View {
                     StatRow(label: "İlaçlar", value: "\(pet.medications.count)", icon: "pills.fill", iconColor: .blue)
                     StatRow(label: "Veteriner Ziyaretleri", value: "\(pet.vetVisits.count)", icon: "cross.case.fill", iconColor: .red)
                     StatRow(label: "Harcamalar", value: "\(pet.expenses.count)", icon: "turkishlirasign.circle.fill", iconColor: .orange)
+                    StatRow(label: "Aktiviteler", value: "\(pet.activityLogs.count)", icon: "figure.walk", iconColor: .cyan)
+                    StatRow(label: "Beslenme", value: "\(pet.feedingLogs.count)", icon: "fork.knife", iconColor: .green)
+                    StatRow(label: "Davranış", value: "\(pet.behaviorLogs.count)", icon: "brain.head.profile.fill", iconColor: .orange)
+                    StatRow(label: "Belgeler", value: "\(pet.documents.count)", icon: "doc.text.fill", iconColor: .teal)
                 }
 
                 Section("Dışa Aktarma Formatı") {

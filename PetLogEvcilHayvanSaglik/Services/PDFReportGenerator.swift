@@ -116,6 +116,50 @@ class PDFReportGenerator {
                 yOffset += 10
             }
 
+            // Vet Visits
+            let vetVisits = pet.vetVisits.sorted { $0.date > $1.date }
+            if !vetVisits.isEmpty {
+                if yOffset > pageHeight - 120 {
+                    context.beginPage()
+                    yOffset = margin
+                }
+                yOffset = drawDivider(context: context.cgContext, y: yOffset, width: contentWidth, margin: margin)
+                yOffset += 10
+                yOffset = drawSection(title: "Veteriner Ziyaretleri", y: yOffset, margin: margin, contentWidth: contentWidth, in: context)
+                for visit in vetVisits.prefix(10) {
+                    let dateStr = visit.date.formatted(date: .abbreviated, time: .omitted)
+                    let costStr = visit.cost > 0 ? " — ₺\(String(format: "%.0f", visit.cost))" : ""
+                    yOffset = drawBullet("• \(visit.reason) — \(dateStr)\(costStr)", y: yOffset, margin: margin, contentWidth: contentWidth)
+                    if !visit.diagnosis.isEmpty {
+                        yOffset = drawBullet("  Tanı: \(visit.diagnosis)", y: yOffset, margin: margin, contentWidth: contentWidth)
+                    }
+                    if yOffset > pageHeight - margin - 40 {
+                        context.beginPage()
+                        yOffset = margin
+                    }
+                }
+                yOffset += 10
+            }
+
+            // Behavior Summary
+            let thirtyDaysAgo = Calendar.current.date(byAdding: .day, value: -30, to: Date()) ?? Date()
+            let recentBehaviors = pet.behaviorLogs.filter { $0.date >= thirtyDaysAgo }
+            if !recentBehaviors.isEmpty {
+                if yOffset > pageHeight - 120 {
+                    context.beginPage()
+                    yOffset = margin
+                }
+                yOffset = drawDivider(context: context.cgContext, y: yOffset, width: contentWidth, margin: margin)
+                yOffset += 10
+                yOffset = drawSection(title: "Davranış Özeti (Son 30 Gün)", y: yOffset, margin: margin, contentWidth: contentWidth, in: context)
+                var counts: [String: Int] = [:]
+                for log in recentBehaviors { counts[log.behaviorType.rawValue, default: 0] += 1 }
+                for (type, count) in counts.sorted(by: { $0.value > $1.value }).prefix(8) {
+                    yOffset = drawBullet("• \(type): \(count)x", y: yOffset, margin: margin, contentWidth: contentWidth)
+                }
+                yOffset += 10
+            }
+
             // Footer
             if yOffset > pageHeight - 60 {
                 context.beginPage()

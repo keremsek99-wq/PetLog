@@ -90,7 +90,17 @@ struct PetOSPetHealthFinanceApp: App {
     private func updateWidgetData() {
         let context = sharedModelContainer.mainContext
         let descriptor = FetchDescriptor<Pet>(sortBy: [SortDescriptor(\.createdAt)])
-        guard let pets = try? context.fetch(descriptor), let selectedPet = pets.first else { return }
+        guard let pets = try? context.fetch(descriptor), !pets.isEmpty else { return }
+
+        // Use persisted selected pet, fall back to first
+        let selectedPet: Pet
+        if let savedID = UserDefaults.standard.string(forKey: "selectedPetID"),
+           let uuid = UUID(uuidString: savedID),
+           let saved = pets.first(where: { $0.id == uuid }) {
+            selectedPet = saved
+        } else {
+            selectedPet = pets.first!
+        }
 
         let now = Date()
         let startOfMonth = Calendar.current.date(from: Calendar.current.dateComponents([.year, .month], from: now)) ?? now

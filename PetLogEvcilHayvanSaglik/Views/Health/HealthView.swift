@@ -10,6 +10,9 @@ struct HealthView: View {
     @State private var showAddVaccine = false
     @State private var showAddMedication = false
     @State private var showAddVetVisit = false
+    @State private var showAddActivity = false
+    @State private var showAddFeeding = false
+    @State private var showAddBehavior = false
     @State private var showPaywall = false
 
     private var pet: Pet? { store.selectedPet }
@@ -43,6 +46,15 @@ struct HealthView: View {
             .sheet(isPresented: $showAddVetVisit) {
                 if let pet { AddVetVisitSheet(store: store, pet: pet) }
             }
+            .sheet(isPresented: $showAddActivity) {
+                AddActivitySheet(store: store)
+            }
+            .sheet(isPresented: $showAddFeeding) {
+                AddFeedingSheet(store: store)
+            }
+            .sheet(isPresented: $showAddBehavior) {
+                AddBehaviorSheet(store: store)
+            }
             .sheet(isPresented: $showPaywall) {
                 PetLogPaywallView(premiumManager: premiumManager)
             }
@@ -51,13 +63,27 @@ struct HealthView: View {
 
     private func healthContent(_ pet: Pet) -> some View {
         VStack(spacing: 0) {
-            Picker("Bölüm", selection: $selectedSection) {
-                ForEach(HealthSection.allCases, id: \.self) { section in
-                    Text(section.rawValue).tag(section)
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(HealthSection.allCases, id: \.self) { section in
+                        Button {
+                            withAnimation(.snappy(duration: 0.2)) {
+                                selectedSection = section
+                            }
+                        } label: {
+                            Text(section.rawValue)
+                                .font(.subheadline.weight(selectedSection == section ? .semibold : .regular))
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 8)
+                                .background(selectedSection == section ? Color.blue : Color(.secondarySystemGroupedBackground))
+                                .foregroundStyle(selectedSection == section ? .white : .primary)
+                                .clipShape(Capsule())
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
+                .padding(.horizontal)
             }
-            .pickerStyle(.segmented)
-            .padding(.horizontal)
             .padding(.vertical, 8)
 
             ScrollView {
@@ -71,6 +97,10 @@ struct HealthView: View {
                         medsSection(pet)
                     case .vetVisits:
                         vetVisitsSection(pet)
+                    case .activities:
+                        activitiesSection(pet)
+                    case .behavior:
+                        behaviorSection(pet)
                     case .breedHealth:
                         breedHealthSection(pet)
                     }
@@ -183,10 +213,210 @@ struct HealthView: View {
             Button { showAddVetVisit = true } label: {
                 Label("Veteriner Ziyareti Ekle", systemImage: "cross.case.fill")
             }
+            Divider()
+            Button { showAddActivity = true } label: {
+                Label("Aktivite Ekle", systemImage: "figure.walk")
+            }
+            Button { showAddFeeding = true } label: {
+                Label("Beslenme Ekle", systemImage: "fork.knife")
+            }
+            Button { showAddBehavior = true } label: {
+                Label("Davranış Kaydet", systemImage: "brain.head.profile.fill")
+            }
         } label: {
             Image(systemName: "plus.circle.fill")
                 .font(.title3)
                 .symbolRenderingMode(.hierarchical)
+        }
+    }
+
+    // MARK: - Activities Section
+
+    private func activitiesSection(_ pet: Pet) -> some View {
+        VStack(spacing: 12) {
+            // Today summary
+            let today = Calendar.current.startOfDay(for: Date())
+            let todayActivities = pet.activityLogs.filter { Calendar.current.isDate($0.date, inSameDayAs: today) }
+            let todayFeedings = pet.feedingLogs.filter { Calendar.current.isDate($0.date, inSameDayAs: today) }
+
+            if !todayActivities.isEmpty || !todayFeedings.isEmpty {
+                SummaryCard(title: "Bugün", icon: "chart.bar.fill", iconColor: .cyan) {
+                    HStack(spacing: 16) {
+                        let walkMin = todayActivities.filter { $0.activityType == .walk }.reduce(0) { $0 + $1.durationMinutes }
+                        let pottyCount = todayActivities.filter { $0.activityType == .potty }.count
+                        VStack(spacing: 2) {
+                            Text("\(walkMin)")
+                                .font(.system(.title3, design: .rounded, weight: .bold))
+                            Text("dk yürüyüş")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                        }
+                        VStack(spacing: 2) {
+                            Text("\(pottyCount)")
+                                .font(.system(.title3, design: .rounded, weight: .bold))
+                            Text("tuvalet")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                        }
+                        VStack(spacing: 2) {
+                            Text("\(todayFeedings.count)")
+                                .font(.system(.title3, design: .rounded, weight: .bold))
+                            Text("öğün")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                    }
+                }
+            }
+
+            // Activity history
+            let sortedActivities = pet.activityLogs.sorted { $0.date > $1.date }
+            let sortedFeedings = pet.feedingLogs.sorted { $0.date > $1.date }
+
+            if sortedActivities.isEmpty && sortedFeedings.isEmpty {
+                EmptyStateView(
+                    title: "Aktivite Kaydı Yok",
+                    message: "Yürüyüş, tuvalet, oyun ve beslenme kayıtlarını buradan takip edin.",
+                    icon: "figure.walk",
+                    actionTitle: "Aktivite Ekle"
+                ) {
+                    showAddActivity = true
+                }
+                .frame(height: 200)
+            } else {
+                if !sortedActivities.isEmpty {
+                    SectionHeader(title: "Aktiviteler")
+                    ForEach(sortedActivities.prefix(30), id: \.id) { log in
+                        ActivityLogRow(log: log) {
+                            store.deleteActivityLog(log)
+                        }
+                    }
+                }
+
+                if !sortedFeedings.isEmpty {
+                    SectionHeader(title: "Beslenme")
+                    ForEach(sortedFeedings.prefix(30), id: \.id) { log in
+                        FeedingLogRow(log: log) {
+                            store.deleteFeedingLog(log)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // MARK: - Behavior Section
+
+    private func behaviorSection(_ pet: Pet) -> some View {
+        VStack(spacing: 12) {
+            // 30-day summary
+            let thirtyDaysAgo = Calendar.current.date(byAdding: .day, value: -30, to: Date()) ?? Date()
+            let recentLogs = pet.behaviorLogs.filter { $0.date >= thirtyDaysAgo }
+            var counts: [BehaviorType: Int] = [:]
+            let _ = recentLogs.forEach { counts[$0.behaviorType, default: 0] += 1 }
+            let topSymptoms = counts.sorted { $0.value > $1.value }.prefix(5)
+
+            if !topSymptoms.isEmpty {
+                SummaryCard(title: "Son 30 Gün", icon: "chart.bar.fill", iconColor: .orange) {
+                    VStack(spacing: 6) {
+                        ForEach(Array(topSymptoms), id: \.key) { type, count in
+                            HStack(spacing: 8) {
+                                Image(systemName: type.icon)
+                                    .font(.caption)
+                                    .foregroundStyle(.orange)
+                                    .frame(width: 20)
+                                Text(type.rawValue)
+                                    .font(.subheadline)
+                                Spacer()
+                                Text("\(count)x")
+                                    .font(.subheadline.weight(.bold))
+                                    .foregroundStyle(count >= 5 ? .red : .secondary)
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Behavior history
+            let sorted = pet.behaviorLogs.sorted { $0.date > $1.date }
+            if sorted.isEmpty {
+                EmptyStateView(
+                    title: "Davranış Kaydı Yok",
+                    message: "Davranış değişiklikleri ve sağlık belirtilerini kaydedin. Veteriner ziyaretinde gösterebilirsiniz.",
+                    icon: "brain.head.profile",
+                    actionTitle: "Davranış Kaydet"
+                ) {
+                    showAddBehavior = true
+                }
+                .frame(height: 200)
+            } else {
+                SectionHeader(title: "Tüm Kayıtlar")
+                ForEach(sorted.prefix(50), id: \.id) { log in
+                    behaviorLogRow(log)
+                }
+            }
+        }
+    }
+
+    private func behaviorLogRow(_ log: BehaviorLog) -> some View {
+        HStack(spacing: 12) {
+            Circle()
+                .fill(Color.orange.opacity(0.15))
+                .frame(width: 40, height: 40)
+                .overlay {
+                    Image(systemName: log.behaviorType.icon)
+                        .font(.subheadline)
+                        .foregroundStyle(.orange)
+                }
+            VStack(alignment: .leading, spacing: 2) {
+                Text(log.behaviorType.rawValue)
+                    .font(.headline)
+                HStack(spacing: 4) {
+                    Text(log.date.formatted(date: .abbreviated, time: .shortened))
+                    if !log.notes.isEmpty {
+                        Text("·")
+                        Text(log.notes)
+                            .lineLimit(1)
+                    }
+                }
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            }
+            Spacer()
+            HStack(spacing: 2) {
+                ForEach(1...5, id: \.self) { i in
+                    Circle()
+                        .fill(i <= log.severity ? severityDotColor(i) : Color(.systemGray5))
+                        .frame(width: 8, height: 8)
+                }
+            }
+        }
+        .padding(14)
+        .background(Color(.secondarySystemGroupedBackground))
+        .clipShape(.rect(cornerRadius: 12))
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            Button(role: .destructive) {
+                store.deleteBehaviorLog(log)
+            } label: {
+                Label("Sil", systemImage: "trash")
+            }
+        }
+        .contextMenu {
+            Button("Sil", role: .destructive) {
+                store.deleteBehaviorLog(log)
+            }
+        }
+    }
+
+    private func severityDotColor(_ level: Int) -> Color {
+        switch level {
+        case 1: return .green
+        case 2: return .yellow
+        case 3: return .orange
+        case 4: return .red
+        case 5: return .purple
+        default: return .gray
         }
     }
 
@@ -434,5 +664,7 @@ nonisolated enum HealthSection: String, CaseIterable, Sendable {
     case vaccines = "Aşılar"
     case meds = "İlaçlar"
     case vetVisits = "Ziyaretler"
+    case activities = "Aktivite"
+    case behavior = "Davranış"
     case breedHealth = "İrk Sağlığı"
 }

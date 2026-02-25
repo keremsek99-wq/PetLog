@@ -181,6 +181,17 @@ struct DashboardView: View {
                     showAddDocument = true
                 }
             }
+            HStack(spacing: 0) {
+                QuickActionButton(title: "Davranış", icon: "brain.head.profile.fill", color: .orange) {
+                    showAddBehavior = true
+                }
+                QuickActionButton(title: "Mama Stok", icon: "takeoutbag.and.cup.and.straw.fill", color: .brown) {
+                    showAddFood = true
+                }
+                // Empty spacers to maintain 4-column grid
+                Color.clear.frame(maxWidth: .infinity)
+                Color.clear.frame(maxWidth: .infinity)
+            }
         }
         .padding(.vertical, 4)
     }

@@ -153,6 +153,11 @@ struct MoreView: View {
                         } label: {
                             Label("Pet Kartı Paylaş", systemImage: "square.and.arrow.up.fill")
                         }
+                        NavigationLink {
+                            DocumentListView(pet: pet, store: store, premiumManager: premiumManager)
+                        } label: {
+                            Label("Belgelerim", systemImage: "doc.text.fill")
+                        }
                     }
                     if let pet = store.selectedPet {
                         birthdayRow(pet)

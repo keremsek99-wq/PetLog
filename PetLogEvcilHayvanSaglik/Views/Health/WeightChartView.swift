@@ -140,7 +140,7 @@ struct WeightChartView: View {
                             }
                         }
                         .chartYAxis {
-                            AxisMarks(position: .leading) {
+                            AxisMarks(position: .leading, values: .automatic(desiredCount: 4)) {
                                 AxisValueLabel()
                                 AxisGridLine(stroke: StrokeStyle(lineWidth: 0.3))
                             }
@@ -168,7 +168,8 @@ struct WeightChartView: View {
                                     )
                             }
                         }
-                        .frame(height: 200)
+                        .frame(height: 220)
+                        .clipped()
                         .animation(.easeInOut(duration: 0.3), value: selectedLog?.id)
                     } else {
                         Text("Bu dönem için yeterli veri yok")
@@ -248,8 +249,8 @@ struct WeightChartView: View {
 
     private func yDomain(for logs: [WeightLog]) -> ClosedRange<Double> {
         let weights = logs.map(\.weightKg)
-        let minW = (weights.min() ?? 0) * 0.93
-        let maxW = (weights.max() ?? 10) * 1.07
+        let minW = (weights.min() ?? 0) * 0.95
+        let maxW = (weights.max() ?? 10) * 1.05
         return minW...maxW
     }
 

@@ -7,7 +7,15 @@ import SwiftUI
 class PetStore {
     private(set) var modelContext: ModelContext
 
-    var selectedPet: Pet?
+    var selectedPet: Pet? {
+        didSet {
+            if let id = selectedPet?.id.uuidString {
+                UserDefaults.standard.set(id, forKey: "selectedPetID")
+            } else {
+                UserDefaults.standard.removeObject(forKey: "selectedPetID")
+            }
+        }
+    }
     var isLoading: Bool = false
 
     static let freePetLimit = 1
@@ -27,8 +35,15 @@ class PetStore {
 
     private func loadSelectedPet() {
         let descriptor = FetchDescriptor<Pet>(sortBy: [SortDescriptor(\.createdAt)])
-        if let pets = try? modelContext.fetch(descriptor), let first = pets.first {
-            selectedPet = first
+        guard let pets = try? modelContext.fetch(descriptor), !pets.isEmpty else { return }
+
+        // Try to restore saved selection
+        if let savedID = UserDefaults.standard.string(forKey: "selectedPetID"),
+           let uuid = UUID(uuidString: savedID),
+           let saved = pets.first(where: { $0.id == uuid }) {
+            selectedPet = saved
+        } else {
+            selectedPet = pets.first
         }
     }
 
@@ -122,6 +137,10 @@ class PetStore {
     func deleteVetVisit(_ visit: VetVisit) { modelContext.delete(visit); save() }
     func deleteExpense(_ expense: Expense) { modelContext.delete(expense); save() }
     func deleteFood(_ food: FoodInventory) { modelContext.delete(food); save() }
+    func deleteActivityLog(_ log: ActivityLog) { modelContext.delete(log); save() }
+    func deleteFeedingLog(_ log: FeedingLog) { modelContext.delete(log); save() }
+    func deleteBehaviorLog(_ log: BehaviorLog) { modelContext.delete(log); save() }
+    func deleteDocument(_ doc: PetDocument) { modelContext.delete(doc); save() }
 
     func monthlySpending(for pet: Pet) -> Double {
         let calendar = Calendar.current
@@ -180,7 +199,7 @@ class PetStore {
         // Weight trend detection
         let sortedWeights = pet.weightLogs.sorted { $0.date < $1.date }
         if sortedWeights.count >= 3 {
-            let recent = sortedWeights.suffix(3)
+            let recent = Array(sortedWeights.suffix(3))
             let weights = recent.map { $0.weightKg }
             let isIncreasing = weights[1] > weights[0] && weights[2] > weights[1]
             let isDecreasing = weights[1] < weights[0] && weights[2] < weights[1]

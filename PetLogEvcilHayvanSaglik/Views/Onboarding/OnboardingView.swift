@@ -198,7 +198,7 @@ struct OnboardingAddPetSheet: View {
                         onComplete()
                         dismiss()
                     }
-                    .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
+                    .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty || species == .unspecified)
                     .fontWeight(.semibold)
                 }
             }

@@ -60,6 +60,39 @@ class DataExportService {
                     isRecurring: $0.isRecurring
                 )
             },
+            activityLogs: pet.activityLogs.sorted { $0.date > $1.date }.map {
+                ActivityLogData(
+                    activityType: $0.activityType.rawValue,
+                    durationMinutes: $0.durationMinutes,
+                    date: $0.date.ISO8601Format(),
+                    notes: $0.notes
+                )
+            },
+            feedingLogs: pet.feedingLogs.sorted { $0.date > $1.date }.map {
+                FeedingLogData(
+                    mealType: $0.mealType.rawValue,
+                    portionGrams: $0.portionGrams,
+                    foodBrand: $0.foodBrand,
+                    date: $0.date.ISO8601Format(),
+                    notes: $0.notes
+                )
+            },
+            behaviorLogs: pet.behaviorLogs.sorted { $0.date > $1.date }.map {
+                BehaviorLogData(
+                    behaviorType: $0.behaviorType.rawValue,
+                    severity: $0.severity,
+                    date: $0.date.ISO8601Format(),
+                    notes: $0.notes
+                )
+            },
+            documents: pet.documents.map {
+                DocumentData(
+                    documentType: $0.documentType.rawValue,
+                    title: $0.title,
+                    date: $0.date.ISO8601Format(),
+                    notes: $0.notes
+                )
+            },
             summary: SummaryData(
                 monthlySpending: store.monthlySpending(for: pet),
                 annualSpending: store.annualSpending(for: pet),
@@ -106,6 +139,10 @@ nonisolated struct PetExportData: Codable, Sendable {
     let medications: [MedicationData]
     let vetVisits: [VetVisitData]
     let expenses: [ExpenseData]
+    let activityLogs: [ActivityLogData]
+    let feedingLogs: [FeedingLogData]
+    let behaviorLogs: [BehaviorLogData]
+    let documents: [DocumentData]
     let summary: SummaryData
 }
 
@@ -168,4 +205,33 @@ nonisolated struct SummaryData: Codable, Sendable {
     let activeMedications: Int
     let totalVetVisits: Int
     let totalExpenses: Int
+}
+
+nonisolated struct ActivityLogData: Codable, Sendable {
+    let activityType: String
+    let durationMinutes: Int
+    let date: String
+    let notes: String
+}
+
+nonisolated struct FeedingLogData: Codable, Sendable {
+    let mealType: String
+    let portionGrams: Double
+    let foodBrand: String
+    let date: String
+    let notes: String
+}
+
+nonisolated struct BehaviorLogData: Codable, Sendable {
+    let behaviorType: String
+    let severity: Int
+    let date: String
+    let notes: String
+}
+
+nonisolated struct DocumentData: Codable, Sendable {
+    let documentType: String
+    let title: String
+    let date: String
+    let notes: String
 }
