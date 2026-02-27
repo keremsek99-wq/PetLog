@@ -444,6 +444,19 @@ struct HealthView: View {
                         color: .green,
                         items: recommendedCheckItems(for: pet)
                     )
+
+                    // Medical Disclaimer
+                    HStack(alignment: .top, spacing: 8) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.caption)
+                            .foregroundStyle(.orange)
+                        Text(BreedDatabase.medicalDisclaimer)
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(12)
+                    .background(Color(.tertiarySystemGroupedBackground))
+                    .clipShape(.rect(cornerRadius: 10))
                 }
             } else {
                 VStack(spacing: 16) {

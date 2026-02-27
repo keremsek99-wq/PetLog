@@ -139,13 +139,31 @@ struct InsightsView: View {
     }
 
     private var disclaimerView: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "info.circle")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            Text("Öneriler tıbbi tavsiye niteliği taşımaz. Sağlık endişeleriniz için mutlaka veterinerinize danışın.")
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 8) {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.caption)
+                    .foregroundStyle(.orange)
+                Text("Tıbbi Uyarı")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.primary)
+            }
+            Text("Bu öneriler yalnızca bilgilendirme amaçlıdır ve profesyonel veteriner tavsiyesi yerine geçmez. Evcil hayvanınızın sağlığı ile ilgili kararlar almadan önce mutlaka lisanslı bir veteriner hekime danışın.")
                 .font(.caption2)
                 .foregroundStyle(.secondary)
+
+            Divider()
+
+            Text("Kaynaklar:")
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(.secondary)
+            VStack(alignment: .leading, spacing: 4) {
+                ForEach(["AVMA — avma.org", "WSAVA — wsava.org", "Merck Veterinary Manual — merckvetmanual.com"], id: \.self) { source in
+                    Text("• \(source)")
+                        .font(.caption2)
+                        .foregroundStyle(.blue)
+                }
+            }
         }
         .padding(12)
         .background(Color(.tertiarySystemGroupedBackground))

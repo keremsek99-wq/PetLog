@@ -10,6 +10,7 @@ struct BreedInfo: Identifiable, Hashable {
     let healthRisks: [String]
     let recommendedChecks: [String]
     let careNotes: [String]
+    let sources: [String]
 
     func hash(into hasher: inout Hasher) {
         hasher.combine(name)
@@ -41,6 +42,20 @@ enum BreedDatabase {
 
     // MARK: - Dog Breeds
 
+    // MARK: - General Sources & Disclaimer
+
+    static let generalSources: [String] = [
+        "https://www.avma.org/resources-tools/pet-owners",
+        "https://www.akc.org/dog-breeds/",
+        "https://www.wsava.org/guidelines/global-guidelines",
+        "https://icatcare.org/advice/",
+        "https://www.merckvetmanual.com/"
+    ]
+
+    static let medicalDisclaimer = "Bu bilgiler yalnızca genel bilgilendirme amaçlıdır ve veteriner tavsiyesi yerine geçmez. Evcil hayvanınızın sağlığı ile ilgili kararlar almadan önce mutlaka lisanslı bir veteriner hekime danışın."
+
+    // MARK: - Dog Breeds
+
     static let dogBreeds: [BreedInfo] = [
         BreedInfo(
             name: "Golden Retriever",
@@ -64,6 +79,11 @@ enum BreedDatabase {
                 "Haftada 2-3 kez fırçalama önerilir",
                 "Yüzmeyi çok sever, su aktiviteleri idealdir",
                 "Sosyal yapısı nedeniyle yalnız bırakılmamalıdır"
+            ],
+            sources: [
+                "https://www.akc.org/dog-breeds/golden-retriever/",
+                "https://www.ofa.org/diseases/breed-statistics#disease=HE&breed=GR",
+                "https://www.merckvetmanual.com/"
             ]
         ),
         BreedInfo(
@@ -88,6 +108,11 @@ enum BreedDatabase {
                 "Porsiyon kontrolü çok önemli",
                 "Suya çok meraklıdır, kulaklar sonra kurulanmalı",
                 "Düzenli tırnak kesimi gerekir"
+            ],
+            sources: [
+                "https://www.akc.org/dog-breeds/labrador-retriever/",
+                "https://www.ofa.org/diseases/breed-statistics#disease=HE&breed=LR",
+                "https://www.merckvetmanual.com/"
             ]
         ),
         BreedInfo(
@@ -112,6 +137,11 @@ enum BreedDatabase {
                 "Yoğun tüy dökümü dönemlerinde günlük fırçalama",
                 "Mide bükülmesi riskini azaltmak için küçük porsiyonlar",
                 "Erken sosyalizasyon çok önemli"
+            ],
+            sources: [
+                "https://www.akc.org/dog-breeds/german-shepherd-dog/",
+                "https://www.ofa.org/diseases/breed-statistics#disease=HE&breed=GS",
+                "https://www.merckvetmanual.com/"
             ]
         ),
         BreedInfo(
@@ -136,6 +166,11 @@ enum BreedDatabase {
                 "Yüzme yaptırmayın (boğulma riski yüksek)",
                 "Deri kıvrımlarını günlük temizleyin",
                 "Kısa yürüyüşler yeterlidir"
+            ],
+            sources: [
+                "https://www.akc.org/dog-breeds/french-bulldog/",
+                "https://www.ufaw.org.uk/dogs/french-bulldog-brachycephalic-obstructive-airway-syndrome",
+                "https://www.merckvetmanual.com/"
             ]
         ),
         BreedInfo(
@@ -160,6 +195,11 @@ enum BreedDatabase {
                 "Tüy dökmeyen yapısı alerji hastalarına uygun",
                 "Zihinsel stimülasyon çok önemli",
                 "Kulak enfeksiyonuna yatkın, düzenli temizlik şart"
+            ],
+            sources: [
+                "https://www.akc.org/dog-breeds/poodle-standard/",
+                "https://www.ofa.org/diseases/breed-statistics#disease=HE&breed=PO",
+                "https://www.merckvetmanual.com/"
             ]
         ),
         BreedInfo(
@@ -184,6 +224,11 @@ enum BreedDatabase {
                 "Kaçma eğilimi yüksek, güvenli alan şart",
                 "Koklama oyunları zihinsel gelişim için ideal",
                 "Sosyal yapısı, yalnız bırakılmayı sevmez"
+            ],
+            sources: [
+                "https://www.akc.org/dog-breeds/beagle/",
+                "https://www.ofa.org/diseases/breed-statistics#disease=HE&breed=BE",
+                "https://www.merckvetmanual.com/"
             ]
         ),
         BreedInfo(
@@ -208,6 +253,11 @@ enum BreedDatabase {
                 "Sıcak iklimlere uygun değil",
                 "Yoğun tüy dökümü, günlük fırçalama gerekebilir",
                 "Kaçma eğilimi yüksek"
+            ],
+            sources: [
+                "https://www.akc.org/dog-breeds/siberian-husky/",
+                "https://www.ofa.org/diseases/breed-statistics#disease=HE&breed=SI",
+                "https://www.merckvetmanual.com/"
             ]
         ),
         BreedInfo(
@@ -232,6 +282,11 @@ enum BreedDatabase {
                 "Düşme ve yaralanma riskine dikkat",
                 "Az ama sık öğün (hipoglisemi önlemi)",
                 "Erken diş bakımı çok önemli"
+            ],
+            sources: [
+                "https://www.akc.org/dog-breeds/chihuahua/",
+                "https://www.ofa.org/diseases/breed-statistics#disease=HE&breed=CH",
+                "https://www.merckvetmanual.com/"
             ]
         ),
     ]
@@ -261,6 +316,11 @@ enum BreedDatabase {
                 "Oyun ile harekete teşvik edin",
                 "Haftada bir fırçalama yeterli",
                 "Bağımsız yapısına rağmen düzenli ilgi ister"
+            ],
+            sources: [
+                "https://icatcare.org/advice/british-shorthair/",
+                "https://www.ufaw.org.uk/cats/british-shorthair",
+                "https://www.merckvetmanual.com/"
             ]
         ),
         BreedInfo(
@@ -285,6 +345,11 @@ enum BreedDatabase {
                 "Yüksek yerlere tırmanma zorlaştırabilir",
                 "Ağrı belirtilerini (topallama, hareketsizlik) takip edin",
                 "Kıkırdak desteği için veteriner takviyesi sorulabilir"
+            ],
+            sources: [
+                "https://icatcare.org/advice/scottish-fold/",
+                "https://www.ufaw.org.uk/cats/scottish-fold-osteochondrodysplasia",
+                "https://www.merckvetmanual.com/"
             ]
         ),
         BreedInfo(
@@ -309,6 +374,11 @@ enum BreedDatabase {
                 "Göz çevresi günlük temizlenmeli",
                 "Sıcak ortamlarda solunum güçlüğü yaşayabilir",
                 "Düzenli profesyonel tıraş gerekebilir"
+            ],
+            sources: [
+                "https://icatcare.org/advice/persian/",
+                "https://www.ufaw.org.uk/cats/persian-polycystic-kidney-disease",
+                "https://www.merckvetmanual.com/"
             ]
         ),
         BreedInfo(
@@ -333,6 +403,11 @@ enum BreedDatabase {
                 "Sesli iletişim kurar, bu normaldir",
                 "Zihinsel stimülasyon ve oyun çok önemli",
                 "Sıcak ortamları tercih eder"
+            ],
+            sources: [
+                "https://icatcare.org/advice/siamese/",
+                "https://www.ufaw.org.uk/cats/siamese",
+                "https://www.merckvetmanual.com/"
             ]
         ),
         BreedInfo(
@@ -357,6 +432,11 @@ enum BreedDatabase {
                 "Büyük kedi ağacı ve alan gerekir",
                 "Suyla oynamayı sevebilir",
                 "Yavaş büyür, 3-5 yaşına kadar tam boyuta ulaşır"
+            ],
+            sources: [
+                "https://icatcare.org/advice/maine-coon/",
+                "https://www.ufaw.org.uk/cats/maine-coon",
+                "https://www.merckvetmanual.com/"
             ]
         ),
         BreedInfo(
@@ -381,6 +461,11 @@ enum BreedDatabase {
                 "Bol su içmesi için çeşme tipi su kabı önerilebilir",
                 "İç mekan zenginleştirme (oyuncak, tırmalama tahtası)",
                 "Düzenli veteriner kontrolleri"
+            ],
+            sources: [
+                "https://icatcare.org/advice/keeping-your-cat-healthy/",
+                "https://www.avma.org/resources-tools/pet-owners/petcare/your-cats-health",
+                "https://www.merckvetmanual.com/"
             ]
         ),
     ]
@@ -410,6 +495,10 @@ enum BreedDatabase {
                 "Günlük kafes dışı uçuş zamanı",
                 "Gece 12 saat karanlık ve sessizlik",
                 "Teflon tavalar zehirli, mutfaktan uzak tutun"
+            ],
+            sources: [
+                "https://www.aav.org/resources/pet-bird-owner-information",
+                "https://www.merckvetmanual.com/exotic-and-laboratory-animals/pet-birds"
             ]
         ),
         BreedInfo(
@@ -434,6 +523,10 @@ enum BreedDatabase {
                 "Sosyal etkileşim çok önemli",
                 "Toz banyosu ihtiyacı vardır",
                 "Islık ve melodi öğrenmeye yatkındır"
+            ],
+            sources: [
+                "https://www.aav.org/resources/pet-bird-owner-information",
+                "https://www.merckvetmanual.com/exotic-and-laboratory-animals/pet-birds"
             ]
         ),
     ]
@@ -463,6 +556,10 @@ enum BreedDatabase {
                 "Sarkık kulakları düzenli temizleyin",
                 "En az 4 saat serbest dolaşma",
                 "Kısırlaştırma güçlü önerilir"
+            ],
+            sources: [
+                "https://rabbit.org/health/",
+                "https://www.merckvetmanual.com/exotic-and-laboratory-animals/rabbits"
             ]
         ),
         BreedInfo(
@@ -487,6 +584,10 @@ enum BreedDatabase {
                 "İnce kadife tüyü özel bakım gerektirmez",
                 "Yüksek lifli diyet (saman %80+)",
                 "Taze sebze günlük verilmeli"
+            ],
+            sources: [
+                "https://rabbit.org/health/",
+                "https://www.merckvetmanual.com/exotic-and-laboratory-animals/rabbits"
             ]
         ),
     ]
@@ -516,6 +617,10 @@ enum BreedDatabase {
                 "25-28°C su sıcaklığı",
                 "Erkekleri asla bir arada tutmayın",
                 "Canlı veya dondurulmuş yem idealdir"
+            ],
+            sources: [
+                "https://www.merckvetmanual.com/exotic-and-laboratory-animals/fish",
+                "https://edis.ifas.ufl.edu/topic-betta-fish"
             ]
         ),
         BreedInfo(
@@ -540,6 +645,10 @@ enum BreedDatabase {
                 "Isıtıcıya gerek yok (18-23°C)",
                 "Çok kirletirler, güçlü filtrasyon şart",
                 "Fan kuyruklu çeşitler daha hassas"
+            ],
+            sources: [
+                "https://www.merckvetmanual.com/exotic-and-laboratory-animals/fish",
+                "https://edis.ifas.ufl.edu/topic-goldfish"
             ]
         ),
     ]
@@ -569,6 +678,10 @@ enum BreedDatabase {
                 "UVB ışık 12 saat açık",
                 "Canlı böcek + taze sebze diyeti",
                 "Kalsiyum tozu takviyesi şart"
+            ],
+            sources: [
+                "https://www.merckvetmanual.com/exotic-and-laboratory-animals/reptiles",
+                "https://www.avma.org/resources-tools/pet-owners/petcare/reptile-care"
             ]
         ),
         BreedInfo(
@@ -593,6 +706,10 @@ enum BreedDatabase {
                 "Sıcak bölge 28-32°C, soğuk bölge 24°C",
                 "Nemli bir gizlenme alanı (deri dökümü için)",
                 "Canlı böcek diyeti (cırcır böceği, solucan)"
+            ],
+            sources: [
+                "https://www.merckvetmanual.com/exotic-and-laboratory-animals/reptiles",
+                "https://www.avma.org/resources-tools/pet-owners/petcare/reptile-care"
             ]
         ),
     ]

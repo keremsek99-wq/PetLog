@@ -241,15 +241,28 @@ struct PetLogPaywallView: View {
     // MARK: - Legal
 
     private var legalSection: some View {
-        VStack(spacing: 4) {
-            Text("Ödeme Apple ID hesabınız üzerinden alınır.")
+        VStack(spacing: 10) {
+            Text("Ödeme Apple ID hesabınız üzerinden alınır. Abonelikler dönem sonunda otomatik yenilenir. İptal etmek için Ayarlar → Apple ID → Abonelikler yolunu kullanabilirsiniz. Mevcut dönem bitmeden en az 24 saat önce iptal etmezseniz abonelik otomatik olarak yenilenir.")
                 .font(.caption2)
                 .foregroundStyle(.tertiary)
-            Text("Abonelikler otomatik yenilenir. Ayarlar'dan iptal edebilirsiniz.")
-                .font(.caption2)
-                .foregroundStyle(.tertiary)
+                .multilineTextAlignment(.center)
+
+            HStack(spacing: 16) {
+                if let termsURL = URL(string: "https://keremsek99-wq.github.io/PetLog/#terms") {
+                    Link("Kullanım Koşulları", destination: termsURL)
+                        .font(.caption2)
+                        .foregroundStyle(.blue)
+                }
+                Text("·")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+                if let privacyURL = URL(string: "https://keremsek99-wq.github.io/PetLog/#privacy") {
+                    Link("Gizlilik Politikası", destination: privacyURL)
+                        .font(.caption2)
+                        .foregroundStyle(.blue)
+                }
+            }
         }
-        .multilineTextAlignment(.center)
     }
 
     // MARK: - Helpers

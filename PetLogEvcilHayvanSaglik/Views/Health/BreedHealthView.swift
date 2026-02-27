@@ -78,6 +78,45 @@ struct BreedHealthView: View {
                 } header: {
                     Label("Bakım Notları", systemImage: "heart.text.clipboard")
                 }
+                // MARK: - Sources
+                if !info.sources.isEmpty {
+                    Section {
+                        ForEach(info.sources, id: \.self) { source in
+                            if let url = URL(string: source) {
+                                Link(destination: url) {
+                                    HStack(spacing: 10) {
+                                        Image(systemName: "link")
+                                            .foregroundStyle(.blue)
+                                            .font(.caption)
+                                        Text(url.host ?? source)
+                                            .font(.subheadline)
+                                            .foregroundStyle(.blue)
+                                        Spacer()
+                                        Image(systemName: "arrow.up.right.square")
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                }
+                            }
+                        }
+                    } header: {
+                        Label("Kaynaklar", systemImage: "book.closed.fill")
+                    }
+                }
+
+                // MARK: - Medical Disclaimer
+                Section {
+                    HStack(alignment: .top, spacing: 10) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundStyle(.orange)
+                            .font(.subheadline)
+                        Text(BreedDatabase.medicalDisclaimer)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                } header: {
+                    Label("Uyarı", systemImage: "info.circle")
+                }
             } else {
                 ContentUnavailableView {
                     Label("Irk Bilgisi Bulunamadı", systemImage: "questionmark.circle")

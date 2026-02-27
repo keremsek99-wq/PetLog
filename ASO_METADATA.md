@@ -59,6 +59,11 @@ PREMIUM ÖZELLİKLER 👑
 
 PetLog, Türkiye'deki tüm evcil hayvan sahipleri için özel olarak tasarlandı. Kedi, köpek, kuş, tavşan, balık, sürüngen ve diğer türler desteklenir.
 
+⚠️ ÖNEMLİ UYARI: PetLog tıbbi tavsiye veya teşhis sağlamaz. Uygulamadaki sağlık bilgileri yalnızca genel bilgilendirme amaçlıdır ve profesyonel veteriner tavsiyesi yerine geçmez. Evcil hayvanınızın sağlığı ile ilgili kararlar almadan önce mutlaka lisanslı bir veteriner hekime danışın. Sağlık bilgileri AVMA (avma.org), AKC (akc.org), WSAVA (wsava.org), iCatCare (icatcare.org) ve Merck Veterinary Manual (merckvetmanual.com) gibi güvenilir kaynaklardan derlenmiştir.
+
+Kullanım Koşulları: https://keremsek99-wq.github.io/PetLog/#terms
+Gizlilik Politikası: https://keremsek99-wq.github.io/PetLog/#privacy
+
 ### Promotional Text (What's New)
 🆕 Yeni: Fotoğraf albümü, beslenme takibi, aktivite logu, belge saklama, davranış takibi ve aylık rapor özelliği eklendi!
 
@@ -118,6 +123,11 @@ PREMIUM FEATURES 👑
 • Unlimited document storage
 
 PetLog supports dogs, cats, birds, rabbits, fish, reptiles, and more. Available in Turkish and English.
+
+⚠️ IMPORTANT DISCLAIMER: PetLog does not provide medical advice or diagnoses. Health information is for general informational purposes only and does not replace professional veterinary advice. Always consult a licensed veterinarian before making any health-related decisions for your pet. Health information is compiled from trusted sources including AVMA (avma.org), AKC (akc.org), WSAVA (wsava.org), iCatCare (icatcare.org), and Merck Veterinary Manual (merckvetmanual.com).
+
+Terms of Use: https://keremsek99-wq.github.io/PetLog/#terms
+Privacy Policy: https://keremsek99-wq.github.io/PetLog/#privacy
 
 ---
 
