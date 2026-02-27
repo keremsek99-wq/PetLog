@@ -125,19 +125,13 @@ struct PetLogPaywallView: View {
 
     private var plansSection: some View {
         VStack(spacing: 10) {
-            if premiumManager.products.isEmpty {
-                if premiumManager.isLoading {
-                    ProgressView()
-                        .padding()
-                } else {
-                    Text("Ürünler yüklenemedi")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .padding()
-                    Button("Tekrar Dene") {
-                        Task { await premiumManager.loadProducts() }
-                    }
-                    .font(.subheadline)
+            if premiumManager.isLoading {
+                ProgressView()
+                    .padding()
+            } else if premiumManager.products.isEmpty {
+                // Fallback UI with hardcoded prices
+                ForEach(FallbackPlan.allPlans) { plan in
+                    fallbackPlanCard(plan)
                 }
             } else {
                 ForEach(premiumManager.products, id: \.id) { product in
@@ -181,6 +175,57 @@ struct PetLogPaywallView: View {
                 Spacer()
 
                 Text(product.displayPrice)
+                    .font(.subheadline.weight(.bold))
+            }
+            .padding(14)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(isSelected ? Color.blue.opacity(0.06) : Color(.secondarySystemGroupedBackground))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(isSelected ? Color.blue : Color.clear, lineWidth: 1.5)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
+    // MARK: - Fallback Plan Card (when StoreKit unavailable)
+
+    private func fallbackPlanCard(_ plan: FallbackPlan) -> some View {
+        let isSelected = selectedPlan == plan.productID
+        let isYearly = plan.productID == PremiumManager.yearlyProductID
+
+        return Button {
+            selectedPlan = plan.productID
+        } label: {
+            HStack(spacing: 14) {
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .font(.title3)
+                    .foregroundStyle(isSelected ? .blue : .secondary)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack {
+                        Text(plan.title)
+                            .font(.subheadline.weight(.semibold))
+                        if isYearly {
+                            Text("En Avantajlı")
+                                .font(.caption2.weight(.bold))
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Color.blue)
+                                .clipShape(Capsule())
+                        }
+                    }
+                    Text(plan.subtitle)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer()
+
+                Text(plan.displayPrice)
                     .font(.subheadline.weight(.bold))
             }
             .padding(14)
@@ -299,3 +344,38 @@ struct PetLogPaywallView: View {
         }
     }
 }
+
+// MARK: - Fallback Plan Data
+
+struct FallbackPlan: Identifiable {
+    let id: String
+    let productID: String
+    let title: String
+    let subtitle: String
+    let displayPrice: String
+
+    static let allPlans: [FallbackPlan] = [
+        FallbackPlan(
+            id: "monthly",
+            productID: PremiumManager.monthlyProductID,
+            title: "Aylık",
+            subtitle: "Her ay yenilenir",
+            displayPrice: "₺149,99"
+        ),
+        FallbackPlan(
+            id: "yearly",
+            productID: PremiumManager.yearlyProductID,
+            title: "Yıllık",
+            subtitle: "2 ay bedava",
+            displayPrice: "₺999,99"
+        ),
+        FallbackPlan(
+            id: "lifetime",
+            productID: PremiumManager.lifetimeProductID,
+            title: "Ömür Boyu",
+            subtitle: "Tek seferlik ödeme",
+            displayPrice: "₺2.999,00"
+        ),
+    ]
+}
+
