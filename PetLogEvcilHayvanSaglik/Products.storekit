@@ -1,0 +1,91 @@
+{
+  "identifier" : "C9B7B5E0-A1D4-4B5C-B2E3-F1A2B3C4D5E6",
+  "type" : "com.apple.product-type.storekit",
+  "version" : 3,
+  "products" : [
+    {
+      "displayPrice" : "29.99",
+      "familyShareable" : false,
+      "internalID" : "001",
+      "localizations" : [
+        {
+          "description" : "Tüm premium özelliklere aylık erişim. Her ay otomatik yenilenir.",
+          "displayName" : "PetLog Premium Aylık",
+          "locale" : "tr"
+        },
+        {
+          "description" : "Monthly access to all premium features. Auto-renews every month.",
+          "displayName" : "PetLog Premium Monthly",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.petlog.premium.month",
+      "referenceName" : "PetLog Premium Monthly",
+      "type" : "AutoRenewableSubscription",
+      "subscriptionGroupID" : "petlog_premium_group",
+      "subscriptionPeriod" : "P1M"
+    },
+    {
+      "displayPrice" : "149.99",
+      "familyShareable" : false,
+      "internalID" : "002",
+      "localizations" : [
+        {
+          "description" : "Tüm premium özelliklere yıllık erişim. 2 ay bedava!",
+          "displayName" : "PetLog Premium Yıllık",
+          "locale" : "tr"
+        },
+        {
+          "description" : "Yearly access to all premium features. Save 2 months!",
+          "displayName" : "PetLog Premium Yearly",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.petlog.premium.year",
+      "referenceName" : "PetLog Premium Yearly",
+      "type" : "AutoRenewableSubscription",
+      "subscriptionGroupID" : "petlog_premium_group",
+      "subscriptionPeriod" : "P1Y"
+    },
+    {
+      "displayPrice" : "399.99",
+      "familyShareable" : false,
+      "internalID" : "003",
+      "localizations" : [
+        {
+          "description" : "Tek seferlik ödeme ile tüm premium özelliklere ömür boyu erişim.",
+          "displayName" : "PetLog Premium Ömür Boyu",
+          "locale" : "tr"
+        },
+        {
+          "description" : "One-time purchase for lifetime access to all premium features.",
+          "displayName" : "PetLog Premium Lifetime",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.petlog.premium.lifetme",
+      "referenceName" : "PetLog Premium Lifetime",
+      "type" : "NonConsumable"
+    }
+  ],
+  "subscriptionGroups" : [
+    {
+      "id" : "petlog_premium_group",
+      "localizations" : [
+        {
+          "displayName" : "PetLog Premium",
+          "locale" : "tr"
+        }
+      ],
+      "name" : "PetLog Premium",
+      "subscriptions" : [
+        "com.petlog.premium.month",
+        "com.petlog.premium.year"
+      ]
+    }
+  ],
+  "settings" : {
+    "_applicationInternalID" : "petlog",
+    "_developerTeamID" : ""
+  }
+}
