@@ -94,9 +94,7 @@ struct AddDocumentSheet: View {
     private func save() {
         guard let pet = store.selectedPet else { return }
         let compressed = imageData.flatMap { UIImage(data: $0)?.jpegData(compressionQuality: 0.6) }
-        let doc = PetDocument(documentType: documentType, title: title, imageData: compressed, notes: notes, date: date)
-        doc.pet = pet
-        store.modelContext.insert(doc)
+        store.addDocument(to: pet, documentType: documentType, title: title, imageData: compressed, notes: notes, date: date)
         dismiss()
     }
 }

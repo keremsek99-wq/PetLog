@@ -55,6 +55,7 @@ struct FinanceView: View {
             .padding(.bottom, 24)
         }
         .background(Color(.systemGroupedBackground))
+        .id(store.refreshID)
     }
 
     private func spendingSummary(_ pet: Pet) -> some View {

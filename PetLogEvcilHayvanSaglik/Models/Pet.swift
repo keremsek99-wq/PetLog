@@ -48,6 +48,18 @@ class Pet {
         return "\(months) ay"
     }
 
+    var emoji: String {
+        switch species {
+        case .dog: return "🐶"
+        case .cat: return "🐱"
+        case .bird: return "🐦"
+        case .rabbit: return "🐰"
+        case .fish: return "🐟"
+        case .reptile: return "🦎"
+        case .unspecified, .other: return "🐾"
+        }
+    }
+
     var latestWeight: Double? {
         weightLogs.sorted { $0.date > $1.date }.first?.weightKg
     }

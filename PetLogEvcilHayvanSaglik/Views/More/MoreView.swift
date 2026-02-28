@@ -26,9 +26,8 @@ struct MoreView: View {
                             PetSummaryCardView(pet: pet, store: store)
                         } label: {
                             HStack(spacing: 14) {
-                                Image(systemName: pet.species.icon)
-                                    .font(.title2)
-                                    .foregroundStyle(.blue)
+                                Text(pet.emoji)
+                                    .font(.largeTitle)
                                     .frame(width: 44, height: 44)
                                     .background(Color.blue.opacity(0.12))
                                     .clipShape(Circle())
@@ -130,42 +129,27 @@ struct MoreView: View {
                     NavigationLink {
                         PetListView(store: store, premiumManager: premiumManager)
                     } label: {
-                        Label("Hayvanlarım", systemImage: "pawprint.fill")
+                        Label("🐾 Hayvanlarım", systemImage: "pawprint.fill")
                     }
                     if let pet = store.selectedPet {
                         NavigationLink {
-                            PetSummaryCardView(pet: pet, store: store)
-                        } label: {
-                            Label("Pet Özet Kartı", systemImage: "person.text.rectangle")
-                        }
-                        NavigationLink {
-                            BreedHealthView(pet: pet)
-                        } label: {
-                            Label("Irk Sağlık Rehberi", systemImage: "heart.text.clipboard.fill")
-                        }
-                        NavigationLink {
                             MonthlyReportView(pet: pet, store: store)
                         } label: {
-                            Label("Aylık Rapor", systemImage: "chart.bar.doc.horizontal.fill")
+                            Label("📊 Aylık Rapor", systemImage: "chart.bar.doc.horizontal.fill")
                         }
                         Button {
                             showSharePet = true
                         } label: {
-                            Label("Pet Kartı Paylaş", systemImage: "square.and.arrow.up.fill")
+                            Label("📤 Pet Kartı Paylaş", systemImage: "square.and.arrow.up.fill")
                         }
                         NavigationLink {
                             DocumentListView(pet: pet, store: store, premiumManager: premiumManager)
                         } label: {
-                            Label("Belgelerim", systemImage: "doc.text.fill")
+                            Label("📄 Belgelerim", systemImage: "doc.text.fill")
                         }
                     }
                     if let pet = store.selectedPet {
                         birthdayRow(pet)
-                        NavigationLink {
-                            BehaviorHistoryView(pet: pet)
-                        } label: {
-                            Label("Davranış Geçmişi", systemImage: "brain.head.profile.fill")
-                        }
                     }
                 }
 

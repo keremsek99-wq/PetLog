@@ -60,17 +60,25 @@ struct QuickActionButton: View {
     let title: String
     let icon: String
     let color: Color
+    var emoji: String? = nil
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 8) {
-                Image(systemName: icon)
-                    .font(.title3.weight(.semibold))
-                    .foregroundStyle(color)
-                    .frame(width: 44, height: 44)
-                    .background(color.opacity(0.12))
-                    .clipShape(Circle())
+            VStack(spacing: 6) {
+                ZStack {
+                    Circle()
+                        .fill(color.opacity(0.12))
+                        .frame(width: 48, height: 48)
+                    if let emoji {
+                        Text(emoji)
+                            .font(.title2)
+                    } else {
+                        Image(systemName: icon)
+                            .font(.title3.weight(.semibold))
+                            .foregroundStyle(color)
+                    }
+                }
                 Text(title)
                     .font(.caption)
                     .foregroundStyle(.primary)
@@ -79,6 +87,25 @@ struct QuickActionButton: View {
             .frame(maxWidth: .infinity)
         }
         .buttonStyle(.plain)
+    }
+}
+
+struct SavedToast: View {
+    let message: String
+    var emoji: String = "✅"
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Text(emoji)
+                .font(.body)
+            Text(message)
+                .font(.subheadline.weight(.medium))
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 12)
+        .background(.ultraThinMaterial)
+        .clipShape(Capsule())
+        .shadow(color: .black.opacity(0.1), radius: 8, y: 4)
     }
 }
 

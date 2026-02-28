@@ -94,9 +94,7 @@ struct AddBehaviorSheet: View {
 
     private func save() {
         guard let pet = store.selectedPet else { return }
-        let log = BehaviorLog(behaviorType: behaviorType, severity: severity, notes: notes, date: date)
-        log.pet = pet
-        store.modelContext.insert(log)
+        store.addBehaviorLog(to: pet, behaviorType: behaviorType, severity: severity, notes: notes, date: date)
         dismiss()
     }
 }

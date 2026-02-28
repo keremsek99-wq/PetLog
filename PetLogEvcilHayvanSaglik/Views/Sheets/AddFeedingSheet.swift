@@ -78,9 +78,7 @@ struct AddFeedingSheet: View {
 
     private func save() {
         guard let pet = store.selectedPet else { return }
-        let log = FeedingLog(mealType: mealType, portionGrams: portionGrams, foodBrand: foodBrand, notes: notes, date: date)
-        log.pet = pet
-        store.modelContext.insert(log)
+        store.addFeedingLog(to: pet, mealType: mealType, portionGrams: portionGrams, foodBrand: foodBrand, notes: notes, date: date)
         dismiss()
     }
 }

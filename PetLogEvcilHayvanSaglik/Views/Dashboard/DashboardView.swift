@@ -106,6 +106,7 @@ struct DashboardView: View {
             .padding(.horizontal)
             .padding(.bottom, 24)
         }
+        .id(store.refreshID)
     }
 
     private func petHeader(_ pet: Pet) -> some View {
@@ -122,14 +123,17 @@ struct DashboardView: View {
                     Circle()
                         .fill(Color.blue.opacity(0.12))
                         .frame(width: 56, height: 56)
-                    Image(systemName: pet.species.icon)
-                        .font(.title2)
-                        .foregroundStyle(.blue)
+                    Text(pet.emoji)
+                        .font(.largeTitle)
                 }
             }
             VStack(alignment: .leading, spacing: 2) {
-                Text(pet.name)
-                    .font(.title2.weight(.bold))
+                HStack(spacing: 6) {
+                    Text(pet.name)
+                        .font(.title2.weight(.bold))
+                    Text(pet.emoji)
+                        .font(.title3)
+                }
                 HStack(spacing: 6) {
                     if pet.species != .unspecified {
                         Text(pet.species.rawValue)
@@ -154,46 +158,61 @@ struct DashboardView: View {
     private var quickActionsRow: some View {
         VStack(spacing: 8) {
             HStack(spacing: 0) {
-                QuickActionButton(title: "Kilo", icon: "scalemass.fill", color: .green) {
-                    showAddWeight = true
-                }
-                QuickActionButton(title: "Mama", icon: "fork.knife", color: .orange) {
+                QuickActionButton(title: "Beslenme", icon: "fork.knife", color: .orange, emoji: "🍽") {
                     showAddFeeding = true
                 }
-                QuickActionButton(title: "Aktivite", icon: "figure.walk", color: .cyan) {
+                QuickActionButton(title: "Kilo", icon: "scalemass.fill", color: .green, emoji: "⚖️") {
+                    showAddWeight = true
+                }
+                QuickActionButton(title: "Aktivite", icon: "figure.walk", color: .cyan, emoji: "🏃") {
                     showAddActivity = true
                 }
-                QuickActionButton(title: "Harcama", icon: "turkishlirasign.circle.fill", color: .orange) {
+                QuickActionButton(title: "Harcama", icon: "turkishlirasign.circle.fill", color: .orange, emoji: "💰") {
                     showAddExpense = true
                 }
-            }
-            HStack(spacing: 0) {
-                QuickActionButton(title: "İlaç", icon: "pills.fill", color: .blue) {
-                    showAddMedication = true
-                }
-                QuickActionButton(title: "Veteriner", icon: "cross.case.fill", color: .red) {
-                    showAddVetVisit = true
-                }
-                QuickActionButton(title: "Fotoğraf", icon: "camera.fill", color: .purple) {
-                    showPhotoTimeline = true
-                }
-                QuickActionButton(title: "Belgeler", icon: "doc.text.fill", color: .teal) {
-                    showAddDocument = true
-                }
-            }
-            HStack(spacing: 0) {
-                QuickActionButton(title: "Davranış", icon: "brain.head.profile.fill", color: .orange) {
-                    showAddBehavior = true
-                }
-                QuickActionButton(title: "Mama Stok", icon: "takeoutbag.and.cup.and.straw.fill", color: .brown) {
-                    showAddFood = true
-                }
-                // Empty spacers to maintain 4-column grid
-                Color.clear.frame(maxWidth: .infinity)
-                Color.clear.frame(maxWidth: .infinity)
+                moreActionsButton
             }
         }
         .padding(.vertical, 4)
+    }
+
+    private var moreActionsButton: some View {
+        Menu {
+            Button { showAddMedication = true } label: {
+                Label("💊 İlaç Ekle", systemImage: "pills.fill")
+            }
+            Button { showAddVetVisit = true } label: {
+                Label("🏥 Veteriner Ziyareti", systemImage: "cross.case.fill")
+            }
+            Button { showAddBehavior = true } label: {
+                Label("🧠 Davranış Kaydet", systemImage: "brain.head.profile.fill")
+            }
+            Divider()
+            Button { showPhotoTimeline = true } label: {
+                Label("📸 Fotoğraf", systemImage: "camera.fill")
+            }
+            Button { showAddDocument = true } label: {
+                Label("📄 Belge Ekle", systemImage: "doc.text.fill")
+            }
+            Button { showAddFood = true } label: {
+                Label("🥫 Mama Stok", systemImage: "takeoutbag.and.cup.and.straw.fill")
+            }
+        } label: {
+            VStack(spacing: 6) {
+                ZStack {
+                    Circle()
+                        .fill(Color.gray.opacity(0.12))
+                        .frame(width: 48, height: 48)
+                    Text("➕")
+                        .font(.title2)
+                }
+                Text("Daha Fazla")
+                    .font(.caption)
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+            }
+            .frame(maxWidth: .infinity)
+        }
     }
 
     private func summaryCards(_ pet: Pet) -> some View {

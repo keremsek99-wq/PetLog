@@ -53,9 +53,7 @@ struct AddActivitySheet: View {
 
     private func save() {
         guard let pet = store.selectedPet else { return }
-        let log = ActivityLog(activityType: activityType, durationMinutes: durationMinutes, notes: notes, date: date)
-        log.pet = pet
-        store.modelContext.insert(log)
+        store.addActivityLog(to: pet, activityType: activityType, durationMinutes: durationMinutes, notes: notes, date: date)
         dismiss()
     }
 }

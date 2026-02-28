@@ -6,6 +6,7 @@ import SwiftUI
 @MainActor
 class PetStore {
     private(set) var modelContext: ModelContext
+    var refreshID = UUID()
 
     var selectedPet: Pet? {
         didSet {
@@ -28,6 +29,7 @@ class PetStore {
     private func save() {
         do {
             try modelContext.save()
+            refreshID = UUID()
         } catch {
             print("PetStore save error: \(error)")
         }
@@ -141,6 +143,34 @@ class PetStore {
     func deleteFeedingLog(_ log: FeedingLog) { modelContext.delete(log); save() }
     func deleteBehaviorLog(_ log: BehaviorLog) { modelContext.delete(log); save() }
     func deleteDocument(_ doc: PetDocument) { modelContext.delete(doc); save() }
+
+    func addFeedingLog(to pet: Pet, mealType: MealType, portionGrams: Double, foodBrand: String, notes: String, date: Date) {
+        let log = FeedingLog(mealType: mealType, portionGrams: portionGrams, foodBrand: foodBrand, notes: notes, date: date)
+        log.pet = pet
+        modelContext.insert(log)
+        save()
+    }
+
+    func addActivityLog(to pet: Pet, activityType: ActivityType, durationMinutes: Int, notes: String, date: Date) {
+        let log = ActivityLog(activityType: activityType, durationMinutes: durationMinutes, notes: notes, date: date)
+        log.pet = pet
+        modelContext.insert(log)
+        save()
+    }
+
+    func addBehaviorLog(to pet: Pet, behaviorType: BehaviorType, severity: Int, notes: String, date: Date) {
+        let log = BehaviorLog(behaviorType: behaviorType, severity: severity, notes: notes, date: date)
+        log.pet = pet
+        modelContext.insert(log)
+        save()
+    }
+
+    func addDocument(to pet: Pet, documentType: DocumentType, title: String, imageData: Data?, notes: String, date: Date) {
+        let doc = PetDocument(documentType: documentType, title: title, imageData: imageData, notes: notes, date: date)
+        doc.pet = pet
+        modelContext.insert(doc)
+        save()
+    }
 
     func monthlySpending(for pet: Pet) -> Double {
         let calendar = Calendar.current
