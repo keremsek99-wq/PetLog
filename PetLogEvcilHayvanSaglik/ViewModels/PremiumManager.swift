@@ -18,6 +18,7 @@ class PremiumManager {
     var products: [Product] = []
     var purchasedProductIDs: Set<String> = []
     var isLoading: Bool = false
+    var loadError: String? = nil
 
     var hasFullAccess: Bool { isPremium }
 
@@ -49,13 +50,24 @@ class PremiumManager {
 
     func loadProducts() async {
         isLoading = true
+        loadError = nil
         do {
             let storeProducts = try await Product.products(for: PremiumManager.allProductIDs)
             products = storeProducts.sorted { price($0) < price($1) }
+            if storeProducts.isEmpty {
+                loadError = "Ürünler yüklenemedi. Lütfen internet bağlantınızı kontrol edip tekrar deneyin."
+                print("PremiumManager: Products loaded but array is empty")
+            }
         } catch {
+            loadError = "Ürünler yüklenemedi. Lütfen internet bağlantınızı kontrol edip tekrar deneyin."
             print("PremiumManager: Failed to load products: \(error)")
         }
         isLoading = false
+    }
+
+    func retryLoadProducts() async {
+        loadError = nil
+        await loadProducts()
     }
 
     // MARK: - Purchase

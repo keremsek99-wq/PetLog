@@ -57,6 +57,10 @@ struct PetLogPaywallView: View {
             .onAppear {
                 // Default to yearly
                 selectedPlan = PremiumManager.yearlyProductID
+                // Reload products if they haven't loaded yet
+                if premiumManager.products.isEmpty && !premiumManager.isLoading {
+                    Task { await premiumManager.retryLoadProducts() }
+                }
             }
         }
     }
@@ -132,6 +136,18 @@ struct PetLogPaywallView: View {
                 // Fallback UI with hardcoded prices
                 ForEach(FallbackPlan.allPlans) { plan in
                     fallbackPlanCard(plan)
+                }
+
+                // Show error + retry when products failed to load
+                if premiumManager.loadError != nil {
+                    Button {
+                        Task { await premiumManager.retryLoadProducts() }
+                    } label: {
+                        Label("Ürünleri Yeniden Yükle", systemImage: "arrow.clockwise")
+                            .font(.subheadline)
+                            .foregroundStyle(.blue)
+                    }
+                    .padding(.top, 4)
                 }
             } else {
                 ForEach(premiumManager.products, id: \.id) { product in
@@ -260,7 +276,7 @@ struct PetLogPaywallView: View {
             .padding(.vertical, 14)
         }
         .buttonStyle(.borderedProminent)
-        .disabled(selectedPlan == nil || isPurchasing || premiumManager.products.isEmpty)
+        .disabled(selectedPlan == nil || isPurchasing)
     }
 
     // MARK: - Restore
@@ -313,9 +329,20 @@ struct PetLogPaywallView: View {
     // MARK: - Helpers
 
     private func purchaseSelected() async {
-        guard let planID = selectedPlan,
-              let product = premiumManager.products.first(where: { $0.id == planID })
-        else { return }
+        guard let planID = selectedPlan else { return }
+
+        // If products haven't loaded yet, try to load them first
+        if premiumManager.products.isEmpty {
+            isPurchasing = true
+            await premiumManager.retryLoadProducts()
+            isPurchasing = false
+        }
+
+        guard let product = premiumManager.products.first(where: { $0.id == planID }) else {
+            errorMessage = "Ürünler yüklenemedi. Lütfen internet bağlantınızı kontrol edip tekrar deneyin."
+            showError = true
+            return
+        }
 
         isPurchasing = true
         let success = await premiumManager.purchase(product)
