@@ -252,6 +252,6 @@ class NotificationService {
 private extension Int {
     func clamped(to range: ClosedRange<Int>, default defaultValue: Int) -> Int {
         let value = self == 0 ? defaultValue : self
-        return min(max(value, range.lowerBound), range.upperBound)
+        return Swift.min(Swift.max(value, range.lowerBound), range.upperBound)
     }
 }

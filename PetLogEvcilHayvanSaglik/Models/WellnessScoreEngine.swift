@@ -195,7 +195,7 @@ struct WellnessScoreEngine {
         let monthAgo = calendar.date(byAdding: .month, value: -1, to: now) ?? now
 
         var factors = 0
-        var totalFactors = 4
+        let totalFactors = 4
 
         // Has recent weight log
         if pet.weightLogs.contains(where: { $0.date >= monthAgo }) { factors += 1 }

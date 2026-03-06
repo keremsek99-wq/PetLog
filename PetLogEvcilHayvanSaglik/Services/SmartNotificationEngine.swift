@@ -92,7 +92,7 @@ struct SmartNotificationEngine {
         // Remind every 2 weeks if no recent weight
         if daysSinceWeight >= 14 {
             let nextWeekend = Calendar.current.nextDate(
-                after: Date(), matching: DateComponents(weekday: 7, hour: 10),
+                after: Date(), matching: DateComponents(hour: 10, weekday: 7),
                 matchingPolicy: .nextTime
             ) ?? Date().addingTimeInterval(86400)
 
