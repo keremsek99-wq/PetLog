@@ -183,6 +183,14 @@ struct MoreView: View {
                         } label: {
                             Label("🏥 Veteriner Randevuları", systemImage: "cross.case.fill")
                         }
+
+                        if let pet = store.selectedPet {
+                            NavigationLink {
+                                SymptomCheckerView(pet: pet, store: store)
+                            } label: {
+                                Label("🩺 Semptom Kontrol", systemImage: "stethoscope")
+                            }
+                        }
                     }
                 }
 
@@ -193,6 +201,18 @@ struct MoreView: View {
                             MonthlyReportView(pet: pet, store: store)
                         } label: {
                             Label("📊 Aylık Rapor", systemImage: "chart.bar.doc.horizontal.fill")
+                        }
+
+                        NavigationLink {
+                            VetShareView(pet: pet, store: store)
+                        } label: {
+                            Label("🩺 Veteriner Paylaşım", systemImage: "square.and.arrow.up")
+                        }
+
+                        NavigationLink {
+                            YearlyWrappedView(pet: pet, store: store)
+                        } label: {
+                            Label("🎉 Yıllık Rapor (Wrapped)", systemImage: "party.popper.fill")
                         }
 
                         Button {
