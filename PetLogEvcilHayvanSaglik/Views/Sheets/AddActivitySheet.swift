@@ -25,7 +25,9 @@ struct AddActivitySheet: View {
         case .training: return "🎓"
         case .grooming: return "✂️"
         case .potty: return "🚽"
-        case .swim: return "🏊"
+        case .bath: return "🛁"
+        case .nailTrim: return "💅"
+        case .sleep: return "😴"
         case .other: return "📝"
         }
     }
