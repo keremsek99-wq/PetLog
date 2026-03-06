@@ -200,6 +200,29 @@ struct MoreView: View {
                     }
                 }
 
+                // MARK: - AI & Advanced
+                Section("AI & Gelişmiş") {
+                    if let pet = store.selectedPet {
+                        NavigationLink {
+                            AISymptomAnalysisView(pet: pet, store: store, premiumManager: premiumManager)
+                        } label: {
+                            Label("🤖 AI Semptom Analizi", systemImage: "sparkles")
+                        }
+
+                        NavigationLink {
+                            LostPetModeView(pet: pet, store: store)
+                        } label: {
+                            Label("🐕 Kayıp Hayvan Modu", systemImage: "magnifyingglass")
+                        }
+
+                        NavigationLink {
+                            FamilySharingView(pet: pet, store: store)
+                        } label: {
+                            Label("👨‍👩‍👧 Aile Paylaşımı", systemImage: "person.2.fill")
+                        }
+                    }
+                }
+
                 // MARK: - Reports & Documents
                 Section("Raporlar & Belgeler") {
                     if let pet = store.selectedPet {
