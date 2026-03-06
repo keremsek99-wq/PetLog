@@ -110,6 +110,9 @@ struct DashboardView: View {
                 // Contextual greeting
                 contextualGreetingBanner(pet)
 
+                // Wellness Score
+                WellnessScoreCard(pet: pet)
+
                 // Sick mode alert
                 if pet.isSickMode {
                     sickModeAlert(pet)

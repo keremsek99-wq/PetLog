@@ -171,6 +171,18 @@ struct MoreView: View {
                         } label: {
                             Label("⭐ Anılar & Miladlar", systemImage: "star.circle.fill")
                         }
+
+                        NavigationLink {
+                            PetCalendarView(store: store, premiumManager: premiumManager)
+                        } label: {
+                            Label("📅 Takvim", systemImage: "calendar")
+                        }
+
+                        NavigationLink {
+                            VetAppointmentView(store: store, premiumManager: premiumManager)
+                        } label: {
+                            Label("🏥 Veteriner Randevuları", systemImage: "cross.case.fill")
+                        }
                     }
                 }
 
