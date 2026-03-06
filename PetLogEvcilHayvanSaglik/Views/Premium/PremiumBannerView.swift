@@ -21,30 +21,52 @@ struct PremiumBanner: View {
                         )
 
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Premium'a Geç")
+                        Text("PetLog Premium")
                             .font(.subheadline.weight(.semibold))
                             .foregroundStyle(.primary)
-                        Text("AI önerileri, detaylı analizler ve daha fazlası")
+                        Text("Tüm özellikleri keşfedin")
                             .font(.caption)
                             .foregroundStyle(.secondary)
-                            .lineLimit(1)
                     }
 
                     Spacer()
 
-                    Image(systemName: "chevron.right")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(.tertiary)
+                    Text("PRO")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .background(
+                            LinearGradient(
+                                colors: [.blue, .purple],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            ),
+                            in: Capsule()
+                        )
                 }
                 .padding(14)
                 .background(
-                    LinearGradient(
-                        colors: [.blue.opacity(0.06), .purple.opacity(0.06)],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(
+                            LinearGradient(
+                                colors: [Color.blue.opacity(0.06), Color.purple.opacity(0.06)],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 14)
+                                .stroke(
+                                    LinearGradient(
+                                        colors: [Color.blue.opacity(0.15), Color.purple.opacity(0.15)],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    ),
+                                    lineWidth: 1
+                                )
+                        )
                 )
-                .clipShape(.rect(cornerRadius: 14))
             }
             .buttonStyle(.plain)
             .sheet(isPresented: $showPaywall) {

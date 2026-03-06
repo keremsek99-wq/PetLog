@@ -17,44 +17,115 @@ struct AddVaccineSheet: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section("Aşı") {
-                    TextField("Aşı Adı", text: $name)
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 8) {
-                            ForEach(commonVaccines, id: \.self) { v in
-                                Button {
-                                    name = v
-                                } label: {
-                                    Text(v)
-                                        .font(.caption)
-                                        .padding(.horizontal, 10)
-                                        .padding(.vertical, 6)
-                                        .background(name == v ? Color.purple : Color(.tertiarySystemGroupedBackground))
-                                        .foregroundStyle(name == v ? .white : .primary)
-                                        .clipShape(Capsule())
+            ScrollView {
+                VStack(spacing: 20) {
+                    // Emoji header
+                    VStack(spacing: 8) {
+                        ZStack {
+                            Circle()
+                                .fill(
+                                    LinearGradient(
+                                        colors: [Color.purple.opacity(0.2), Color.purple.opacity(0.05)],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .frame(width: 64, height: 64)
+                            Text("💉")
+                                .font(.largeTitle)
+                        }
+                        Text("\(pet.name) için aşı kaydı")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.top, 8)
+
+                    // Vaccine name
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Aşı Adı")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                            .padding(.leading, 4)
+
+                        TextField("Aşı Adı", text: $name)
+                            .font(.body.weight(.medium))
+                            .padding(12)
+                            .background(Color(.secondarySystemGroupedBackground))
+                            .clipShape(.rect(cornerRadius: 12))
+
+                        // Common vaccine chips
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 8) {
+                                ForEach(commonVaccines, id: \.self) { v in
+                                    Button {
+                                        withAnimation(.spring(duration: 0.2)) {
+                                            name = v
+                                        }
+                                    } label: {
+                                        Text(v)
+                                            .font(.caption)
+                                            .padding(.horizontal, 12)
+                                            .padding(.vertical, 8)
+                                            .background(name == v ? Color.purple : Color(.tertiarySystemGroupedBackground))
+                                            .foregroundStyle(name == v ? .white : .primary)
+                                            .clipShape(Capsule())
+                                    }
+                                    .buttonStyle(.plain)
                                 }
-                                .buttonStyle(.plain)
                             }
                         }
+                        .sensoryFeedback(.selection, trigger: name)
                     }
-                    .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+
+                    // Date
                     DatePicker("Yapıldığı Tarih", selection: $dateAdministered, displayedComponents: .date)
-                }
+                        .padding(12)
+                        .background(Color(.secondarySystemGroupedBackground))
+                        .clipShape(.rect(cornerRadius: 12))
 
-                Section("Sonraki Tarih") {
-                    Toggle("Hatırlatma Tarihi Belirle", isOn: $hasDueDate)
-                    if hasDueDate {
-                        DatePicker("Sonraki Tarih", selection: $dueDate, in: dateAdministered..., displayedComponents: .date)
+                    // Due date toggle
+                    VStack(spacing: 12) {
+                        Toggle(isOn: $hasDueDate.animation(.spring(duration: 0.3))) {
+                            HStack(spacing: 8) {
+                                Image(systemName: "bell.badge.fill")
+                                    .foregroundStyle(.orange)
+                                Text("Hatırlatma Tarihi Belirle")
+                            }
+                        }
+                        .padding(12)
+                        .background(Color(.secondarySystemGroupedBackground))
+                        .clipShape(.rect(cornerRadius: 12))
+
+                        if hasDueDate {
+                            DatePicker("Sonraki Tarih", selection: $dueDate, in: dateAdministered..., displayedComponents: .date)
+                                .padding(12)
+                                .background(Color(.secondarySystemGroupedBackground))
+                                .clipShape(.rect(cornerRadius: 12))
+                                .transition(.asymmetric(
+                                    insertion: .move(edge: .top).combined(with: .opacity),
+                                    removal: .opacity
+                                ))
+                        }
+                    }
+
+                    // Details
+                    VStack(spacing: 12) {
+                        TextField("Veteriner", text: $veterinarian)
+                            .padding(12)
+                            .background(Color(.secondarySystemGroupedBackground))
+                            .clipShape(.rect(cornerRadius: 12))
+
+                        TextField("Notlar", text: $notes, axis: .vertical)
+                            .lineLimit(3)
+                            .padding(12)
+                            .background(Color(.secondarySystemGroupedBackground))
+                            .clipShape(.rect(cornerRadius: 12))
                     }
                 }
-
-                Section("Detaylar") {
-                    TextField("Veteriner", text: $veterinarian)
-                    TextField("Notlar", text: $notes, axis: .vertical)
-                        .lineLimit(3)
-                }
+                .padding(.horizontal)
+                .padding(.bottom, 24)
             }
+            .background(Color(.systemGroupedBackground))
             .navigationTitle("Aşı Ekle")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

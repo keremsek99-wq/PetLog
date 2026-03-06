@@ -18,6 +18,8 @@ struct DashboardView: View {
     @State private var showAddDocument = false
     @State private var showPhotoTimeline = false
     @State private var showAddBehavior = false
+    @State private var showAddVaccine = false
+    @State private var showDetailCards = false
 
     private var pet: Pet? { store.selectedPet }
     private var hasMultiplePets: Bool { store.allPets().count > 1 }
@@ -92,16 +94,37 @@ struct DashboardView: View {
             .sheet(isPresented: $showAddBehavior) {
                 AddBehaviorSheet(store: store)
             }
+            .sheet(isPresented: $showAddVaccine) {
+                if let pet { AddVaccineSheet(store: store, pet: pet) }
+            }
         }
     }
 
+    // MARK: - Main Dashboard
+
     private func petDashboard(_ pet: Pet) -> some View {
         ScrollView {
-            VStack(spacing: 20) {
+            VStack(spacing: 16) {
                 petHeader(pet)
+
+                // Contextual greeting
+                contextualGreetingBanner(pet)
+
+                // Sick mode alert
+                if pet.isSickMode {
+                    sickModeAlert(pet)
+                }
+
                 PremiumBanner(premiumManager: premiumManager)
-                quickActionsRow
-                summaryCards(pet)
+
+                // Weekly summary strip
+                weeklySummaryStrip(pet)
+
+                // Species-aware quick actions
+                speciesAwareQuickActions(pet)
+
+                // Smart-ordered cards
+                smartCards(pet)
             }
             .padding(.horizontal)
             .padding(.bottom, 24)
@@ -109,30 +132,51 @@ struct DashboardView: View {
         .id(store.refreshID)
     }
 
+    // MARK: - Pet Header (Enhanced)
+
     private func petHeader(_ pet: Pet) -> some View {
         HStack(spacing: 14) {
             if let photoData = pet.photoData, let uiImage = UIImage(data: photoData) {
                 Image(uiImage: uiImage)
                     .resizable()
                     .scaledToFill()
-                    .frame(width: 56, height: 56)
+                    .frame(width: 60, height: 60)
                     .clipShape(Circle())
-                    .overlay(Circle().stroke(Color.blue.opacity(0.2), lineWidth: 1.5))
+                    .overlay(
+                        Circle()
+                            .stroke(
+                                LinearGradient(
+                                    colors: PetOSColors.speciesGradient(pet.species),
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 2.5
+                            )
+                    )
+                    .shadow(color: pet.speciesColor.opacity(0.2), radius: 4, y: 2)
             } else {
                 ZStack {
                     Circle()
-                        .fill(Color.blue.opacity(0.12))
-                        .frame(width: 56, height: 56)
+                        .fill(
+                            LinearGradient(
+                                colors: PetOSColors.speciesGradient(pet.species),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 60, height: 60)
                     Text(pet.emoji)
                         .font(.largeTitle)
                 }
+                .shadow(color: pet.speciesColor.opacity(0.2), radius: 4, y: 2)
             }
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 6) {
                     Text(pet.name)
                         .font(.title2.weight(.bold))
-                    Text(pet.emoji)
-                        .font(.title3)
+                    if pet.isSickMode {
+                        PulsingDot(color: .red)
+                    }
                 }
                 HStack(spacing: 6) {
                     if pet.species != .unspecified {
@@ -155,26 +199,155 @@ struct DashboardView: View {
         .padding(.top, 8)
     }
 
-    private var quickActionsRow: some View {
+    // MARK: - Contextual Greeting
+
+    private func contextualGreetingBanner(_ pet: Pet) -> some View {
+        Text(pet.contextualGreeting)
+            .font(.subheadline.weight(.medium))
+            .foregroundStyle(.secondary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 4)
+    }
+
+    // MARK: - Sick Mode Alert
+
+    private func sickModeAlert(_ pet: Pet) -> some View {
+        ContextualAlertBanner(
+            emoji: "🏥",
+            message: "\(pet.name) şu an takip altında. Sağlık kayıtlarını güncel tutun.",
+            accentColor: .red,
+            actionLabel: "Semptom Ekle"
+        ) {
+            showAddBehavior = true
+        }
+    }
+
+    // MARK: - Weekly Summary Strip
+
+    private func weeklySummaryStrip(_ pet: Pet) -> some View {
+        let calendar = Calendar.current
+        let weekAgo = calendar.date(byAdding: .day, value: -7, to: Date()) ?? Date()
+
+        let weeklyExpenses = pet.expenses.filter { $0.date >= weekAgo }
+        let weeklyTotal = weeklyExpenses.reduce(0) { $0 + $1.amount }
+
+        let weeklyActivities = pet.activityLogs.filter { $0.date >= weekAgo }
+        let weeklyFeedings = pet.feedingLogs.filter { $0.date >= weekAgo }
+
+        var items: [(emoji: String, label: String, value: String)] = []
+
+        items.append(("💰", "bu hafta", weeklyTotal.formatted(.currency(code: "TRY"))))
+        if pet.species == .dog {
+            let walkMin = weeklyActivities.filter { $0.activityType == .walk }.reduce(0) { $0 + $1.durationMinutes }
+            items.append(("🚶", "yürüyüş", "\(walkMin) dk"))
+        }
+        items.append(("🍽", "öğün", "\(weeklyFeedings.count)"))
+
+        if let vaccine = pet.nextVaccineDue {
+            let days = calendar.dateComponents([.day], from: Date(), to: vaccine.dueDate ?? .distantFuture).day ?? 999
+            if days <= 30 {
+                items.append(("💉", "aşıya", "\(days) gün"))
+            }
+        }
+
+        return WeeklySummaryBanner(items: items)
+    }
+
+    // MARK: - Species-Aware Quick Actions
+
+    private func speciesAwareQuickActions(_ pet: Pet) -> some View {
         VStack(spacing: 8) {
             HStack(spacing: 0) {
-                QuickActionButton(title: "Beslenme", icon: "fork.knife", color: .orange, emoji: "🍽") {
-                    showAddFeeding = true
-                }
-                QuickActionButton(title: "Kilo", icon: "scalemass.fill", color: .green, emoji: "⚖️") {
-                    showAddWeight = true
-                }
-                QuickActionButton(title: "Aktivite", icon: "figure.walk", color: .cyan, emoji: "🏃") {
-                    showAddActivity = true
-                }
-                QuickActionButton(title: "Harcama", icon: "turkishlirasign.circle.fill", color: .orange, emoji: "💰") {
-                    showAddExpense = true
+                switch pet.species {
+                case .dog:
+                    QuickActionButton(title: "Beslenme", icon: "fork.knife", color: .orange, emoji: "🍽") { showAddFeeding = true }
+                    QuickActionButton(title: "Yürüyüş", icon: "figure.walk", color: .cyan, emoji: "🐕") { showAddActivity = true }
+                    QuickActionButton(title: "Harcama", icon: "turkishlirasign.circle.fill", color: .orange, emoji: "💰") { showAddExpense = true }
+                    QuickActionButton(title: "Sağlık", icon: "heart.fill", color: .red, emoji: "❤️‍🩹") { showAddBehavior = true }
+                case .cat:
+                    QuickActionButton(title: "Beslenme", icon: "fork.knife", color: .orange, emoji: "🍽") { showAddFeeding = true }
+                    QuickActionButton(title: "Kilo", icon: "scalemass.fill", color: .green, emoji: "⚖️") { showAddWeight = true }
+                    QuickActionButton(title: "Harcama", icon: "turkishlirasign.circle.fill", color: .orange, emoji: "💰") { showAddExpense = true }
+                    QuickActionButton(title: "Davranış", icon: "brain.head.profile.fill", color: .purple, emoji: "🧠") { showAddBehavior = true }
+                case .bird:
+                    QuickActionButton(title: "Beslenme", icon: "fork.knife", color: .orange, emoji: "🍽") { showAddFeeding = true }
+                    QuickActionButton(title: "Harcama", icon: "turkishlirasign.circle.fill", color: .orange, emoji: "💰") { showAddExpense = true }
+                    QuickActionButton(title: "Davranış", icon: "brain.head.profile.fill", color: .purple, emoji: "🧠") { showAddBehavior = true }
+                    QuickActionButton(title: "Veteriner", icon: "cross.case.fill", color: .red, emoji: "🏥") { showAddVetVisit = true }
+                case .fish:
+                    QuickActionButton(title: "Harcama", icon: "turkishlirasign.circle.fill", color: .orange, emoji: "💰") { showAddExpense = true }
+                    QuickActionButton(title: "Veteriner", icon: "cross.case.fill", color: .red, emoji: "🏥") { showAddVetVisit = true }
+                    QuickActionButton(title: "Davranış", icon: "brain.head.profile.fill", color: .teal, emoji: "🐟") { showAddBehavior = true }
+                    QuickActionButton(title: "Belge", icon: "doc.text.fill", color: .blue, emoji: "📄") { showAddDocument = true }
+                default:
+                    QuickActionButton(title: "Beslenme", icon: "fork.knife", color: .orange, emoji: "🍽") { showAddFeeding = true }
+                    QuickActionButton(title: "Kilo", icon: "scalemass.fill", color: .green, emoji: "⚖️") { showAddWeight = true }
+                    QuickActionButton(title: "Harcama", icon: "turkishlirasign.circle.fill", color: .orange, emoji: "💰") { showAddExpense = true }
+                    QuickActionButton(title: "Sağlık", icon: "heart.fill", color: .red, emoji: "❤️‍🩹") { showAddBehavior = true }
                 }
                 moreActionsButton
             }
         }
         .padding(.vertical, 4)
     }
+
+    // MARK: - Smart Card Ordering
+
+    private func smartCards(_ pet: Pet) -> some View {
+        VStack(spacing: 12) {
+            // 🔴 URGENT: Medication/Vaccine alerts first
+            if pet.isSickMode {
+                medicationsCard(pet)
+            }
+
+            let upcomingVaccine = pet.nextVaccineDue
+            if let vaccine = upcomingVaccine, vaccine.isDueSoon {
+                vaccineCard(pet, urgent: true)
+            }
+
+            // 🟡 ACTIONABLE: Spending + Upcoming events
+            HStack(spacing: 12) {
+                spendingCard(pet)
+                if !pet.isSickMode {
+                    medicationsCard(pet)
+                }
+            }
+
+            if upcomingVaccine == nil || !(upcomingVaccine?.isDueSoon ?? false) {
+                vaccineCard(pet, urgent: false)
+            }
+
+            // 🟢 INFORMATIONAL: Activity, weight, food (collapsible for healthy pets)
+            if pet.isSickMode || showDetailCards {
+                todayActivityCard(pet)
+                weightCard(pet)
+                foodCard(pet)
+            } else {
+                Button {
+                    withAnimation(.spring(duration: 0.4)) {
+                        showDetailCards = true
+                    }
+                } label: {
+                    HStack {
+                        Image(systemName: "chart.bar.fill")
+                            .foregroundStyle(.secondary)
+                        Text("Günlük Detaylar")
+                            .font(.subheadline.weight(.medium))
+                        Spacer()
+                        Image(systemName: "chevron.down")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                    }
+                    .padding(14)
+                    .background(Color(.secondarySystemGroupedBackground))
+                    .clipShape(.rect(cornerRadius: 14))
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
+    // MARK: - More Actions Menu
 
     private var moreActionsButton: some View {
         Menu {
@@ -184,10 +357,19 @@ struct DashboardView: View {
             Button { showAddVetVisit = true } label: {
                 Label("🏥 Veteriner Ziyareti", systemImage: "cross.case.fill")
             }
+            Button { showAddVaccine = true } label: {
+                Label("💉 Aşı Ekle", systemImage: "syringe.fill")
+            }
             Button { showAddBehavior = true } label: {
                 Label("🧠 Davranış Kaydet", systemImage: "brain.head.profile.fill")
             }
             Divider()
+            Button { showAddWeight = true } label: {
+                Label("⚖️ Kilo Kaydet", systemImage: "scalemass.fill")
+            }
+            Button { showAddActivity = true } label: {
+                Label("🏃 Aktivite Ekle", systemImage: "figure.walk")
+            }
             Button { showPhotoTimeline = true } label: {
                 Label("📸 Fotoğraf", systemImage: "camera.fill")
             }
@@ -201,8 +383,14 @@ struct DashboardView: View {
             VStack(spacing: 6) {
                 ZStack {
                     Circle()
-                        .fill(Color.gray.opacity(0.12))
-                        .frame(width: 48, height: 48)
+                        .fill(
+                            LinearGradient(
+                                colors: [Color.gray.opacity(0.14), Color.gray.opacity(0.06)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 50, height: 50)
                     Text("➕")
                         .font(.title2)
                 }
@@ -215,23 +403,10 @@ struct DashboardView: View {
         }
     }
 
-    private func summaryCards(_ pet: Pet) -> some View {
-        VStack(spacing: 12) {
-            todayActivityCard(pet)
-            weightCard(pet)
-            foodCard(pet)
-
-            HStack(spacing: 12) {
-                spendingCard(pet)
-                medicationsCard(pet)
-            }
-
-            vaccineCard(pet)
-        }
-    }
+    // MARK: - Summary Cards
 
     private func weightCard(_ pet: Pet) -> some View {
-        SummaryCard(title: "Kilo", icon: "scalemass.fill", iconColor: .green) {
+        GlowCard(title: "Kilo", icon: "scalemass.fill", iconColor: .green, emoji: "⚖️") {
             if let weight = pet.latestWeight {
                 HStack(alignment: .firstTextBaseline) {
                     Text(String(format: "%.1f", weight))
@@ -275,7 +450,7 @@ struct DashboardView: View {
     }
 
     private func foodCard(_ pet: Pet) -> some View {
-        SummaryCard(title: "Mama Stoku", icon: "takeoutbag.and.cup.and.straw.fill", iconColor: .orange) {
+        GlowCard(title: "Mama Stoku", icon: "takeoutbag.and.cup.and.straw.fill", iconColor: .orange, emoji: "🥫") {
             if let food = pet.currentFood {
                 VStack(alignment: .leading, spacing: 10) {
                     if premiumManager.hasFullAccess {
@@ -329,7 +504,7 @@ struct DashboardView: View {
     }
 
     private func spendingCard(_ pet: Pet) -> some View {
-        SummaryCard(title: "Bu Ay", icon: "turkishlirasign.circle.fill", iconColor: .orange) {
+        GlowCard(title: "Bu Ay", icon: "turkishlirasign.circle.fill", iconColor: PetOSColors.financeOrange, emoji: "💰") {
             let monthly = store.monthlySpending(for: pet)
             Text(monthly.formatted(.currency(code: "TRY")))
                 .font(.system(.title3, design: .rounded, weight: .bold))
@@ -337,16 +512,38 @@ struct DashboardView: View {
     }
 
     private func medicationsCard(_ pet: Pet) -> some View {
-        SummaryCard(title: "Aktif İlaçlar", icon: "pills.fill", iconColor: .blue) {
-            let count = pet.activeMedications.count
-            Text("\(count)")
-                .font(.system(.title3, design: .rounded, weight: .bold))
-                .foregroundStyle(count > 0 ? .primary : .secondary)
+        let count = pet.activeMedications.count
+        return GlowCard(
+            title: "Aktif İlaçlar",
+            icon: "pills.fill",
+            iconColor: .blue,
+            isUrgent: count > 0,
+            emoji: "💊"
+        ) {
+            HStack {
+                Text("\(count)")
+                    .font(.system(.title3, design: .rounded, weight: .bold))
+                    .foregroundStyle(count > 0 ? .primary : .secondary)
+                if count > 0 {
+                    Spacer()
+                    Button {
+                        showAddBehavior = true
+                    } label: {
+                        Text("Durum Kaydet")
+                            .font(.caption2.weight(.semibold))
+                            .foregroundStyle(.blue)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color.blue.opacity(0.1))
+                            .clipShape(Capsule())
+                    }
+                }
+            }
         }
     }
 
-    private func vaccineCard(_ pet: Pet) -> some View {
-        SummaryCard(title: "Sonraki Aşı", icon: "syringe.fill", iconColor: .purple) {
+    private func vaccineCard(_ pet: Pet, urgent: Bool) -> some View {
+        GlowCard(title: "Sonraki Aşı", icon: "syringe.fill", iconColor: .purple, isUrgent: urgent, emoji: "💉") {
             if let next = pet.nextVaccineDue {
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
@@ -368,9 +565,19 @@ struct DashboardView: View {
                     }
                 }
             } else {
-                Text("Yaklaşan aşı yok")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                HStack {
+                    Text("Yaklaşan aşı yok")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Button {
+                        showAddVaccine = true
+                    } label: {
+                        Text("Aşı Ekle")
+                            .font(.caption.weight(.medium))
+                            .foregroundStyle(.purple)
+                    }
+                }
             }
         }
     }
@@ -381,7 +588,7 @@ struct DashboardView: View {
         let todayActivities = pet.activityLogs.filter { Calendar.current.isDate($0.date, inSameDayAs: today) }
         let walkMinutes = todayActivities.filter { $0.activityType == .walk }.reduce(0) { $0 + $1.durationMinutes }
 
-        return SummaryCard(title: "Bugünkü Aktivite", icon: "chart.bar.fill", iconColor: .cyan) {
+        return GlowCard(title: "Bugünkü Aktivite", icon: "chart.bar.fill", iconColor: .cyan, emoji: "📊") {
             HStack(spacing: 16) {
                 VStack(spacing: 2) {
                     Text("\(todayFeedings.count)")
@@ -390,19 +597,21 @@ struct DashboardView: View {
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }
-                VStack(spacing: 2) {
-                    Text("\(walkMinutes)")
-                        .font(.system(.title3, design: .rounded, weight: .bold))
-                    Text("dk yürüyüş")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                }
-                VStack(spacing: 2) {
-                    Text("\(todayActivities.filter { $0.activityType == .potty }.count)")
-                        .font(.system(.title3, design: .rounded, weight: .bold))
-                    Text("tuvalet")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
+                if pet.species == .dog {
+                    VStack(spacing: 2) {
+                        Text("\(walkMinutes)")
+                            .font(.system(.title3, design: .rounded, weight: .bold))
+                        Text("dk yürüyüş")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                    VStack(spacing: 2) {
+                        Text("\(todayActivities.filter { $0.activityType == .potty }.count)")
+                            .font(.system(.title3, design: .rounded, weight: .bold))
+                        Text("tuvalet")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
                 }
                 VStack(spacing: 2) {
                     Text("\(pet.photoLogs.count)")
@@ -415,6 +624,8 @@ struct DashboardView: View {
             }
         }
     }
+
+    // MARK: - Empty & Navigation States
 
     private var noPetState: some View {
         EmptyStateView(

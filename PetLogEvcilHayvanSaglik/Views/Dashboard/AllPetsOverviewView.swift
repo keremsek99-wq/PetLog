@@ -12,6 +12,7 @@ struct AllPetsOverviewView: View {
         ScrollView {
             VStack(spacing: 16) {
                 headerStats
+                petCards
                 spendingOverview
                 vaccineOverview
                 medicationOverview
@@ -31,25 +32,25 @@ struct AllPetsOverviewView: View {
     private var headerStats: some View {
         HStack(spacing: 12) {
             overviewStat(
-                icon: "pawprint.fill",
+                emoji: "🐾",
                 color: .blue,
                 value: "\(pets.count)",
                 label: "Hayvan"
             )
             overviewStat(
-                icon: "turkishlirasign.circle.fill",
+                emoji: "💰",
                 color: .orange,
                 value: totalMonthlySpending.formatted(.currency(code: "TRY")),
                 label: "Bu Ay"
             )
             overviewStat(
-                icon: "syringe.fill",
+                emoji: "💉",
                 color: .red,
                 value: "\(totalOverdueVaccines)",
                 label: "Gecikmiş"
             )
             overviewStat(
-                icon: "pills.fill",
+                emoji: "💊",
                 color: .blue,
                 value: "\(totalActiveMeds)",
                 label: "İlaç"
@@ -57,14 +58,15 @@ struct AllPetsOverviewView: View {
         }
     }
 
-    private func overviewStat(icon: String, color: Color, value: String, label: String) -> some View {
+    private func overviewStat(emoji: String, color: Color, value: String, label: String) -> some View {
         VStack(spacing: 6) {
-            Image(systemName: icon)
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(color)
-                .frame(width: 28, height: 28)
-                .background(color.opacity(0.12))
-                .clipShape(Circle())
+            ZStack {
+                Circle()
+                    .fill(color.opacity(0.12))
+                    .frame(width: 32, height: 32)
+                Text(emoji)
+                    .font(.subheadline)
+            }
             Text(value)
                 .font(.subheadline.weight(.bold))
                 .lineLimit(1)
@@ -79,10 +81,93 @@ struct AllPetsOverviewView: View {
         .clipShape(.rect(cornerRadius: 12))
     }
 
+    // MARK: - Per-Pet Cards
+
+    private var petCards: some View {
+        VStack(spacing: 10) {
+            ForEach(pets, id: \.id) { pet in
+                petMiniCard(pet)
+            }
+        }
+    }
+
+    private func petMiniCard(_ pet: Pet) -> some View {
+        Button {
+            store.selectedPet = pet
+        } label: {
+            HStack(spacing: 12) {
+                if let photoData = pet.photoData, let uiImage = UIImage(data: photoData) {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 44, height: 44)
+                        .clipShape(Circle())
+                        .overlay(
+                            Circle()
+                                .stroke(
+                                    LinearGradient(
+                                        colors: PetOSColors.speciesGradient(pet.species),
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    ),
+                                    lineWidth: 2
+                                )
+                        )
+                } else {
+                    ZStack {
+                        Circle()
+                            .fill(
+                                LinearGradient(
+                                    colors: PetOSColors.speciesGradient(pet.species),
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .frame(width: 44, height: 44)
+                        Text(pet.emoji)
+                            .font(.title3)
+                    }
+                }
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(spacing: 6) {
+                        Text(pet.name)
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.primary)
+                        if pet.isSickMode {
+                            PulsingDot(color: .red)
+                        }
+                    }
+                    Text("\(pet.species.rawValue) · \(pet.age)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text(store.monthlySpending(for: pet).formatted(.currency(code: "TRY")))
+                        .font(.caption.weight(.bold))
+                    Text("bu ay")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .padding(14)
+            .background(
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(Color(.secondarySystemGroupedBackground))
+                    .shadow(color: pet.isSickMode ? Color.red.opacity(0.08) : Color.black.opacity(0.03), radius: 4, y: 2)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(pet.isSickMode ? Color.red.opacity(0.15) : Color.clear, lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
     // MARK: - Spending Overview
 
     private var spendingOverview: some View {
-        SummaryCard(title: "Toplam Harcama", icon: "chart.pie.fill", iconColor: .orange) {
+        GlowCard(title: "Toplam Harcama", icon: "chart.pie.fill", iconColor: PetOSColors.financeOrange, emoji: "💰") {
             VStack(spacing: 10) {
                 ForEach(pets, id: \.id) { pet in
                     let monthly = store.monthlySpending(for: pet)
@@ -111,7 +196,7 @@ struct AllPetsOverviewView: View {
     // MARK: - Vaccine Overview
 
     private var vaccineOverview: some View {
-        SummaryCard(title: "Aşı Durumu", icon: "syringe.fill", iconColor: .purple) {
+        GlowCard(title: "Aşı Durumu", icon: "syringe.fill", iconColor: .purple, isUrgent: totalOverdueVaccines > 0, emoji: "💉") {
             if allVaccineItems.isEmpty {
                 Text("Aşı kaydı yok")
                     .font(.subheadline)
@@ -154,7 +239,7 @@ struct AllPetsOverviewView: View {
     // MARK: - Medication Overview
 
     private var medicationOverview: some View {
-        SummaryCard(title: "Aktif İlaçlar", icon: "pills.fill", iconColor: .blue) {
+        GlowCard(title: "Aktif İlaçlar", icon: "pills.fill", iconColor: .blue, isUrgent: totalActiveMeds > 0, emoji: "💊") {
             if allActiveMeds.isEmpty {
                 Text("Aktif ilaç yok")
                     .font(.subheadline)
@@ -191,7 +276,7 @@ struct AllPetsOverviewView: View {
     // MARK: - Weight Overview
 
     private var weightOverview: some View {
-        SummaryCard(title: "Kilo Takibi", icon: "scalemass.fill", iconColor: .green) {
+        GlowCard(title: "Kilo Takibi", icon: "scalemass.fill", iconColor: .green, emoji: "⚖️") {
             VStack(spacing: 8) {
                 ForEach(pets, id: \.id) { pet in
                     HStack(spacing: 8) {
@@ -229,12 +314,19 @@ struct AllPetsOverviewView: View {
                     .frame(width: 22, height: 22)
                     .clipShape(Circle())
             } else {
-                Image(systemName: pet.species.icon)
-                    .font(.caption2)
-                    .foregroundStyle(.blue)
-                    .frame(width: 22, height: 22)
-                    .background(Color.blue.opacity(0.1))
-                    .clipShape(Circle())
+                ZStack {
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: PetOSColors.speciesGradient(pet.species),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 22, height: 22)
+                    Text(pet.emoji)
+                        .font(.system(size: 11))
+                }
             }
         }
     }

@@ -74,9 +74,19 @@ struct InsightsView: View {
 
     private var insightHeader: some View {
         HStack(spacing: 12) {
-            Image(systemName: "brain.head.profile.fill")
-                .font(.title2)
-                .foregroundStyle(.purple)
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [PetOSColors.insightPurple.opacity(0.2), PetOSColors.accent.opacity(0.1)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 44, height: 44)
+                Text("🧠")
+                    .font(.title3)
+            }
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
                     Text("Yapay Zeka Önerileri")
@@ -92,9 +102,9 @@ struct InsightsView: View {
                                     colors: [.blue, .purple],
                                     startPoint: .leading,
                                     endPoint: .trailing
-                                )
+                                ),
+                                in: Capsule()
                             )
-                            .clipShape(Capsule())
                     }
                 }
                 Text(premiumManager.hasFullAccess
@@ -106,8 +116,20 @@ struct InsightsView: View {
             Spacer()
         }
         .padding(14)
-        .background(Color.purple.opacity(0.08))
-        .clipShape(.rect(cornerRadius: 14))
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(
+                    LinearGradient(
+                        colors: [PetOSColors.insightPurple.opacity(0.08), PetOSColors.accent.opacity(0.04)],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(PetOSColors.insightPurple.opacity(0.1), lineWidth: 1)
+                )
+        )
     }
 
     private func insightGroup(title: String, severity: InsightSeverity, items: [Insight]) -> some View {
@@ -191,88 +213,112 @@ struct InsightCard: View {
     @State private var isExpanded = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 10) {
-                Image(systemName: insight.type.icon)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(PetOSColors.severityColor(insight.severity))
-                    .frame(width: 32, height: 32)
-                    .background(PetOSColors.severityColor(insight.severity).opacity(0.12))
-                    .clipShape(.rect(cornerRadius: 8))
+        HStack(spacing: 0) {
+            // Severity accent strip
+            RoundedRectangle(cornerRadius: 2)
+                .fill(PetOSColors.severityColor(insight.severity))
+                .frame(width: 4)
+                .padding(.vertical, 4)
 
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(insight.title)
-                        .font(.subheadline.weight(.semibold))
-                    Text(insight.createdAt.formatted(date: .abbreviated, time: .omitted))
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 10) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(PetOSColors.severityColor(insight.severity).opacity(0.12))
+                            .frame(width: 36, height: 36)
+                        Image(systemName: insight.type.icon)
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(PetOSColors.severityColor(insight.severity))
+                    }
 
-                if isLocked {
-                    Image(systemName: "lock.fill")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                } else {
-                    Button {
-                        withAnimation(.snappy) { isExpanded.toggle() }
-                    } label: {
-                        Image(systemName: "chevron.down")
-                            .font(.caption.weight(.semibold))
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(insight.title)
+                            .font(.subheadline.weight(.semibold))
+                        Text(insight.createdAt.formatted(date: .abbreviated, time: .omitted))
+                            .font(.caption2)
                             .foregroundStyle(.secondary)
-                            .rotationEffect(.degrees(isExpanded ? 180 : 0))
+                    }
+                    Spacer()
+
+                    if isLocked {
+                        Image(systemName: "lock.fill")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Button {
+                            withAnimation(.snappy) { isExpanded.toggle() }
+                        } label: {
+                            Image(systemName: "chevron.down")
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(.secondary)
+                                .rotationEffect(.degrees(isExpanded ? 180 : 0))
+                        }
                     }
                 }
-            }
 
-            if isLocked {
-                VStack(spacing: 10) {
+                if isLocked {
+                    VStack(spacing: 10) {
+                        Text(insight.body)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                            .blur(radius: 4)
+
+                        Button {
+                            onUnlock?()
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: "crown.fill")
+                                    .font(.caption)
+                                Text("Detayları Gör")
+                                    .font(.caption.weight(.semibold))
+                            }
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(
+                                LinearGradient(
+                                    colors: [.blue, .purple],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                ),
+                                in: Capsule()
+                            )
+                        }
+                    }
+                } else {
                     Text(insight.body)
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                        .blur(radius: 4)
+                        .fixedSize(horizontal: false, vertical: true)
 
-                    Button {
-                        onUnlock?()
-                    } label: {
-                        HStack(spacing: 6) {
-                            Image(systemName: "crown.fill")
+                    if isExpanded && !insight.recommendedAction.isEmpty {
+                        HStack(spacing: 8) {
+                            Image(systemName: "arrow.right.circle.fill")
                                 .font(.caption)
-                            Text("Detayları Gör")
-                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(PetOSColors.severityColor(insight.severity))
+                            Text(insight.recommendedAction)
+                                .font(.caption)
+                                .foregroundStyle(.primary)
                         }
-                        .foregroundStyle(.blue)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 8)
-                        .background(Color.blue.opacity(0.1))
-                        .clipShape(Capsule())
+                        .padding(10)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(PetOSColors.severityColor(insight.severity).opacity(0.06))
+                        .clipShape(.rect(cornerRadius: 8))
+                        .transition(.asymmetric(
+                            insertion: .move(edge: .top).combined(with: .opacity),
+                            removal: .opacity
+                        ))
                     }
-                }
-            } else {
-                Text(insight.body)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-
-                if isExpanded && !insight.recommendedAction.isEmpty {
-                    HStack(spacing: 8) {
-                        Image(systemName: "arrow.right.circle.fill")
-                            .font(.caption)
-                            .foregroundStyle(.blue)
-                        Text(insight.recommendedAction)
-                            .font(.caption)
-                            .foregroundStyle(.primary)
-                    }
-                    .padding(10)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color.blue.opacity(0.06))
-                    .clipShape(.rect(cornerRadius: 8))
                 }
             }
+            .padding(14)
         }
-        .padding(14)
-        .background(Color(.secondarySystemGroupedBackground))
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color(.secondarySystemGroupedBackground))
+                .shadow(color: .black.opacity(0.04), radius: 4, y: 2)
+        )
         .clipShape(.rect(cornerRadius: 14))
         .sensoryFeedback(.selection, trigger: isExpanded)
     }

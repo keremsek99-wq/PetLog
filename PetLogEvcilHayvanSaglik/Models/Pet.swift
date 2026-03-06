@@ -78,6 +78,82 @@ class Pet {
     var currentFood: FoodInventory? {
         foodInventories.sorted { $0.startedAt > $1.startedAt }.first
     }
+
+    // MARK: - Species-Aware UX
+
+    var relevantActivityTypes: [ActivityType] {
+        switch species {
+        case .dog:
+            return [.walk, .play, .potty, .grooming, .bath, .training, .sleep, .other]
+        case .cat:
+            return [.play, .grooming, .bath, .sleep, .other]
+        case .bird:
+            return [.play, .grooming, .sleep, .other]
+        case .rabbit:
+            return [.play, .grooming, .bath, .other]
+        case .fish:
+            return [.other]
+        case .reptile:
+            return [.grooming, .bath, .other]
+        case .unspecified, .other:
+            return ActivityType.allCases
+        }
+    }
+
+    var speciesColor: Color {
+        PetOSColors.speciesColor(species)
+    }
+
+    // MARK: - Sick Mode Detection
+
+    var isSickMode: Bool {
+        let hasActiveMeds = !activeMedications.isEmpty
+        let twoWeeksAgo = Calendar.current.date(byAdding: .day, value: -14, to: Date()) ?? Date()
+        let recentVetVisit = vetVisits.contains { $0.date >= twoWeeksAgo }
+        let sevenDaysAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date()
+        let highSeverityBehaviors = behaviorLogs.filter { $0.date >= sevenDaysAgo && $0.severity >= 4 }
+        return hasActiveMeds || recentVetVisit || !highSeverityBehaviors.isEmpty
+    }
+
+    // MARK: - Contextual Greeting
+
+    var contextualGreeting: String {
+        let calendar = Calendar.current
+        let now = Date()
+
+        // Check birthday
+        let birthdayComponents = calendar.dateComponents([.month, .day], from: birthdate)
+        let todayComponents = calendar.dateComponents([.month, .day], from: now)
+        if birthdayComponents.month == todayComponents.month && birthdayComponents.day == todayComponents.day {
+            return "\(emoji) Mutlu Doğum Günü \(name)! 🎂"
+        }
+
+        // Check medications ending soon
+        let endingSoon = activeMedications.filter { med in
+            guard let endDate = med.endDate else { return false }
+            let fiveDays = calendar.date(byAdding: .day, value: 5, to: now) ?? now
+            return endDate <= fiveDays && endDate >= now
+        }
+        if let med = endingSoon.first {
+            let days = calendar.dateComponents([.day], from: now, to: med.endDate ?? now).day ?? 0
+            return "💊 \(name)'nın \(med.name) ilacı \(days) gün sonra bitiyor"
+        }
+
+        // Check upcoming vaccine
+        if let vaccine = nextVaccineDue, vaccine.isDueSoon {
+            return "💉 \(name)'nın \(vaccine.name) aşısı yaklaşıyor"
+        }
+
+        // Default greeting based on time of day
+        let hour = calendar.component(.hour, from: now)
+        if hour < 12 {
+            return "\(emoji) Günaydın, \(name) nasıl?"
+        } else if hour < 18 {
+            return "\(emoji) İyi günler! \(name) ile keyifli vakitler"
+        } else {
+            return "\(emoji) İyi akşamlar! \(name) bugün nasıldı?"
+        }
+    }
 }
 
 nonisolated enum PetSpecies: String, Codable, CaseIterable, Sendable {

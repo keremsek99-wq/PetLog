@@ -5,7 +5,7 @@ struct HealthView: View {
     let store: PetStore
     let premiumManager: PremiumManager
 
-    @State private var selectedSection: HealthSection = .weight
+    @State private var selectedSection: HealthSection = .daily
     @State private var showAddWeight = false
     @State private var showAddVaccine = false
     @State private var showAddMedication = false
@@ -14,6 +14,7 @@ struct HealthView: View {
     @State private var showAddFeeding = false
     @State private var showAddBehavior = false
     @State private var showPaywall = false
+    @State private var showDailyHint = true
 
     private var pet: Pet? { store.selectedPet }
 
@@ -61,46 +62,26 @@ struct HealthView: View {
         }
     }
 
+    // MARK: - Health Content
+
     private func healthContent(_ pet: Pet) -> some View {
         VStack(spacing: 0) {
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    ForEach(HealthSection.allCases, id: \.self) { section in
-                        Button {
-                            withAnimation(.snappy(duration: 0.2)) {
-                                selectedSection = section
-                            }
-                        } label: {
-                            HStack(spacing: 4) {
-                                Text(section.emoji)
-                                    .font(.caption)
-                                Text(section.title)
-                                    .font(.subheadline.weight(selectedSection == section ? .semibold : .regular))
-                            }
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 8)
-                            .background(selectedSection == section ? Color.blue : Color(.secondarySystemGroupedBackground))
-                            .foregroundStyle(selectedSection == section ? .white : .primary)
-                            .clipShape(Capsule())
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
+            // Tappable stat grid (replaces horizontal pills)
+            healthStatGrid(pet)
                 .padding(.horizontal)
-            }
-            .padding(.vertical, 8)
+                .padding(.vertical, 8)
 
             ScrollView {
                 VStack(spacing: 16) {
                     switch selectedSection {
-                    case .weight:
-                        weightSection(pet)
+                    case .daily:
+                        dailySection(pet)
                     case .vaccinesMeds:
                         vaccineAndMedsSection(pet)
                     case .vetVisits:
                         vetVisitsSection(pet)
-                    case .daily:
-                        dailySection(pet)
+                    case .weight:
+                        weightSection(pet)
                     case .breedHealth:
                         breedHealthSection(pet)
                     }
@@ -112,6 +93,75 @@ struct HealthView: View {
         .background(Color(.systemGroupedBackground))
         .id(store.refreshID)
     }
+
+    // MARK: - Tappable Stat Grid
+
+    private func healthStatGrid(_ pet: Pet) -> some View {
+        let grid = [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())]
+
+        return LazyVGrid(columns: grid, spacing: 8) {
+            HealthStatCard(
+                title: HealthSection.daily.title,
+                emoji: "📋",
+                value: dailyStatValue(pet),
+                isSelected: selectedSection == .daily
+            ) {
+                withAnimation(.snappy(duration: 0.2)) { selectedSection = .daily }
+            }
+
+            HealthStatCard(
+                title: HealthSection.vaccinesMeds.title,
+                emoji: "💉",
+                value: vaccineStatValue(pet),
+                isSelected: selectedSection == .vaccinesMeds
+            ) {
+                withAnimation(.snappy(duration: 0.2)) { selectedSection = .vaccinesMeds }
+            }
+
+            HealthStatCard(
+                title: HealthSection.vetVisits.title,
+                emoji: "🏥",
+                value: "\(pet.vetVisits.count) ziyaret",
+                isSelected: selectedSection == .vetVisits
+            ) {
+                withAnimation(.snappy(duration: 0.2)) { selectedSection = .vetVisits }
+            }
+
+            HealthStatCard(
+                title: HealthSection.weight.title,
+                emoji: "⚖️",
+                value: pet.latestWeight.map { String(format: "%.1f kg", $0) } ?? "—",
+                isSelected: selectedSection == .weight
+            ) {
+                withAnimation(.snappy(duration: 0.2)) { selectedSection = .weight }
+            }
+
+            HealthStatCard(
+                title: HealthSection.breedHealth.title,
+                emoji: "🧬",
+                value: pet.breed.isEmpty ? pet.species.rawValue : pet.breed,
+                isSelected: selectedSection == .breedHealth
+            ) {
+                withAnimation(.snappy(duration: 0.2)) { selectedSection = .breedHealth }
+            }
+        }
+    }
+
+    private func dailyStatValue(_ pet: Pet) -> String {
+        let today = Calendar.current.startOfDay(for: Date())
+        let count = pet.activityLogs.filter { Calendar.current.isDate($0.date, inSameDayAs: today) }.count
+            + pet.feedingLogs.filter { Calendar.current.isDate($0.date, inSameDayAs: today) }.count
+        return "\(count) kayıt"
+    }
+
+    private func vaccineStatValue(_ pet: Pet) -> String {
+        let activeCount = pet.activeMedications.count
+        if activeCount > 0 { return "\(activeCount) aktif ilaç" }
+        if let next = pet.nextVaccineDue { return next.isDueSoon ? "Yaklaşan!" : "Planlandı" }
+        return "Kayıt yok"
+    }
+
+    // MARK: - Weight Section
 
     private func weightSection(_ pet: Pet) -> some View {
         VStack(spacing: 16) {
@@ -132,6 +182,8 @@ struct HealthView: View {
             }
         }
     }
+
+    // MARK: - Vaccines & Meds Section
 
     private func vaccineAndMedsSection(_ pet: Pet) -> some View {
         VStack(spacing: 16) {
@@ -193,6 +245,8 @@ struct HealthView: View {
         }
     }
 
+    // MARK: - Vet Visits Section
+
     private func vetVisitsSection(_ pet: Pet) -> some View {
         VStack(spacing: 12) {
             let sorted = pet.vetVisits.sorted { $0.date > $1.date }
@@ -210,6 +264,8 @@ struct HealthView: View {
             }
         }
     }
+
+    // MARK: - Add Menu
 
     private var addMenu: some View {
         Menu {
@@ -246,29 +302,70 @@ struct HealthView: View {
 
     private func dailySection(_ pet: Pet) -> some View {
         VStack(spacing: 16) {
+            // Feature discovery hint
+            FeatureHintBubble(
+                message: "Buraya dokunarak ishal, kusma, aşırı su içme gibi belirtiler kaydedebilirsiniz. Tüm davranış ve sağlık verileriniz burada toplanır.",
+                icon: "lightbulb.fill",
+                isVisible: $showDailyHint
+            )
+
+            // Quick add buttons for daily logs
+            HStack(spacing: 8) {
+                Button { showAddActivity = true } label: {
+                    Label("Aktivite", systemImage: "figure.walk")
+                        .font(.caption.weight(.medium))
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(Color.cyan.opacity(0.1))
+                        .foregroundStyle(.cyan)
+                        .clipShape(Capsule())
+                }
+                Button { showAddFeeding = true } label: {
+                    Label("Beslenme", systemImage: "fork.knife")
+                        .font(.caption.weight(.medium))
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(Color.orange.opacity(0.1))
+                        .foregroundStyle(.orange)
+                        .clipShape(Capsule())
+                }
+                Button { showAddBehavior = true } label: {
+                    Label("Davranış", systemImage: "brain.head.profile.fill")
+                        .font(.caption.weight(.medium))
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(Color.purple.opacity(0.1))
+                        .foregroundStyle(.purple)
+                        .clipShape(Capsule())
+                }
+                Spacer()
+            }
+
             // Today summary
             let today = Calendar.current.startOfDay(for: Date())
             let todayActivities = pet.activityLogs.filter { Calendar.current.isDate($0.date, inSameDayAs: today) }
             let todayFeedings = pet.feedingLogs.filter { Calendar.current.isDate($0.date, inSameDayAs: today) }
 
             if !todayActivities.isEmpty || !todayFeedings.isEmpty {
-                SummaryCard(title: "Bugün", icon: "chart.bar.fill", iconColor: .cyan) {
+                GlowCard(title: "Bugün", icon: "chart.bar.fill", iconColor: .cyan, emoji: "📊") {
                     HStack(spacing: 16) {
                         let walkMin = todayActivities.filter { $0.activityType == .walk }.reduce(0) { $0 + $1.durationMinutes }
                         let pottyCount = todayActivities.filter { $0.activityType == .potty }.count
-                        VStack(spacing: 2) {
-                            Text("\(walkMin)")
-                                .font(.system(.title3, design: .rounded, weight: .bold))
-                            Text("dk yürüyüş")
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
-                        }
-                        VStack(spacing: 2) {
-                            Text("\(pottyCount)")
-                                .font(.system(.title3, design: .rounded, weight: .bold))
-                            Text("tuvalet")
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
+                        if pet.species == .dog {
+                            VStack(spacing: 2) {
+                                Text("\(walkMin)")
+                                    .font(.system(.title3, design: .rounded, weight: .bold))
+                                Text("dk yürüyüş")
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                            }
+                            VStack(spacing: 2) {
+                                Text("\(pottyCount)")
+                                    .font(.system(.title3, design: .rounded, weight: .bold))
+                                Text("tuvalet")
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
                         VStack(spacing: 2) {
                             Text("\(todayFeedings.count)")
@@ -324,7 +421,7 @@ struct HealthView: View {
                 let topSymptoms = counts.sorted { $0.value > $1.value }.prefix(5)
 
                 if !topSymptoms.isEmpty {
-                    SummaryCard(title: "🧠 Davranış (30 Gün)", icon: "brain.head.profile.fill", iconColor: .orange) {
+                    GlowCard(title: "🧠 Davranış (30 Gün)", icon: "brain.head.profile.fill", iconColor: .orange) {
                         VStack(spacing: 6) {
                             ForEach(Array(topSymptoms), id: \.key) { type, count in
                                 HStack(spacing: 8) {
@@ -515,7 +612,6 @@ struct HealthView: View {
                 "Boyut: \(info.size)"
             ] + info.careNotes
         }
-        // Fallback: generic species info
         switch pet.species {
         case .dog:
             return [
@@ -568,7 +664,6 @@ struct HealthView: View {
         if let info = BreedDatabase.breedInfo(species: pet.species, breedName: pet.breed) {
             return info.healthRisks
         }
-        // Fallback: generic species risks
         switch pet.species {
         case .dog:
             return [
@@ -619,7 +714,6 @@ struct HealthView: View {
         if let info = BreedDatabase.breedInfo(species: pet.species, breedName: pet.breed) {
             return info.recommendedChecks
         }
-        // Fallback: generic species checks
         switch pet.species {
         case .dog:
             return [
@@ -668,10 +762,10 @@ struct HealthView: View {
 }
 
 nonisolated enum HealthSection: String, CaseIterable, Sendable {
-    case weight = "Kilo"
+    case daily = "Günlük"
     case vaccinesMeds = "Aşı & İlaç"
     case vetVisits = "Ziyaretler"
-    case daily = "Günlük"
+    case weight = "Kilo"
     case breedHealth = "İrk Sağlığı"
 
     var title: String { rawValue }

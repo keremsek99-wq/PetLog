@@ -20,20 +20,34 @@ struct MoreView: View {
     var body: some View {
         NavigationStack {
             List {
+                // MARK: - Pet Profile
                 Section {
                     if let pet = store.selectedPet {
                         NavigationLink {
                             PetSummaryCardView(pet: pet, store: store)
                         } label: {
                             HStack(spacing: 14) {
-                                Text(pet.emoji)
-                                    .font(.largeTitle)
-                                    .frame(width: 44, height: 44)
-                                    .background(Color.blue.opacity(0.12))
-                                    .clipShape(Circle())
+                                ZStack {
+                                    Circle()
+                                        .fill(
+                                            LinearGradient(
+                                                colors: PetOSColors.speciesGradient(pet.species),
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            )
+                                        )
+                                        .frame(width: 48, height: 48)
+                                    Text(pet.emoji)
+                                        .font(.title2)
+                                }
                                 VStack(alignment: .leading, spacing: 2) {
-                                    Text(pet.name)
-                                        .font(.headline)
+                                    HStack(spacing: 4) {
+                                        Text(pet.name)
+                                            .font(.headline)
+                                        if pet.isSickMode {
+                                            PulsingDot(color: .red)
+                                        }
+                                    }
                                     Text("\(pet.species.rawValue) · \(pet.age)")
                                         .font(.subheadline)
                                         .foregroundStyle(.secondary)
@@ -41,11 +55,28 @@ struct MoreView: View {
                             }
                             .padding(.vertical, 4)
                         }
+
+                        birthdayRow(pet)
+
+                        Button {
+                            showSharePet = true
+                        } label: {
+                            Label("📤 Pet Kartı Paylaş", systemImage: "square.and.arrow.up.fill")
+                        }
                     }
+
+                    NavigationLink {
+                        PetListView(store: store, premiumManager: premiumManager)
+                    } label: {
+                        Label("🐾 Hayvanlarım", systemImage: "pawprint.fill")
+                    }
+                } header: {
+                    Text("Pet Profilim")
                 } footer: {
-                    Text("Pet özet kartını görmek için dokunun")
+                    Text("Pet özet kartını görmek için hayvanınıza dokunun")
                 }
 
+                // MARK: - Premium
                 if !premiumManager.hasFullAccess {
                     Section {
                         Button {
@@ -125,40 +156,57 @@ struct MoreView: View {
                     }
                 }
 
-                Section("Hayvan Yönetimi") {
-                    NavigationLink {
-                        PetListView(store: store, premiumManager: premiumManager)
-                    } label: {
-                        Label("🐾 Hayvanlarım", systemImage: "pawprint.fill")
-                    }
+                // MARK: - Reports & Documents
+                Section("Raporlar & Belgeler") {
                     if let pet = store.selectedPet {
                         NavigationLink {
                             MonthlyReportView(pet: pet, store: store)
                         } label: {
                             Label("📊 Aylık Rapor", systemImage: "chart.bar.doc.horizontal.fill")
                         }
+
                         Button {
-                            showSharePet = true
+                            if premiumManager.hasFullAccess {
+                                pdfData = PDFReportGenerator.generateReport(for: pet, store: store)
+                                showPDFShare = true
+                            } else {
+                                showPaywall = true
+                            }
                         } label: {
-                            Label("📤 Pet Kartı Paylaş", systemImage: "square.and.arrow.up.fill")
+                            HStack {
+                                Label("📄 PDF Rapor Oluştur", systemImage: "doc.richtext.fill")
+                                Spacer()
+                                if !premiumManager.hasFullAccess {
+                                    Image(systemName: "lock.fill")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
                         }
+                        .sensoryFeedback(.success, trigger: showPDFShare)
+
                         NavigationLink {
                             DocumentListView(pet: pet, store: store, premiumManager: premiumManager)
                         } label: {
-                            Label("📄 Belgelerim", systemImage: "doc.text.fill")
+                            Label("📋 Belgelerim", systemImage: "doc.text.fill")
                         }
                     }
-                    if let pet = store.selectedPet {
-                        birthdayRow(pet)
+
+                    NavigationLink {
+                        DataExportFullView(store: store, premiumManager: premiumManager)
+                    } label: {
+                        Label("💾 Veri Dışa Aktar", systemImage: "square.and.arrow.up")
                     }
                 }
 
-                Section("Bildirimler & Güvenlik") {
+                // MARK: - Settings
+                Section("Ayarlar") {
                     NavigationLink {
                         NotificationSettingsView()
                     } label: {
-                        Label("Bildirim Ayarları", systemImage: "bell.badge.fill")
+                        Label("🔔 Bildirim Ayarları", systemImage: "bell.badge.fill")
                     }
+
                     Toggle(isOn: Binding(
                         get: { appLock.isAppLockEnabled },
                         set: { newValue in
@@ -175,57 +223,13 @@ struct MoreView: View {
                             }
                         }
                     )) {
-                        Label(appLock.biometricType != .none ? appLock.biometricName : "Uygulama Kilidi", systemImage: appLock.biometricIcon)
+                        Label(appLock.biometricType != .none ? appLock.biometricName : "🔒 Uygulama Kilidi", systemImage: appLock.biometricIcon)
                     }
                     .disabled(!appLock.canAuthenticate)
-                }
 
-                Section("Veriler") {
-                    if let pet = store.selectedPet {
-                        Button {
-                            if premiumManager.hasFullAccess {
-                                pdfData = PDFReportGenerator.generateReport(for: pet, store: store)
-                                showPDFShare = true
-                            } else {
-                                showPaywall = true
-                            }
-                        } label: {
-                            HStack {
-                                Label("PDF Rapor Oluştur", systemImage: "doc.richtext.fill")
-                                Spacer()
-                                if !premiumManager.hasFullAccess {
-                                    Image(systemName: "lock.fill")
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                }
-                            }
-                        }
-                        .sensoryFeedback(.success, trigger: showPDFShare)
-                    }
-                    NavigationLink {
-                        DataExportFullView(store: store, premiumManager: premiumManager)
-                    } label: {
-                        Label("Veri Dışa Aktar", systemImage: "square.and.arrow.up")
-                    }
-                    NavigationLink {
-                        PrivacyView()
-                    } label: {
-                        Label("Gizlilik & Veriler", systemImage: "hand.raised.fill")
-                    }
-                }
-
-                Section("Türkiye Özel") {
-                    NavigationLink {
-                        TurkeyResourcesView()
-                    } label: {
-                        Label("Faydalı Bilgiler", systemImage: "mappin.and.ellipse")
-                    }
-                }
-
-                Section {
                     if premiumManager.hasFullAccess {
                         Toggle(isOn: $iCloudSyncEnabled) {
-                            Label("iCloud Senkronizasyonu", systemImage: "icloud.fill")
+                            Label("☁️ iCloud Senkronizasyonu", systemImage: "icloud.fill")
                         }
                         .onChange(of: iCloudSyncEnabled) { _, _ in
                             showRestartAlert = true
@@ -235,28 +239,38 @@ struct MoreView: View {
                             showPaywall = true
                         } label: {
                             HStack {
-                                Label("iCloud Senkronizasyonu", systemImage: "icloud.fill")
+                                Label("☁️ iCloud Senkronizasyonu", systemImage: "icloud.fill")
                                 Spacer()
                                 Image(systemName: "lock.fill")
                                     .foregroundStyle(.orange)
                             }
                         }
                     }
-                } header: {
-                    Text("Senkronizasyon")
-                } footer: {
-                    Text("Verilerinizi tüm Apple cihazlarınız arasında senkronize edin.")
+
+                    NavigationLink {
+                        PrivacyView()
+                    } label: {
+                        Label("🛡 Gizlilik & Veriler", systemImage: "hand.raised.fill")
+                    }
                 }
 
-                Section("Uygulama") {
+                // MARK: - About
+                Section("Hakkında") {
+                    NavigationLink {
+                        TurkeyResourcesView()
+                    } label: {
+                        Label("🇹🇷 Faydalı Bilgiler", systemImage: "mappin.and.ellipse")
+                    }
+
                     HStack {
-                        Label("Sürüm", systemImage: "info.circle")
+                        Label("📱 Sürüm", systemImage: "info.circle")
                         Spacer()
                         Text("1.0.0")
                             .foregroundStyle(.secondary)
                     }
                 }
 
+                // MARK: - Danger Zone
                 Section {
                     Button(role: .destructive) {
                         showDeleteAlert = true
@@ -325,7 +339,7 @@ struct MoreView: View {
         let daysUntil = calendar.dateComponents([.day], from: calendar.startOfDay(for: now), to: calendar.startOfDay(for: nextBirthday)).day ?? 0
 
         return HStack {
-            Label("Doğum Günü", systemImage: "birthday.cake.fill")
+            Label("🎂 Doğum Günü", systemImage: "birthday.cake.fill")
             Spacer()
             if daysUntil == 0 {
                 Text("Bugün! 🎉")

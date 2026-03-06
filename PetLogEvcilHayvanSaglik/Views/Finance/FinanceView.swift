@@ -75,13 +75,49 @@ struct FinanceView: View {
                 Text(selectedTimeframe == .month ? "bu ay harcandı" : "bu yıl harcandı")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
+
+                // Month-over-month comparison
+                if selectedTimeframe == .month {
+                    monthOverMonthView(pet: pet, currentAmount: amount)
+                }
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 8)
         }
         .padding(16)
-        .background(Color(.secondarySystemGroupedBackground))
-        .clipShape(.rect(cornerRadius: 14))
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color(.secondarySystemGroupedBackground))
+                .shadow(color: .black.opacity(0.04), radius: 4, y: 2)
+        )
+    }
+
+    private func monthOverMonthView(pet: Pet, currentAmount: Double) -> some View {
+        let calendar = Calendar.current
+        let now = Date()
+        guard let lastMonthStart = calendar.date(byAdding: .month, value: -1, to: calendar.date(from: calendar.dateComponents([.year, .month], from: now)) ?? now),
+              let lastMonthEnd = calendar.date(from: calendar.dateComponents([.year, .month], from: now)) else {
+            return AnyView(EmptyView())
+        }
+        let lastMonthAmount = pet.expenses
+            .filter { $0.date >= lastMonthStart && $0.date < lastMonthEnd }
+            .reduce(0) { $0 + $1.amount }
+
+        if lastMonthAmount > 0 {
+            let change = ((currentAmount - lastMonthAmount) / lastMonthAmount) * 100
+            let isUp = change > 0
+            return AnyView(
+                HStack(spacing: 4) {
+                    Image(systemName: isUp ? "arrow.up.right" : "arrow.down.right")
+                        .font(.caption2.weight(.bold))
+                    Text("%\(String(format: "%.0f", abs(change))) geçen aya göre")
+                        .font(.caption2)
+                }
+                .foregroundStyle(isUp ? .red : .green)
+                .padding(.top, 4)
+            )
+        }
+        return AnyView(EmptyView())
     }
 
     private func categoryBreakdown(_ pet: Pet) -> some View {
