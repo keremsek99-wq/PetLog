@@ -61,14 +61,14 @@ struct MoreView: View {
                         Button {
                             showSharePet = true
                         } label: {
-                            Label("📤 Pet Kartı Paylaş", systemImage: "square.and.arrow.up.fill")
+                            Label("Pet Kartı Paylaş", systemImage: "square.and.arrow.up.fill")
                         }
                     }
 
                     NavigationLink {
                         PetListView(store: store, premiumManager: premiumManager)
                     } label: {
-                        Label("🐾 Hayvanlarım", systemImage: "pawprint.fill")
+                        Label("Hayvanlarım", systemImage: "pawprint.fill")
                     }
                 } header: {
                     Text("Pet Profilim")
@@ -162,40 +162,40 @@ struct MoreView: View {
                         NavigationLink {
                             EmergencyCardView(pet: pet)
                         } label: {
-                            Label("🚨 Acil Durum Kartı", systemImage: "heart.text.clipboard")
+                            Label("Acil Durum Kartı", systemImage: "heart.text.clipboard")
                                 .foregroundStyle(.red)
                         }
 
                         NavigationLink {
                             MilestoneTimelineView(store: store, premiumManager: premiumManager)
                         } label: {
-                            Label("⭐ Anılar & Miladlar", systemImage: "star.circle.fill")
+                            Label("Anılar & Miladlar", systemImage: "star.circle.fill")
                         }
 
                         NavigationLink {
                             PetCalendarView(store: store, premiumManager: premiumManager)
                         } label: {
-                            Label("📅 Takvim", systemImage: "calendar")
+                            Label("Takvim", systemImage: "calendar")
                         }
 
                         NavigationLink {
                             VetAppointmentView(store: store, premiumManager: premiumManager)
                         } label: {
-                            Label("🏥 Veteriner Randevuları", systemImage: "cross.case.fill")
+                            Label("Veteriner Randevuları", systemImage: "cross.case.fill")
                         }
 
                         if let pet = store.selectedPet {
                             NavigationLink {
                                 SymptomCheckerView(pet: pet, store: store)
                             } label: {
-                                Label("🩺 Semptom Kontrol", systemImage: "stethoscope")
+                                Label("Semptom Kontrol", systemImage: "stethoscope")
                             }
                         }
 
                         NavigationLink {
                             NearbyVetsView()
                         } label: {
-                            Label("📍 Yakındaki Veterinerler", systemImage: "mappin.and.ellipse")
+                            Label("Yakındaki Veterinerler", systemImage: "mappin.and.ellipse")
                         }
                     }
                 }
@@ -206,19 +206,19 @@ struct MoreView: View {
                         NavigationLink {
                             AISymptomAnalysisView(pet: pet, store: store, premiumManager: premiumManager)
                         } label: {
-                            Label("🤖 AI Semptom Analizi", systemImage: "sparkles")
+                            Label("AI Semptom Analizi", systemImage: "sparkles")
                         }
 
                         NavigationLink {
                             LostPetModeView(pet: pet, store: store)
                         } label: {
-                            Label("🐕 Kayıp Hayvan Modu", systemImage: "magnifyingglass")
+                            Label("Kayıp Hayvan Modu", systemImage: "magnifyingglass")
                         }
 
                         NavigationLink {
                             FamilySharingView(pet: pet, store: store)
                         } label: {
-                            Label("👨‍👩‍👧 Aile Paylaşımı", systemImage: "person.2.fill")
+                            Label("Aile Paylaşımı", systemImage: "person.2.fill")
                         }
                     }
                 }
@@ -229,19 +229,19 @@ struct MoreView: View {
                         NavigationLink {
                             MonthlyReportView(pet: pet, store: store)
                         } label: {
-                            Label("📊 Aylık Rapor", systemImage: "chart.bar.doc.horizontal.fill")
+                            Label("Aylık Rapor", systemImage: "chart.bar.doc.horizontal.fill")
                         }
 
                         NavigationLink {
                             VetShareView(pet: pet, store: store)
                         } label: {
-                            Label("🩺 Veteriner Paylaşım", systemImage: "square.and.arrow.up")
+                            Label("Veteriner Paylaşım", systemImage: "square.and.arrow.up")
                         }
 
                         NavigationLink {
                             YearlyWrappedView(pet: pet, store: store)
                         } label: {
-                            Label("🎉 Yıllık Rapor (Wrapped)", systemImage: "party.popper.fill")
+                            Label("Yıllık Rapor (Wrapped)", systemImage: "party.popper.fill")
                         }
 
                         Button {
@@ -253,7 +253,7 @@ struct MoreView: View {
                             }
                         } label: {
                             HStack {
-                                Label("📄 PDF Rapor Oluştur", systemImage: "doc.richtext.fill")
+                                Label("PDF Rapor Oluştur", systemImage: "doc.richtext.fill")
                                 Spacer()
                                 if !premiumManager.hasFullAccess {
                                     Image(systemName: "lock.fill")
@@ -267,14 +267,14 @@ struct MoreView: View {
                         NavigationLink {
                             DocumentListView(pet: pet, store: store, premiumManager: premiumManager)
                         } label: {
-                            Label("📋 Belgelerim", systemImage: "doc.text.fill")
+                            Label("Belgelerim", systemImage: "doc.text.fill")
                         }
                     }
 
                     NavigationLink {
                         DataExportFullView(store: store, premiumManager: premiumManager)
                     } label: {
-                        Label("💾 Veri Dışa Aktar", systemImage: "square.and.arrow.up")
+                        Label("Veri Dışa Aktar", systemImage: "square.and.arrow.up")
                     }
                 }
 
@@ -283,7 +283,7 @@ struct MoreView: View {
                     NavigationLink {
                         NotificationSettingsView()
                     } label: {
-                        Label("🔔 Bildirim Ayarları", systemImage: "bell.badge.fill")
+                        Label("Bildirim Ayarları", systemImage: "bell.badge.fill")
                     }
 
                     Toggle(isOn: Binding(
@@ -308,7 +308,7 @@ struct MoreView: View {
 
                     if premiumManager.hasFullAccess {
                         Toggle(isOn: $iCloudSyncEnabled) {
-                            Label("☁️ iCloud Senkronizasyonu", systemImage: "icloud.fill")
+                            Label("iCloud Senkronizasyonu", systemImage: "icloud.fill")
                         }
                         .onChange(of: iCloudSyncEnabled) { _, _ in
                             showRestartAlert = true
@@ -318,7 +318,7 @@ struct MoreView: View {
                             showPaywall = true
                         } label: {
                             HStack {
-                                Label("☁️ iCloud Senkronizasyonu", systemImage: "icloud.fill")
+                                Label("iCloud Senkronizasyonu", systemImage: "icloud.fill")
                                 Spacer()
                                 Image(systemName: "lock.fill")
                                     .foregroundStyle(.orange)
@@ -329,7 +329,7 @@ struct MoreView: View {
                     NavigationLink {
                         PrivacyView()
                     } label: {
-                        Label("🛡 Gizlilik & Veriler", systemImage: "hand.raised.fill")
+                        Label("Gizlilik & Veriler", systemImage: "hand.raised.fill")
                     }
                 }
 
@@ -338,11 +338,11 @@ struct MoreView: View {
                     NavigationLink {
                         TurkeyResourcesView()
                     } label: {
-                        Label("🇹🇷 Faydalı Bilgiler", systemImage: "mappin.and.ellipse")
+                        Label("Faydalı Bilgiler", systemImage: "mappin.and.ellipse")
                     }
 
                     HStack {
-                        Label("📱 Sürüm", systemImage: "info.circle")
+                        Label("Sürüm", systemImage: "info.circle")
                         Spacer()
                         Text("1.0.0")
                             .foregroundStyle(.secondary)
@@ -418,7 +418,7 @@ struct MoreView: View {
         let daysUntil = calendar.dateComponents([.day], from: calendar.startOfDay(for: now), to: calendar.startOfDay(for: nextBirthday)).day ?? 0
 
         return HStack {
-            Label("🎂 Doğum Günü", systemImage: "birthday.cake.fill")
+            Label("Doğum Günü", systemImage: "birthday.cake.fill")
             Spacer()
             if daysUntil == 0 {
                 Text("Bugün! 🎉")

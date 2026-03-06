@@ -270,26 +270,26 @@ struct HealthView: View {
     private var addMenu: some View {
         Menu {
             Button { showAddWeight = true } label: {
-                Label("⚖️ Kilo Kaydet", systemImage: "scalemass.fill")
+                Label("Kilo Kaydet", systemImage: "scalemass.fill")
             }
             Button { showAddVaccine = true } label: {
-                Label("💉 Aşı Ekle", systemImage: "syringe.fill")
+                Label("Aşı Ekle", systemImage: "syringe.fill")
             }
             Button { showAddMedication = true } label: {
-                Label("💊 İlaç Ekle", systemImage: "pills.fill")
+                Label("İlaç Ekle", systemImage: "pills.fill")
             }
             Button { showAddVetVisit = true } label: {
-                Label("🏥 Veteriner Ziyareti", systemImage: "cross.case.fill")
+                Label("Veteriner Ziyareti", systemImage: "cross.case.fill")
             }
             Divider()
             Button { showAddActivity = true } label: {
-                Label("🏃 Aktivite Ekle", systemImage: "figure.walk")
+                Label("Aktivite Ekle", systemImage: "figure.walk")
             }
             Button { showAddFeeding = true } label: {
-                Label("🍽 Beslenme Ekle", systemImage: "fork.knife")
+                Label("Beslenme Ekle", systemImage: "fork.knife")
             }
             Button { showAddBehavior = true } label: {
-                Label("🧠 Davranış Kaydet", systemImage: "brain.head.profile.fill")
+                Label("Davranış Kaydet", systemImage: "brain.head.profile.fill")
             }
         } label: {
             Image(systemName: "plus.circle.fill")

@@ -107,9 +107,6 @@ struct DashboardView: View {
             VStack(spacing: 16) {
                 petHeader(pet)
 
-                // Contextual greeting
-                contextualGreetingBanner(pet)
-
                 // Wellness Score
                 WellnessScoreCard(pet: pet)
 
@@ -118,18 +115,10 @@ struct DashboardView: View {
                     sickModeAlert(pet)
                 }
 
-                PremiumBanner(premiumManager: premiumManager)
-
-                // Weekly summary strip
-                weeklySummaryStrip(pet)
-
-                // Daily breed tip
-                breedTipCard(pet)
-
-                // Species-aware quick actions
+                // ⭐ Quick Actions — top priority
                 speciesAwareQuickActions(pet)
 
-                // Smart-ordered cards
+                // Smart-ordered cards (spending, meds, vaccines)
                 smartCards(pet)
 
                 // Recent milestones
@@ -137,6 +126,12 @@ struct DashboardView: View {
 
                 // Emergency quick access
                 emergencyQuickAccess(pet)
+
+                // Collapsible informational sections
+                collapsibleInfoSection(pet)
+
+                // Premium banner — bottom
+                PremiumBanner(premiumManager: premiumManager)
             }
             .padding(.horizontal)
             .padding(.bottom, 24)
@@ -144,6 +139,49 @@ struct DashboardView: View {
         .id(store.refreshID)
         .onAppear {
             SmartNotificationEngine.scheduleAllSmartNotifications(for: pet)
+        }
+    }
+
+    // MARK: - Collapsible Info Section
+
+    @AppStorage("showDashboardInfoSection") private var showDashboardInfoSection = false
+
+    @ViewBuilder
+    private func collapsibleInfoSection(_ pet: Pet) -> some View {
+        VStack(spacing: 0) {
+            Button {
+                withAnimation(.spring(duration: 0.35)) {
+                    showDashboardInfoSection.toggle()
+                }
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "info.circle.fill")
+                        .foregroundStyle(.secondary)
+                    Text("Haftalık Özet & İpuçları")
+                        .font(.subheadline.weight(.medium))
+                    Spacer()
+                    Image(systemName: "chevron.down")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.tertiary)
+                        .rotationEffect(.degrees(showDashboardInfoSection ? 180 : 0))
+                }
+                .padding(14)
+                .background(Color(.secondarySystemGroupedBackground))
+                .clipShape(.rect(cornerRadius: 14))
+            }
+            .buttonStyle(.plain)
+
+            if showDashboardInfoSection {
+                VStack(spacing: 12) {
+                    weeklySummaryStrip(pet)
+                    breedTipCard(pet)
+                }
+                .padding(.top, 12)
+                .transition(.asymmetric(
+                    insertion: .move(edge: .top).combined(with: .opacity),
+                    removal: .opacity
+                ))
+            }
         }
     }
 
@@ -493,32 +531,32 @@ struct DashboardView: View {
     private var moreActionsButton: some View {
         Menu {
             Button { showAddMedication = true } label: {
-                Label("💊 İlaç Ekle", systemImage: "pills.fill")
+                Label("İlaç Ekle", systemImage: "pills.fill")
             }
             Button { showAddVetVisit = true } label: {
-                Label("🏥 Veteriner Ziyareti", systemImage: "cross.case.fill")
+                Label("Veteriner Ziyareti", systemImage: "cross.case.fill")
             }
             Button { showAddVaccine = true } label: {
-                Label("💉 Aşı Ekle", systemImage: "syringe.fill")
+                Label("Aşı Ekle", systemImage: "syringe.fill")
             }
             Button { showAddBehavior = true } label: {
-                Label("🧠 Davranış Kaydet", systemImage: "brain.head.profile.fill")
+                Label("Davranış Kaydet", systemImage: "brain.head.profile.fill")
             }
             Divider()
             Button { showAddWeight = true } label: {
-                Label("⚖️ Kilo Kaydet", systemImage: "scalemass.fill")
+                Label("Kilo Kaydet", systemImage: "scalemass.fill")
             }
             Button { showAddActivity = true } label: {
-                Label("🏃 Aktivite Ekle", systemImage: "figure.walk")
+                Label("Aktivite Ekle", systemImage: "figure.walk")
             }
             Button { showPhotoTimeline = true } label: {
-                Label("📸 Fotoğraf", systemImage: "camera.fill")
+                Label("Fotoğraf", systemImage: "camera.fill")
             }
             Button { showAddDocument = true } label: {
-                Label("📄 Belge Ekle", systemImage: "doc.text.fill")
+                Label("Belge Ekle", systemImage: "doc.text.fill")
             }
             Button { showAddFood = true } label: {
-                Label("🥫 Mama Stok", systemImage: "takeoutbag.and.cup.and.straw.fill")
+                Label("Mama Stok", systemImage: "takeoutbag.and.cup.and.straw.fill")
             }
         } label: {
             VStack(spacing: 6) {

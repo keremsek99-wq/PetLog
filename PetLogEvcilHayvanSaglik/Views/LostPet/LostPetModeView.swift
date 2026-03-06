@@ -131,7 +131,7 @@ struct LostPetModeView: View {
                             Button {
                                 showPosterPreview = true
                             } label: {
-                                Label("📄 Kayıp Poster Oluştur", systemImage: "doc.richtext.fill")
+                                Label("Kayıp Poster Oluştur", systemImage: "doc.richtext.fill")
                                     .font(.headline)
                                     .frame(maxWidth: .infinity)
                                     .padding(.vertical, 14)
