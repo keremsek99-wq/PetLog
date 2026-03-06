@@ -296,7 +296,7 @@ struct SymptomCheckerView: View {
         let symptomsText = selectedSymptoms.map(\.name).joined(separator: ", ")
         let notes = "Semptomlar: \(symptomsText). \(additionalNotes)"
         let severity = selectedSymptoms.map(\.urgency.numericValue).max() ?? 2
-        store.addBehaviorLog(to: pet, behaviorType: .sickness, severity: severity, notes: notes, date: Date())
+        store.addBehaviorLog(to: pet, behaviorType: .other, severity: severity, notes: notes, date: Date())
     }
 }
 

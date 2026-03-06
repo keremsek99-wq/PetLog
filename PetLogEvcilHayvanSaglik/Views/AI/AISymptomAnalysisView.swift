@@ -432,7 +432,7 @@ struct AISymptomAnalysisView: View {
     private func saveToBehaviorLog(_ result: AIAnalysisResult) {
         let notes = "AI Analiz: \(result.summary). Bölge: \(selectedBodyArea?.rawValue ?? "–"). Belirtiler: \(description)"
         let severity = result.urgency == .emergency ? 5 : (result.urgency == .high ? 4 : 2)
-        store.addBehaviorLog(to: pet, behaviorType: .sickness, severity: severity, notes: notes, date: Date())
+        store.addBehaviorLog(to: pet, behaviorType: .other, severity: severity, notes: notes, date: Date())
     }
 
     private func likelihoodColor(_ likelihood: String) -> Color {
