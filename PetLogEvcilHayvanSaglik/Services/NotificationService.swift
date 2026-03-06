@@ -11,6 +11,16 @@ class NotificationService {
 
     private init() {}
 
+    // MARK: - User Preferences (read from AppStorage)
+    private var morningHour: Int { UserDefaults.standard.integer(forKey: "morningReminderHour").clamped(to: 0...23, default: 9) }
+    private var morningMinute: Int { UserDefaults.standard.integer(forKey: "morningReminderMinute").clamped(to: 0...59, default: 0) }
+    private var eveningHour: Int { UserDefaults.standard.integer(forKey: "eveningReminderHour").clamped(to: 0...23, default: 21) }
+    private var eveningMinute: Int { UserDefaults.standard.integer(forKey: "eveningReminderMinute").clamped(to: 0...59, default: 0) }
+    private var vaccineDaysBefore: Int { UserDefaults.standard.integer(forKey: "vaccineReminderDaysBefore").clamped(to: 1...60, default: 7) }
+    private var weightCheckInterval: Int { UserDefaults.standard.integer(forKey: "weightCheckIntervalDays").clamped(to: 7...180, default: 14) }
+    private var photoReminderEnabled: Bool { UserDefaults.standard.object(forKey: "photoReminderEnabled") as? Bool ?? true }
+    private var monthlyReportEnabled: Bool { UserDefaults.standard.object(forKey: "monthlyReportEnabled") as? Bool ?? true }
+
     func checkAuthorization() async {
         let settings = await UNUserNotificationCenter.current().notificationSettings()
         authorizationStatus = settings.authorizationStatus
@@ -40,15 +50,18 @@ class NotificationService {
             scheduleVaccineReminders(for: pet)
             scheduleMedicationReminders(for: pet)
 
-            // Premium: mama bitiş, kilo kontrol
+            // Premium: mama bitiş, kilo kontrol, fotoğraf hatırlatıcı
             if isPremium {
                 scheduleFoodRunoutReminder(for: pet)
                 scheduleWeightCheckReminder(for: pet)
+                if photoReminderEnabled {
+                    scheduleMonthlyPhotoReminder(for: pet)
+                }
             }
         }
 
         // Premium: aylık harcama özeti
-        if isPremium {
+        if isPremium && monthlyReportEnabled {
             scheduleMonthlySpendingSummary()
         }
     }
@@ -57,12 +70,13 @@ class NotificationService {
         for vaccine in pet.vaccineRecords {
             guard let dueDate = vaccine.dueDate, dueDate > Date() else { continue }
 
-            let sevenDaysBefore = Calendar.current.date(byAdding: .day, value: -7, to: dueDate)
-            if let reminderDate = sevenDaysBefore, reminderDate > Date() {
+            // Customizable days-before reminder
+            let earlyReminder = Calendar.current.date(byAdding: .day, value: -vaccineDaysBefore, to: dueDate)
+            if let reminderDate = earlyReminder, reminderDate > Date() {
                 scheduleNotification(
-                    id: "vaccine-7d-\(vaccine.id.uuidString)",
+                    id: "vaccine-early-\(vaccine.id.uuidString)",
                     title: "Aşı Hatırlatma",
-                    body: "\(pet.name)'in \(vaccine.name) aşısına 7 gün kaldı.",
+                    body: "\(pet.name)'in \(vaccine.name) aşısına \(vaccineDaysBefore) gün kaldı.",
                     date: reminderDate
                 )
             }
@@ -93,8 +107,8 @@ class NotificationService {
             switch med.schedule {
             case .daily, .twiceDaily:
                 var morning = DateComponents()
-                morning.hour = 9
-                morning.minute = 0
+                morning.hour = morningHour
+                morning.minute = morningMinute
                 scheduleRepeating(
                     id: id,
                     title: "İlaç Hatırlatma",
@@ -103,8 +117,8 @@ class NotificationService {
                 )
                 if med.schedule == .twiceDaily {
                     var evening = DateComponents()
-                    evening.hour = 21
-                    evening.minute = 0
+                    evening.hour = eveningHour
+                    evening.minute = eveningMinute
                     scheduleRepeating(
                         id: "\(id)-pm",
                         title: "Akşam İlaç Hatırlatma",
@@ -115,7 +129,8 @@ class NotificationService {
             case .weekly:
                 var weekly = DateComponents()
                 weekly.weekday = 2
-                weekly.hour = 9
+                weekly.hour = morningHour
+                weekly.minute = morningMinute
                 scheduleRepeating(
                     id: id,
                     title: "Haftalık İlaç",
@@ -125,7 +140,8 @@ class NotificationService {
             case .monthly:
                 var monthly = DateComponents()
                 monthly.day = Calendar.current.component(.day, from: med.startDate)
-                monthly.hour = 9
+                monthly.hour = morningHour
+                monthly.minute = morningMinute
                 scheduleRepeating(
                     id: id,
                     title: "Aylık İlaç",
@@ -145,9 +161,9 @@ class NotificationService {
 
         let warningDate: Date
         if daysLeft > 3 {
-            warningDate = Calendar.current.startOfDay(for: Date()).addingTimeInterval(10 * 3600)
+            warningDate = Calendar.current.startOfDay(for: Date()).addingTimeInterval(Double(morningHour + 1) * 3600)
         } else {
-            warningDate = Calendar.current.startOfDay(for: Date()).addingTimeInterval(9 * 3600)
+            warningDate = Calendar.current.startOfDay(for: Date()).addingTimeInterval(Double(morningHour) * 3600)
         }
 
         guard warningDate > Date() else { return }
@@ -164,11 +180,11 @@ class NotificationService {
     private func scheduleWeightCheckReminder(for pet: Pet) {
         let lastDate = pet.weightLogs.sorted { $0.date > $1.date }.first?.date
         let daysSince = lastDate.map { Calendar.current.dateComponents([.day], from: $0, to: Date()).day ?? 0 } ?? 30
-        guard daysSince >= 14 else { return }
+        guard daysSince >= weightCheckInterval else { return }
 
         var components = DateComponents()
         components.weekday = 1
-        components.hour = 10
+        components.hour = morningHour + 1
         scheduleRepeating(
             id: "weight-\(pet.id.uuidString)",
             title: "Kilo Takibi",
@@ -177,10 +193,23 @@ class NotificationService {
         )
     }
 
+    private func scheduleMonthlyPhotoReminder(for pet: Pet) {
+        // Monthly photo reminder on the 15th
+        var components = DateComponents()
+        components.day = 15
+        components.hour = morningHour + 2
+        scheduleRepeating(
+            id: "photo-\(pet.id.uuidString)",
+            title: "📸 Büyüme Albümü",
+            body: "\(pet.name)'in bu ayki fotoğrafını çekmeyi unutmayın!",
+            dateComponents: components
+        )
+    }
+
     private func scheduleMonthlySpendingSummary() {
         var components = DateComponents()
         components.day = 1
-        components.hour = 10
+        components.hour = morningHour + 1
         scheduleRepeating(
             id: "monthly-spending",
             title: "Aylık Harcama Özeti",
@@ -215,5 +244,14 @@ class NotificationService {
     func cancelAllNotifications() {
         UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
         UNUserNotificationCenter.current().removeAllDeliveredNotifications()
+    }
+}
+
+// MARK: - Int Clamping Helper
+
+private extension Int {
+    func clamped(to range: ClosedRange<Int>, default defaultValue: Int) -> Int {
+        let value = self == 0 ? defaultValue : self
+        return min(max(value, range.lowerBound), range.upperBound)
     }
 }

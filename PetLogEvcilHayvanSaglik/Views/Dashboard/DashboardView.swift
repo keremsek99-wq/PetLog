@@ -120,6 +120,9 @@ struct DashboardView: View {
                 // Weekly summary strip
                 weeklySummaryStrip(pet)
 
+                // Daily breed tip
+                breedTipCard(pet)
+
                 // Species-aware quick actions
                 speciesAwareQuickActions(pet)
 
@@ -251,6 +254,54 @@ struct DashboardView: View {
         }
 
         return WeeklySummaryBanner(items: items)
+    }
+
+    // MARK: - Daily Breed Tip Card
+
+    @AppStorage("dailyTipEnabled") private var dailyTipEnabled: Bool = true
+
+    @ViewBuilder
+    private func breedTipCard(_ pet: Pet) -> some View {
+        if dailyTipEnabled {
+            let tip = BreedTipsDatabase.dailyTip(species: pet.species, breed: pet.breed)
+            let accentColor: Color = switch tip.category {
+            case .health: .red
+            case .nutrition: .orange
+            case .activity: .green
+            case .grooming: .purple
+            case .care: .blue
+            }
+
+            HStack(spacing: 12) {
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(accentColor)
+                    .frame(width: 4)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 6) {
+                        Text(tip.emoji)
+                            .font(.title3)
+                        Text(tip.title)
+                            .font(.subheadline.weight(.semibold))
+                        Spacer()
+                        Text(tip.category.rawValue)
+                            .font(.caption2)
+                            .foregroundStyle(accentColor)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(accentColor.opacity(0.1))
+                            .clipShape(Capsule())
+                    }
+                    Text(tip.body)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(3)
+                }
+            }
+            .padding(12)
+            .background(Color(.secondarySystemGroupedBackground))
+            .clipShape(.rect(cornerRadius: 12))
+        }
     }
 
     // MARK: - Species-Aware Quick Actions

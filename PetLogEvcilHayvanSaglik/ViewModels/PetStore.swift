@@ -333,6 +333,120 @@ class PetStore {
             ))
         }
 
+        // --- NEW ENHANCED RULES ---
+
+        // Activity gap detection (dogs: no walk in 3+ days)
+        if pet.species == .dog {
+            let walkLogs = pet.activityLogs.filter { $0.activityType == .walk }.sorted { $0.date > $1.date }
+            let daysSinceLastWalk = walkLogs.first.map {
+                Calendar.current.dateComponents([.day], from: $0.date, to: Date()).day ?? 0
+            } ?? 999
+            if daysSinceLastWalk >= 3 && !walkLogs.isEmpty {
+                insights.append(Insight(
+                    type: .general,
+                    severity: .warning,
+                    title: "Yürüyüş Eksikliği",
+                    body: "\(pet.name) son \(daysSinceLastWalk) gündür yürüyüşe çıkmamış. Düzenli egzersiz fiziksel ve zihinsel sağlık için çok önemlidir.",
+                    recommendedAction: "Bugün kısa bile olsa bir yürüyüş yapın.",
+                    petName: pet.name
+                ))
+            }
+        }
+
+        // Feeding irregularity (no feeding log in 2+ days)
+        let lastFeedingDate = pet.feedingLogs.sorted { $0.date > $1.date }.first?.date
+        if let lastFeeding = lastFeedingDate {
+            let daysSinceLastFeeding = Calendar.current.dateComponents([.day], from: lastFeeding, to: Date()).day ?? 0
+            if daysSinceLastFeeding >= 2 {
+                insights.append(Insight(
+                    type: .general,
+                    severity: .info,
+                    title: "Beslenme Kaydı Eksik",
+                    body: "\(pet.name) için \(daysSinceLastFeeding) gündür beslenme kaydı girilmemiş.",
+                    recommendedAction: "Düzenli kayıt tutmak, beslenme düzenini takip etmenizi sağlar.",
+                    petName: pet.name
+                ))
+            }
+        }
+
+        // Seasonal health alerts
+        let currentMonth = Calendar.current.component(.month, from: Date())
+        if (6...8).contains(currentMonth) {
+            // Summer heat warning for brachycephalic breeds
+            let brachycephalicBreeds = ["French Bulldog", "Pug", "İran Kedisi (Persian)", "Bulldog"]
+            if brachycephalicBreeds.contains(pet.breed) {
+                insights.append(Insight(
+                    type: .general,
+                    severity: .warning,
+                    title: "Sıcak Hava Uyarısı",
+                    body: "\(pet.breed) ırkı sıcağa karşı hassastır. Öğle saatlerinde dışarı çıkmayın ve bol su sağlayın.",
+                    recommendedAction: "Serin ortam sağlayın, zorunlu olmadıkça 11:00-16:00 arası dışarı çıkmayın.",
+                    petName: pet.name
+                ))
+            }
+        }
+
+        if (3...5).contains(currentMonth) {
+            // Spring parasite season
+            insights.append(Insight(
+                type: .general,
+                severity: .info,
+                title: "Parazit Sezonu",
+                body: "İlkbahar parazit sezonu başladı. \(pet.name)'in iç ve dış parazit korumasını kontrol edin.",
+                recommendedAction: "Son parazit ilacı tarihini kontrol edin.",
+                petName: pet.name
+            ))
+        }
+
+        // Breed-specific health risk reminder (every 90 days)
+        if let breedInfo = BreedDatabase.breedInfo(species: pet.species, breedName: pet.breed) {
+            let dayOfYear = Calendar.current.ordinality(of: .day, in: .year, for: Date()) ?? 0
+            if dayOfYear % 90 < 7 && !breedInfo.healthRisks.isEmpty {
+                let risk = breedInfo.healthRisks[dayOfYear % breedInfo.healthRisks.count]
+                insights.append(Insight(
+                    type: .general,
+                    severity: .info,
+                    title: "\(pet.breed) Irk Uyarısı",
+                    body: risk,
+                    recommendedAction: "Veteriner kontrolünde bu konuyu da sorun.",
+                    petName: pet.name
+                ))
+            }
+        }
+
+        // Spending trend (this month vs last month)
+        let calendar = Calendar.current
+        let now = Date()
+        let startOfThisMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: now))!
+        let startOfLastMonth = calendar.date(byAdding: .month, value: -1, to: startOfThisMonth)!
+        let lastMonthSpend = pet.expenses.filter { $0.date >= startOfLastMonth && $0.date < startOfThisMonth }.reduce(0) { $0 + $1.amount }
+        if lastMonthSpend > 0 && monthlySpend > lastMonthSpend * 1.5 {
+            let increase = Int(((monthlySpend - lastMonthSpend) / lastMonthSpend) * 100)
+            insights.append(Insight(
+                type: .spendingAnomaly,
+                severity: .info,
+                title: "Harcama Artışı",
+                body: "Bu ayki harcamalar geçen aya göre %\(increase) arttı (\(lastMonthSpend.formatted(.currency(code: "TRY"))) → \(monthlySpend.formatted(.currency(code: "TRY")))).",
+                recommendedAction: "Artışın nedenini kontrol edin — tek seferlik mi yoksa sürekli mi?",
+                petName: pet.name
+            ))
+        }
+
+        // Kısırlaştırma reminder for unspayed pets > 6 months
+        if !pet.isNeutered {
+            let ageMonths = calendar.dateComponents([.month], from: pet.birthdate, to: now).month ?? 0
+            if ageMonths >= 6 {
+                insights.append(Insight(
+                    type: .general,
+                    severity: .info,
+                    title: "Kısırlaştırma Önerisi",
+                    body: "\(pet.name) \(ageMonths) aylık ve henüz kısırlaştırılmamış. Kısırlaştırma birçok sağlık riskini azaltır.",
+                    recommendedAction: "Veterinerinizle kısırlaştırma zamanlamasını konuşun.",
+                    petName: pet.name
+                ))
+            }
+        }
+
         if insights.isEmpty {
             insights.append(Insight(
                 type: .general,
