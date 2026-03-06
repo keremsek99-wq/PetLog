@@ -727,7 +727,7 @@ struct AISymptomEngine {
             summaryParts.append("Belirtilen semptomlar genel değerlendirme gerektirir")
         }
 
-        let summary = "\(pet.species.rawValue) türü, \(breed.isEmpty ? "" : "\(breed) ırkı, ")yaş: \(age). \(summaryParts.joined(separator: ". ")). Süre: \(duration.rawValue)."
+        let summary = "\(species.rawValue) türü, \(breed.isEmpty ? "" : "\(breed) ırkı, ")yaş: \(age). \(summaryParts.joined(separator: ". ")). Süre: \(duration.rawValue)."
 
         return AIAnalysisResult(
             urgency: urgency,
