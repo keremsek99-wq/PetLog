@@ -142,6 +142,9 @@ struct DashboardView: View {
             .padding(.bottom, 24)
         }
         .id(store.refreshID)
+        .onAppear {
+            SmartNotificationEngine.scheduleAllSmartNotifications(for: pet)
+        }
     }
 
     // MARK: - Pet Header (Enhanced)

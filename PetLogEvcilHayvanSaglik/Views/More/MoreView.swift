@@ -191,6 +191,12 @@ struct MoreView: View {
                                 Label("🩺 Semptom Kontrol", systemImage: "stethoscope")
                             }
                         }
+
+                        NavigationLink {
+                            NearbyVetsView()
+                        } label: {
+                            Label("📍 Yakındaki Veterinerler", systemImage: "mappin.and.ellipse")
+                        }
                     }
                 }
 
