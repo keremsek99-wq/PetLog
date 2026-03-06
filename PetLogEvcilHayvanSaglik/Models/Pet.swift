@@ -15,6 +15,16 @@ class Pet {
     var photoData: Data?
     var createdAt: Date
 
+    // Emergency Info
+    var allergies: String = ""
+    var bloodType: String = ""
+    var microchipID: String = ""
+    var emergencyVetName: String = ""
+    var emergencyVetPhone: String = ""
+    var emergencyContactName: String = ""
+    var emergencyContactPhone: String = ""
+    var specialConditions: String = ""
+
     @Relationship(deleteRule: .cascade) var weightLogs: [WeightLog] = []
     @Relationship(deleteRule: .cascade) var vaccineRecords: [VaccineRecord] = []
     @Relationship(deleteRule: .cascade) var medications: [Medication] = []
@@ -26,6 +36,7 @@ class Pet {
     @Relationship(deleteRule: .cascade) var activityLogs: [ActivityLog] = []
     @Relationship(deleteRule: .cascade) var documents: [PetDocument] = []
     @Relationship(deleteRule: .cascade) var behaviorLogs: [BehaviorLog] = []
+    @Relationship(deleteRule: .cascade) var milestones: [Milestone] = []
 
     init(name: String, species: PetSpecies, breed: String = "", birthdate: Date, sex: PetSex = .unknown, isNeutered: Bool = false, weightTargetKg: Double? = nil) {
         self.id = UUID()

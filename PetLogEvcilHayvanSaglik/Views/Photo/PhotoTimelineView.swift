@@ -222,16 +222,56 @@ struct PhotoTimelineView: View {
             // Compare result
             if let p1 = comparePhoto1, let p2 = comparePhoto2 {
                 let days = abs(Calendar.current.dateComponents([.day], from: p1.date, to: p2.date).day ?? 0)
-                HStack {
-                    Image(systemName: "arrow.left.and.right")
-                        .foregroundStyle(.secondary)
-                    Text("\(days) gün fark")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.secondary)
+                VStack(spacing: 8) {
+                    HStack {
+                        Image(systemName: "arrow.left.and.right")
+                            .foregroundStyle(.secondary)
+                        Text("\(days) gün fark")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(8)
+                    .background(Color(.secondarySystemGroupedBackground))
+                    .clipShape(Capsule())
+
+                    // Weight comparison
+                    if let pet {
+                        let w1 = closestWeight(to: p1.date, in: pet.weightLogs)
+                        let w2 = closestWeight(to: p2.date, in: pet.weightLogs)
+                        if let w1, let w2 {
+                            let delta = w2 - w1
+                            HStack(spacing: 16) {
+                                VStack(spacing: 2) {
+                                    Text("⚖️ \(String(format: "%.1f", w1)) kg")
+                                        .font(.caption.weight(.semibold))
+                                    Text("Önce")
+                                        .font(.caption2)
+                                        .foregroundStyle(.secondary)
+                                }
+                                Image(systemName: delta >= 0 ? "arrow.right" : "arrow.right")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                VStack(spacing: 2) {
+                                    Text("⚖️ \(String(format: "%.1f", w2)) kg")
+                                        .font(.caption.weight(.semibold))
+                                    Text("Sonra")
+                                        .font(.caption2)
+                                        .foregroundStyle(.secondary)
+                                }
+                                Text(delta >= 0 ? "+\(String(format: "%.1f", delta)) kg" : "\(String(format: "%.1f", delta)) kg")
+                                    .font(.caption2.weight(.bold))
+                                    .foregroundStyle(abs(delta) < 0.5 ? .green : .orange)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 3)
+                                    .background((abs(delta) < 0.5 ? Color.green : Color.orange).opacity(0.1))
+                                    .clipShape(Capsule())
+                            }
+                            .padding(8)
+                            .background(Color(.secondarySystemGroupedBackground))
+                            .clipShape(.rect(cornerRadius: 10))
+                        }
+                    }
                 }
-                .padding(8)
-                .background(Color(.secondarySystemGroupedBackground))
-                .clipShape(Capsule())
             }
 
             Divider()
@@ -388,5 +428,15 @@ struct PhotoTimelineView: View {
         selectedImage = nil
         selectedPhotoItem = nil
         caption = ""
+    }
+
+    // Find the weight log closest to a given date
+    private func closestWeight(to date: Date, in logs: [WeightLog]) -> Double? {
+        guard !logs.isEmpty else { return nil }
+        let sorted = logs.sorted { abs($0.date.timeIntervalSince(date)) < abs($1.date.timeIntervalSince(date)) }
+        guard let closest = sorted.first else { return nil }
+        // Only use if within 30 days
+        let daysDiff = abs(Calendar.current.dateComponents([.day], from: closest.date, to: date).day ?? 999)
+        return daysDiff <= 30 ? closest.weightKg : nil
     }
 }

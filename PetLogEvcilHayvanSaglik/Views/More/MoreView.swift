@@ -156,6 +156,24 @@ struct MoreView: View {
                     }
                 }
 
+                // MARK: - Pet Features
+                if let pet = store.selectedPet {
+                    Section("Hayvan Profili") {
+                        NavigationLink {
+                            EmergencyCardView(pet: pet)
+                        } label: {
+                            Label("🚨 Acil Durum Kartı", systemImage: "heart.text.clipboard")
+                                .foregroundStyle(.red)
+                        }
+
+                        NavigationLink {
+                            MilestoneTimelineView(store: store, premiumManager: premiumManager)
+                        } label: {
+                            Label("⭐ Anılar & Miladlar", systemImage: "star.circle.fill")
+                        }
+                    }
+                }
+
                 // MARK: - Reports & Documents
                 Section("Raporlar & Belgeler") {
                     if let pet = store.selectedPet {

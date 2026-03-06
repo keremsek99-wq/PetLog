@@ -128,6 +128,12 @@ struct DashboardView: View {
 
                 // Smart-ordered cards
                 smartCards(pet)
+
+                // Recent milestones
+                recentMilestoneBanner(pet)
+
+                // Emergency quick access
+                emergencyQuickAccess(pet)
             }
             .padding(.horizontal)
             .padding(.bottom, 24)
@@ -302,6 +308,84 @@ struct DashboardView: View {
             .background(Color(.secondarySystemGroupedBackground))
             .clipShape(.rect(cornerRadius: 12))
         }
+    }
+
+    // MARK: - Recent Milestone Banner
+
+    @ViewBuilder
+    private func recentMilestoneBanner(_ pet: Pet) -> some View {
+        let recentMilestones = pet.milestones.sorted { $0.date > $1.date }
+        if let latest = recentMilestones.first {
+            let daysAgo = Calendar.current.dateComponents([.day], from: latest.date, to: Date()).day ?? 0
+            NavigationLink {
+                MilestoneTimelineView(store: store, premiumManager: premiumManager)
+            } label: {
+                HStack(spacing: 12) {
+                    Text(latest.emoji)
+                        .font(.title2)
+                        .frame(width: 44, height: 44)
+                        .background(Color.yellow.opacity(0.15))
+                        .clipShape(Circle())
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(latest.title)
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.primary)
+                        Text(daysAgo == 0 ? "Bugün!" : "\(daysAgo) gün önce")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    VStack(alignment: .trailing) {
+                        Text("⭐ \(recentMilestones.count)")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.orange)
+                        Text("anı")
+                            .font(.caption2)
+                            .foregroundStyle(.tertiary)
+                    }
+                }
+                .padding(12)
+                .background(Color(.secondarySystemGroupedBackground))
+                .clipShape(.rect(cornerRadius: 12))
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    // MARK: - Emergency Quick Access
+
+    @ViewBuilder
+    private func emergencyQuickAccess(_ pet: Pet) -> some View {
+        let hasInfo = !pet.allergies.isEmpty || !pet.emergencyVetPhone.isEmpty || !pet.microchipID.isEmpty
+        NavigationLink {
+            EmergencyCardView(pet: pet)
+        } label: {
+            HStack(spacing: 12) {
+                Text("🚨")
+                    .font(.title3)
+                    .frame(width: 38, height: 38)
+                    .background(Color.red.opacity(0.12))
+                    .clipShape(Circle())
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Acil Durum Kartı")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.primary)
+                    Text(hasInfo ? "Bilgiler mevcut" : "Henüz bilgi girilmemiş")
+                        .font(.caption)
+                        .foregroundStyle(hasInfo ? .green : .secondary)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+            }
+            .padding(12)
+            .background(Color(.secondarySystemGroupedBackground))
+            .clipShape(.rect(cornerRadius: 12))
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Species-Aware Quick Actions
