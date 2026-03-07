@@ -267,23 +267,15 @@ struct DashboardView: View {
                     // Wellness Score
                     WellnessScoreCard(pet: pet)
 
-                    // Quick Actions (detailed)
-                    speciesAwareQuickActions(pet)
-
-                    // Smart cards
-                    smartCards(pet)
-
-                    // Activity, weight, food
-                    todayActivityCard(pet)
-                    weightCard(pet)
-                    foodCard(pet)
+                    // Spending summary
+                    spendingCard(pet)
 
                     // Milestones & Emergency
                     recentMilestoneBanner(pet)
                     emergencyQuickAccess(pet)
 
-                    // Weekly summary & breed tips
-                    collapsibleInfoSection(pet)
+                    // Breed Tip
+                    breedTipCard(pet)
 
                     // Premium
                     PremiumBanner(premiumManager: premiumManager)

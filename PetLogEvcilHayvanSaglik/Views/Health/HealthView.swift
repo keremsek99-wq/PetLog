@@ -73,6 +73,13 @@ struct HealthView: View {
 
             ScrollView {
                 VStack(spacing: 16) {
+                    // Health summary header
+                    healthSummaryHeader(pet)
+
+                    // Proactive tools (always visible)
+                    proactiveToolLinks(pet)
+
+                    // Section content
                     switch selectedSection {
                     case .daily:
                         dailySection(pet)
@@ -92,6 +99,122 @@ struct HealthView: View {
         }
         .background(Color(.systemGroupedBackground))
         .id(store.refreshID)
+    }
+
+    // MARK: - Health Summary Header
+
+    private func healthSummaryHeader(_ pet: Pet) -> some View {
+        let status = StatusEngine.dailyStatus(for: pet)
+        let activemedCount = pet.activeMedications.count
+        let weekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date()
+        let weekSymptoms = pet.behaviorLogs.filter { $0.date >= weekAgo }.count
+
+        return VStack(spacing: 8) {
+            HStack(spacing: 10) {
+                Text(status.emoji)
+                    .font(.title2)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(status.message)
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(.primary)
+                    HStack(spacing: 12) {
+                        if activemedCount > 0 {
+                            Label("\(activemedCount) ilaç", systemImage: "pills.fill")
+                                .font(.caption2)
+                                .foregroundStyle(.blue)
+                        }
+                        if weekSymptoms > 0 {
+                            Label("\(weekSymptoms) semptom", systemImage: "exclamationmark.circle.fill")
+                                .font(.caption2)
+                                .foregroundStyle(.orange)
+                        }
+                        if let weight = pet.latestWeight {
+                            Label(String(format: "%.1f kg", weight), systemImage: "scalemass.fill")
+                                .font(.caption2)
+                                .foregroundStyle(.green)
+                        }
+                    }
+                }
+                Spacer()
+            }
+            .padding(12)
+            .background(Color(.secondarySystemGroupedBackground))
+            .clipShape(.rect(cornerRadius: 12))
+        }
+    }
+
+    // MARK: - Proactive Tool Links
+
+    private func proactiveToolLinks(_ pet: Pet) -> some View {
+        HStack(spacing: 10) {
+            NavigationLink {
+                TrendDashboardView(pet: pet, store: store)
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "chart.line.uptrend.xyaxis")
+                        .font(.caption)
+                        .foregroundStyle(.blue)
+                        .frame(width: 28, height: 28)
+                        .background(Color.blue.opacity(0.1))
+                        .clipShape(Circle())
+                    Text("Trend Analizi")
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(.primary)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
+                .frame(maxWidth: .infinity)
+                .background(Color(.secondarySystemGroupedBackground))
+                .clipShape(.rect(cornerRadius: 10))
+            }
+            .buttonStyle(.plain)
+
+            NavigationLink {
+                VetPrepView(pet: pet, store: store)
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "doc.text.magnifyingglass")
+                        .font(.caption)
+                        .foregroundStyle(.green)
+                        .frame(width: 28, height: 28)
+                        .background(Color.green.opacity(0.1))
+                        .clipShape(Circle())
+                    Text("Vet Hazırlık")
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(.primary)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
+                .frame(maxWidth: .infinity)
+                .background(Color(.secondarySystemGroupedBackground))
+                .clipShape(.rect(cornerRadius: 10))
+            }
+            .buttonStyle(.plain)
+
+            if pet.isSickMode {
+                NavigationLink {
+                    SymptomTimelineView(pet: pet)
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "clock.arrow.circlepath")
+                            .font(.caption)
+                            .foregroundStyle(.red)
+                            .frame(width: 28, height: 28)
+                            .background(Color.red.opacity(0.1))
+                            .clipShape(Circle())
+                        Text("Semptom")
+                            .font(.caption.weight(.medium))
+                            .foregroundStyle(.primary)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
+                    .frame(maxWidth: .infinity)
+                    .background(Color(.secondarySystemGroupedBackground))
+                    .clipShape(.rect(cornerRadius: 10))
+                }
+                .buttonStyle(.plain)
+            }
+        }
     }
 
     // MARK: - Tappable Stat Grid
@@ -447,67 +570,6 @@ struct HealthView: View {
                         behaviorLogRow(log)
                     }
                 }
-            }
-
-            // Phase 2: Proactive insight links
-            VStack(spacing: 8) {
-                NavigationLink {
-                    TrendDashboardView(pet: pet, store: store)
-                } label: {
-                    HStack(spacing: 10) {
-                        Image(systemName: "chart.line.uptrend.xyaxis")
-                            .font(.body)
-                            .foregroundStyle(.blue)
-                            .frame(width: 36, height: 36)
-                            .background(Color.blue.opacity(0.1))
-                            .clipShape(Circle())
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Trend Analizi")
-                                .font(.subheadline.weight(.medium))
-                                .foregroundStyle(.primary)
-                            Text("Haftalık & aylık karşılaştırma")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
-                    }
-                    .padding(12)
-                    .background(Color(.secondarySystemGroupedBackground))
-                    .clipShape(.rect(cornerRadius: 12))
-                }
-                .buttonStyle(.plain)
-
-                NavigationLink {
-                    VetPrepView(pet: pet, store: store)
-                } label: {
-                    HStack(spacing: 10) {
-                        Image(systemName: "doc.text.magnifyingglass")
-                            .font(.body)
-                            .foregroundStyle(.green)
-                            .frame(width: 36, height: 36)
-                            .background(Color.green.opacity(0.1))
-                            .clipShape(Circle())
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Veteriner Hazırlık")
-                                .font(.subheadline.weight(.medium))
-                                .foregroundStyle(.primary)
-                            Text("Vet ziyareti öncesi sağlık özeti")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
-                    }
-                    .padding(12)
-                    .background(Color(.secondarySystemGroupedBackground))
-                    .clipShape(.rect(cornerRadius: 12))
-                }
-                .buttonStyle(.plain)
             }
         }
     }
