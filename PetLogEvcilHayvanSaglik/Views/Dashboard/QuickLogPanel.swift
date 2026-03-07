@@ -111,12 +111,27 @@ struct QuickLogPanel: View {
     }
     
     private func showQuickToast(icon: String, message: String) {
-        toastIcon = icon
-        toastMessage = message
-        withAnimation(.spring(duration: 0.4, bounce: 0.3)) {
-            showToast = true
+        // If toast is already showing, dismiss first then re-show
+        if showToast {
+            withAnimation(.easeOut(duration: 0.15)) {
+                showToast = false
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                toastIcon = icon
+                toastMessage = message
+                withAnimation(.spring(duration: 0.4, bounce: 0.3)) {
+                    showToast = true
+                }
+            }
+        } else {
+            toastIcon = icon
+            toastMessage = message
+            withAnimation(.spring(duration: 0.4, bounce: 0.3)) {
+                showToast = true
+            }
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+        // Auto-dismiss after 2 seconds
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.2) {
             withAnimation(.easeOut(duration: 0.3)) {
                 showToast = false
             }
