@@ -60,6 +60,16 @@ struct ActivityLogRow: View {
         case .training: return .purple
         case .sleep: return .indigo
         case .other: return .gray
+        case .waterChange: return .teal
+        case .waterTest: return .mint
+        case .filterMaintenance: return .gray
+        case .cageCleaning: return .brown
+        case .featherCare: return .pink
+        case .flight: return .cyan
+        case .hayFeeding: return .green
+        case .dentalCheck: return .orange
+        case .uvbCheck: return .yellow
+        case .humidityCheck: return .teal
         }
     }
 }

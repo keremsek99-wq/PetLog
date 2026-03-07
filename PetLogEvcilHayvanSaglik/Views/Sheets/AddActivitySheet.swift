@@ -29,6 +29,16 @@ struct AddActivitySheet: View {
         case .nailTrim: return "💅"
         case .sleep: return "😴"
         case .other: return "📝"
+        case .waterChange: return "💧"
+        case .waterTest: return "🧪"
+        case .filterMaintenance: return "⚙️"
+        case .cageCleaning: return "🧹"
+        case .featherCare: return "🪶"
+        case .flight: return "🕊️"
+        case .hayFeeding: return "🌾"
+        case .dentalCheck: return "🦷"
+        case .uvbCheck: return "☀️"
+        case .humidityCheck: return "💨"
         }
     }
 
