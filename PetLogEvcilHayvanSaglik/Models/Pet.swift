@@ -97,17 +97,17 @@ class Pet {
     var relevantActivityTypes: [ActivityType] {
         switch species {
         case .dog:
-            return [.walk, .play, .potty, .grooming, .bath, .training, .sleep, .other]
+            return [.walk, .play, .potty, .grooming, .bath, .nailTrim, .training, .sleep, .other]
         case .cat:
-            return [.play, .grooming, .bath, .sleep, .other]
+            return [.play, .grooming, .bath, .nailTrim, .sleep, .other]
         case .bird:
-            return [.play, .grooming, .sleep, .other]
+            return [.play, .cageCleaning, .featherCare, .flight, .grooming, .sleep, .other]
         case .rabbit:
-            return [.play, .grooming, .bath, .other]
+            return [.play, .hayFeeding, .dentalCheck, .grooming, .bath, .other]
         case .fish:
-            return [.other]
+            return [.waterChange, .waterTest, .filterMaintenance, .other]
         case .reptile:
-            return [.grooming, .bath, .other]
+            return [.uvbCheck, .humidityCheck, .grooming, .bath, .other]
         case .unspecified, .other:
             return ActivityType.allCases
         }

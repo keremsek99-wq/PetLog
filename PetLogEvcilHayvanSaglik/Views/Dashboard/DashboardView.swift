@@ -1,24 +1,23 @@
 import SwiftUI
 import SwiftData
 
+// MARK: - Dashboard Sheet Enum
+
+enum DashboardSheet: Identifiable {
+    case addWeight, addExpense, addMedication, addVetVisit
+    case addFood, addPet, paywall, addFeeding
+    case addActivity, addDocument, photoTimeline
+    case addBehavior, addVaccine, sickModeOverlay
+    
+    var id: String { String(describing: self) }
+}
+
 struct DashboardView: View {
     let store: PetStore
     let premiumManager: PremiumManager
 
-    @State private var showAddWeight = false
-    @State private var showAddExpense = false
-    @State private var showAddMedication = false
-    @State private var showAddVetVisit = false
-    @State private var showAddFood = false
-    @State private var showAddPet = false
-    @State private var showPaywall = false
+    @State private var activeSheet: DashboardSheet?
     @State private var showAllPets = false
-    @State private var showAddFeeding = false
-    @State private var showAddActivity = false
-    @State private var showAddDocument = false
-    @State private var showPhotoTimeline = false
-    @State private var showAddBehavior = false
-    @State private var showAddVaccine = false
     @State private var showDetailCards = false
 
     private var pet: Pet? { store.selectedPet }
@@ -58,80 +57,63 @@ struct DashboardView: View {
                     }
                 }
             }
-            .sheet(isPresented: $showAddWeight) {
-                if let pet { AddWeightSheet(store: store, pet: pet) }
-            }
-            .sheet(isPresented: $showAddExpense) {
-                if let pet { AddExpenseSheet(store: store, pet: pet) }
-            }
-            .sheet(isPresented: $showAddMedication) {
-                if let pet { AddMedicationSheet(store: store, pet: pet) }
-            }
-            .sheet(isPresented: $showAddVetVisit) {
-                if let pet { AddVetVisitSheet(store: store, pet: pet) }
-            }
-            .sheet(isPresented: $showAddFood) {
-                if let pet { AddFoodSheet(store: store, pet: pet) }
-            }
-            .sheet(isPresented: $showAddPet) {
-                AddPetSheet(store: store)
-            }
-            .sheet(isPresented: $showPaywall) {
-                PetLogPaywallView(premiumManager: premiumManager)
-            }
-            .sheet(isPresented: $showAddFeeding) {
-                AddFeedingSheet(store: store)
-            }
-            .sheet(isPresented: $showAddActivity) {
-                AddActivitySheet(store: store)
-            }
-            .sheet(isPresented: $showAddDocument) {
-                AddDocumentSheet(store: store, premiumManager: premiumManager)
-            }
-            .sheet(isPresented: $showPhotoTimeline) {
-                PhotoTimelineView(store: store, premiumManager: premiumManager)
-            }
-            .sheet(isPresented: $showAddBehavior) {
-                AddBehaviorSheet(store: store)
-            }
-            .sheet(isPresented: $showAddVaccine) {
-                if let pet { AddVaccineSheet(store: store, pet: pet) }
+            .sheet(item: $activeSheet) { sheet in
+                switch sheet {
+                case .addWeight:
+                    if let pet { AddWeightSheet(store: store, pet: pet) }
+                case .addExpense:
+                    if let pet { AddExpenseSheet(store: store, pet: pet) }
+                case .addMedication:
+                    if let pet { AddMedicationSheet(store: store, pet: pet) }
+                case .addVetVisit:
+                    if let pet { AddVetVisitSheet(store: store, pet: pet) }
+                case .addFood:
+                    if let pet { AddFoodSheet(store: store, pet: pet) }
+                case .addPet:
+                    AddPetSheet(store: store)
+                case .paywall:
+                    PetLogPaywallView(premiumManager: premiumManager)
+                case .addFeeding:
+                    AddFeedingSheet(store: store)
+                case .addActivity:
+                    AddActivitySheet(store: store)
+                case .addDocument:
+                    AddDocumentSheet(store: store, premiumManager: premiumManager)
+                case .photoTimeline:
+                    PhotoTimelineView(store: store, premiumManager: premiumManager)
+                case .addBehavior:
+                    AddBehaviorSheet(store: store)
+                case .addVaccine:
+                    if let pet { AddVaccineSheet(store: store, pet: pet) }
+                case .sickModeOverlay:
+                    if let pet { SickModeOverlayView(pet: pet, store: store, premiumManager: premiumManager) }
+                }
             }
         }
     }
 
-    // MARK: - Main Dashboard
+    // MARK: - Main Dashboard (3-Layer "Sözcü Modu")
 
     private func petDashboard(_ pet: Pet) -> some View {
         ScrollView {
             VStack(spacing: 16) {
+                // ━━━ KATMAN 1: DURUM (her zaman görünür) ━━━
                 petHeader(pet)
+                statusBanner(pet)
+                QuickLogPanel(pet: pet, store: store)
 
-                // Wellness Score
-                WellnessScoreCard(pet: pet)
+                // ━━━ KATMAN 2: GÜNLÜK AKSİYON (vurgulu) ━━━
+                actionSuggestionCard(pet)
 
-                // Sick mode alert
                 if pet.isSickMode {
                     sickModeAlert(pet)
                 }
 
-                // ⭐ Quick Actions — top priority
-                speciesAwareQuickActions(pet)
+                // Urgent cards only
+                urgentCards(pet)
 
-                // Smart-ordered cards (spending, meds, vaccines)
-                smartCards(pet)
-
-                // Recent milestones
-                recentMilestoneBanner(pet)
-
-                // Emergency quick access
-                emergencyQuickAccess(pet)
-
-                // Collapsible informational sections
-                collapsibleInfoSection(pet)
-
-                // Premium banner — bottom
-                PremiumBanner(premiumManager: premiumManager)
+                // ━━━ KATMAN 3: DETAY (collapsible) ━━━
+                detailSection(pet)
             }
             .padding(.horizontal)
             .padding(.bottom, 24)
@@ -139,6 +121,179 @@ struct DashboardView: View {
         .id(store.refreshID)
         .onAppear {
             SmartNotificationEngine.scheduleAllSmartNotifications(for: pet)
+        }
+    }
+
+    // MARK: - Status Banner (StatusEngine)
+
+    private func statusBanner(_ pet: Pet) -> some View {
+        let status = StatusEngine.dailyStatus(for: pet)
+        let bgColor: Color = switch status.level {
+        case .great: .green
+        case .attention: .orange
+        case .warning: .red
+        case .critical: .red
+        }
+
+        return HStack(spacing: 10) {
+            Text(status.emoji)
+                .font(.title2)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(status.headline)
+                    .font(.subheadline.weight(.semibold))
+                if let detail = status.detail {
+                    Text(detail)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            Spacer()
+        }
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(bgColor.opacity(0.08))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(bgColor.opacity(0.2), lineWidth: 1)
+        )
+    }
+
+    // MARK: - Action Suggestion Card
+
+    private func actionSuggestionCard(_ pet: Pet) -> some View {
+        let suggestion = ActionSuggestionEngine.dailySuggestion(for: pet)
+
+        return Button {
+            handleSuggestionAction(suggestion.actionType)
+        } label: {
+            HStack(spacing: 12) {
+                Text(suggestion.emoji)
+                    .font(.title2)
+                    .frame(width: 44, height: 44)
+                    .background(Color.blue.opacity(0.1))
+                    .clipShape(Circle())
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(suggestion.message)
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(.primary)
+                        .multilineTextAlignment(.leading)
+                    Text(suggestion.actionLabel)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.blue)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+            }
+            .padding(14)
+            .background(
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(Color(.secondarySystemGroupedBackground))
+            )
+        }
+        .buttonStyle(.plain)
+        .sensoryFeedback(.impact(flexibility: .soft), trigger: activeSheet)
+    }
+
+    private func handleSuggestionAction(_ action: ActionSuggestion.SuggestedAction) {
+        switch action {
+        case .addVaccine: activeSheet = .addVaccine
+        case .addActivity: activeSheet = .addActivity
+        case .addFeeding: activeSheet = .addFeeding
+        case .orderFood: activeSheet = .addFood
+        case .addWeight: activeSheet = .addWeight
+        case .addPhoto: activeSheet = .photoTimeline
+        case .addVetVisit: activeSheet = .addVetVisit
+        case .addBehavior: activeSheet = .addBehavior
+        case .none: break
+        }
+    }
+
+    // MARK: - Urgent Cards Only
+
+    private func urgentCards(_ pet: Pet) -> some View {
+        VStack(spacing: 12) {
+            if pet.isSickMode {
+                medicationsCard(pet)
+            }
+
+            let upcomingVaccine = pet.nextVaccineDue
+            if let vaccine = upcomingVaccine, vaccine.isDueSoon {
+                vaccineCard(pet, urgent: true)
+            }
+
+            // Overdue vaccines
+            let overdueVaccines = pet.vaccineRecords.filter { $0.isOverdue }
+            if !overdueVaccines.isEmpty {
+                vaccineCard(pet, urgent: true)
+            }
+        }
+    }
+
+    // MARK: - Detail Section (Collapsible)
+
+    @AppStorage("showDashboardDetailSection") private var showDashboardDetailSection = false
+
+    private func detailSection(_ pet: Pet) -> some View {
+        VStack(spacing: 0) {
+            Button {
+                withAnimation(.spring(duration: 0.35)) {
+                    showDashboardDetailSection.toggle()
+                }
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "chart.bar.fill")
+                        .foregroundStyle(.secondary)
+                    Text("Detaylar & Genel Bakış")
+                        .font(.subheadline.weight(.medium))
+                    Spacer()
+                    Image(systemName: "chevron.down")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.tertiary)
+                        .rotationEffect(.degrees(showDashboardDetailSection ? 180 : 0))
+                }
+                .padding(14)
+                .background(Color(.secondarySystemGroupedBackground))
+                .clipShape(.rect(cornerRadius: 14))
+            }
+            .buttonStyle(.plain)
+
+            if showDashboardDetailSection {
+                VStack(spacing: 12) {
+                    // Wellness Score
+                    WellnessScoreCard(pet: pet)
+
+                    // Quick Actions (detailed)
+                    speciesAwareQuickActions(pet)
+
+                    // Smart cards
+                    smartCards(pet)
+
+                    // Activity, weight, food
+                    todayActivityCard(pet)
+                    weightCard(pet)
+                    foodCard(pet)
+
+                    // Milestones & Emergency
+                    recentMilestoneBanner(pet)
+                    emergencyQuickAccess(pet)
+
+                    // Weekly summary & breed tips
+                    collapsibleInfoSection(pet)
+
+                    // Premium
+                    PremiumBanner(premiumManager: premiumManager)
+                }
+                .padding(.top, 12)
+                .transition(.asymmetric(
+                    insertion: .move(edge: .top).combined(with: .opacity),
+                    removal: .opacity
+                ))
+            }
         }
     }
 
@@ -265,14 +420,36 @@ struct DashboardView: View {
     // MARK: - Sick Mode Alert
 
     private func sickModeAlert(_ pet: Pet) -> some View {
-        ContextualAlertBanner(
-            emoji: "🏥",
-            message: "\(pet.name) şu an takip altında. Sağlık kayıtlarını güncel tutun.",
-            accentColor: .red,
-            actionLabel: "Semptom Ekle"
-        ) {
-            showAddBehavior = true
+        Button {
+            activeSheet = .sickModeOverlay
+        } label: {
+            HStack(spacing: 12) {
+                Text("🏥")
+                    .font(.title2)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("\(pet.name) Takip Altında")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.red)
+                    Text("Detaylı takip panelini aç")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+            }
+            .padding(14)
+            .background(
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(Color.red.opacity(0.08))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(Color.red.opacity(0.2), lineWidth: 1)
+            )
         }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Weekly Summary Strip
@@ -439,30 +616,30 @@ struct DashboardView: View {
             HStack(spacing: 0) {
                 switch pet.species {
                 case .dog:
-                    QuickActionButton(title: "Beslenme", icon: "fork.knife", color: .orange, emoji: "🍽") { showAddFeeding = true }
-                    QuickActionButton(title: "Yürüyüş", icon: "figure.walk", color: .cyan, emoji: "🐕") { showAddActivity = true }
-                    QuickActionButton(title: "Harcama", icon: "turkishlirasign.circle.fill", color: .orange, emoji: "💰") { showAddExpense = true }
-                    QuickActionButton(title: "Sağlık", icon: "heart.fill", color: .red, emoji: "❤️‍🩹") { showAddBehavior = true }
+                    QuickActionButton(title: "Beslenme", icon: "fork.knife", color: .orange, emoji: "🍽") { activeSheet = .addFeeding }
+                    QuickActionButton(title: "Yürüyüş", icon: "figure.walk", color: .cyan, emoji: "🐕") { activeSheet = .addActivity }
+                    QuickActionButton(title: "Harcama", icon: "turkishlirasign.circle.fill", color: .orange, emoji: "💰") { activeSheet = .addExpense }
+                    QuickActionButton(title: "Sağlık", icon: "heart.fill", color: .red, emoji: "❤️‍🩹") { activeSheet = .addBehavior }
                 case .cat:
-                    QuickActionButton(title: "Beslenme", icon: "fork.knife", color: .orange, emoji: "🍽") { showAddFeeding = true }
-                    QuickActionButton(title: "Kilo", icon: "scalemass.fill", color: .green, emoji: "⚖️") { showAddWeight = true }
-                    QuickActionButton(title: "Harcama", icon: "turkishlirasign.circle.fill", color: .orange, emoji: "💰") { showAddExpense = true }
-                    QuickActionButton(title: "Davranış", icon: "brain.head.profile.fill", color: .purple, emoji: "🧠") { showAddBehavior = true }
+                    QuickActionButton(title: "Beslenme", icon: "fork.knife", color: .orange, emoji: "🍽") { activeSheet = .addFeeding }
+                    QuickActionButton(title: "Kilo", icon: "scalemass.fill", color: .green, emoji: "⚖️") { activeSheet = .addWeight }
+                    QuickActionButton(title: "Harcama", icon: "turkishlirasign.circle.fill", color: .orange, emoji: "💰") { activeSheet = .addExpense }
+                    QuickActionButton(title: "Davranış", icon: "brain.head.profile.fill", color: .purple, emoji: "🧠") { activeSheet = .addBehavior }
                 case .bird:
-                    QuickActionButton(title: "Beslenme", icon: "fork.knife", color: .orange, emoji: "🍽") { showAddFeeding = true }
-                    QuickActionButton(title: "Harcama", icon: "turkishlirasign.circle.fill", color: .orange, emoji: "💰") { showAddExpense = true }
-                    QuickActionButton(title: "Davranış", icon: "brain.head.profile.fill", color: .purple, emoji: "🧠") { showAddBehavior = true }
-                    QuickActionButton(title: "Veteriner", icon: "cross.case.fill", color: .red, emoji: "🏥") { showAddVetVisit = true }
+                    QuickActionButton(title: "Beslenme", icon: "fork.knife", color: .orange, emoji: "🍽") { activeSheet = .addFeeding }
+                    QuickActionButton(title: "Harcama", icon: "turkishlirasign.circle.fill", color: .orange, emoji: "💰") { activeSheet = .addExpense }
+                    QuickActionButton(title: "Davranış", icon: "brain.head.profile.fill", color: .purple, emoji: "🧠") { activeSheet = .addBehavior }
+                    QuickActionButton(title: "Veteriner", icon: "cross.case.fill", color: .red, emoji: "🏥") { activeSheet = .addVetVisit }
                 case .fish:
-                    QuickActionButton(title: "Harcama", icon: "turkishlirasign.circle.fill", color: .orange, emoji: "💰") { showAddExpense = true }
-                    QuickActionButton(title: "Veteriner", icon: "cross.case.fill", color: .red, emoji: "🏥") { showAddVetVisit = true }
-                    QuickActionButton(title: "Davranış", icon: "brain.head.profile.fill", color: .teal, emoji: "🐟") { showAddBehavior = true }
-                    QuickActionButton(title: "Belge", icon: "doc.text.fill", color: .blue, emoji: "📄") { showAddDocument = true }
+                    QuickActionButton(title: "Harcama", icon: "turkishlirasign.circle.fill", color: .orange, emoji: "💰") { activeSheet = .addExpense }
+                    QuickActionButton(title: "Veteriner", icon: "cross.case.fill", color: .red, emoji: "🏥") { activeSheet = .addVetVisit }
+                    QuickActionButton(title: "Davranış", icon: "brain.head.profile.fill", color: .teal, emoji: "🐟") { activeSheet = .addBehavior }
+                    QuickActionButton(title: "Belge", icon: "doc.text.fill", color: .blue, emoji: "📄") { activeSheet = .addDocument }
                 default:
-                    QuickActionButton(title: "Beslenme", icon: "fork.knife", color: .orange, emoji: "🍽") { showAddFeeding = true }
-                    QuickActionButton(title: "Kilo", icon: "scalemass.fill", color: .green, emoji: "⚖️") { showAddWeight = true }
-                    QuickActionButton(title: "Harcama", icon: "turkishlirasign.circle.fill", color: .orange, emoji: "💰") { showAddExpense = true }
-                    QuickActionButton(title: "Sağlık", icon: "heart.fill", color: .red, emoji: "❤️‍🩹") { showAddBehavior = true }
+                    QuickActionButton(title: "Beslenme", icon: "fork.knife", color: .orange, emoji: "🍽") { activeSheet = .addFeeding }
+                    QuickActionButton(title: "Kilo", icon: "scalemass.fill", color: .green, emoji: "⚖️") { activeSheet = .addWeight }
+                    QuickActionButton(title: "Harcama", icon: "turkishlirasign.circle.fill", color: .orange, emoji: "💰") { activeSheet = .addExpense }
+                    QuickActionButton(title: "Sağlık", icon: "heart.fill", color: .red, emoji: "❤️‍🩹") { activeSheet = .addBehavior }
                 }
                 moreActionsButton
             }
@@ -530,32 +707,32 @@ struct DashboardView: View {
 
     private var moreActionsButton: some View {
         Menu {
-            Button { showAddMedication = true } label: {
+            Button { activeSheet = .addMedication } label: {
                 Label("İlaç Ekle", systemImage: "pills.fill")
             }
-            Button { showAddVetVisit = true } label: {
+            Button { activeSheet = .addVetVisit } label: {
                 Label("Veteriner Ziyareti", systemImage: "cross.case.fill")
             }
-            Button { showAddVaccine = true } label: {
+            Button { activeSheet = .addVaccine } label: {
                 Label("Aşı Ekle", systemImage: "syringe.fill")
             }
-            Button { showAddBehavior = true } label: {
+            Button { activeSheet = .addBehavior } label: {
                 Label("Davranış Kaydet", systemImage: "brain.head.profile.fill")
             }
             Divider()
-            Button { showAddWeight = true } label: {
+            Button { activeSheet = .addWeight } label: {
                 Label("Kilo Kaydet", systemImage: "scalemass.fill")
             }
-            Button { showAddActivity = true } label: {
+            Button { activeSheet = .addActivity } label: {
                 Label("Aktivite Ekle", systemImage: "figure.walk")
             }
-            Button { showPhotoTimeline = true } label: {
+            Button { activeSheet = .photoTimeline } label: {
                 Label("Fotoğraf", systemImage: "camera.fill")
             }
-            Button { showAddDocument = true } label: {
+            Button { activeSheet = .addDocument } label: {
                 Label("Belge Ekle", systemImage: "doc.text.fill")
             }
-            Button { showAddFood = true } label: {
+            Button { activeSheet = .addFood } label: {
                 Label("Mama Stok", systemImage: "takeoutbag.and.cup.and.straw.fill")
             }
         } label: {
@@ -598,7 +775,7 @@ struct DashboardView: View {
                 }
             } else {
                 Button {
-                    showAddWeight = true
+                    activeSheet = .addWeight
                 } label: {
                     Label("İlk kiloyu kaydet", systemImage: "plus.circle.fill")
                         .font(.subheadline.weight(.medium))
@@ -652,7 +829,7 @@ struct DashboardView: View {
                             .tint(food.daysUntilRunout <= 3 ? .red : (food.daysUntilRunout <= 7 ? .orange : .green))
                     } else {
                         Button {
-                            showPaywall = true
+                            activeSheet = .paywall
                         } label: {
                             HStack {
                                 VStack(alignment: .leading, spacing: 4) {
@@ -673,7 +850,7 @@ struct DashboardView: View {
                 }
             } else {
                 Button {
-                    showAddFood = true
+                    activeSheet = .addFood
                 } label: {
                     Label("Mama takibi başlat", systemImage: "plus.circle.fill")
                         .font(.subheadline.weight(.medium))
@@ -706,7 +883,7 @@ struct DashboardView: View {
                 if count > 0 {
                     Spacer()
                     Button {
-                        showAddBehavior = true
+                        activeSheet = .addBehavior
                     } label: {
                         Text("Durum Kaydet")
                             .font(.caption2.weight(.semibold))
@@ -750,7 +927,7 @@ struct DashboardView: View {
                         .foregroundStyle(.secondary)
                     Spacer()
                     Button {
-                        showAddVaccine = true
+                        activeSheet = .addVaccine
                     } label: {
                         Text("Aşı Ekle")
                             .font(.caption.weight(.medium))
@@ -813,7 +990,7 @@ struct DashboardView: View {
             icon: "pawprint.fill",
             actionTitle: "Hayvan Ekle"
         ) {
-            showAddPet = true
+            activeSheet = .addPet
         }
     }
 
@@ -830,9 +1007,9 @@ struct DashboardView: View {
             Divider()
             Button {
                 if store.canAddMorePets(isPremium: premiumManager.hasFullAccess) {
-                    showAddPet = true
+                    activeSheet = .addPet
                 } else {
-                    showPaywall = true
+                    activeSheet = .paywall
                 }
             } label: {
                 Label("Hayvan Ekle", systemImage: "plus")
