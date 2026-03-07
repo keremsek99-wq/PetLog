@@ -114,7 +114,7 @@ struct HealthView: View {
                 Text(status.emoji)
                     .font(.title2)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(status.message)
+                    Text(status.headline)
                         .font(.subheadline.weight(.medium))
                         .foregroundStyle(.primary)
                     HStack(spacing: 12) {
