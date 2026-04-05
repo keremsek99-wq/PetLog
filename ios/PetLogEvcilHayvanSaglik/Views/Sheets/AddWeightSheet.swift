@@ -127,7 +127,7 @@ struct AddWeightSheet: View {
                     Button("Kaydet") {
                         save()
                     }
-                    .disabled(Double(weightString.replacingOccurrences(of: ",", with: ".")) == nil || Double(weightString.replacingOccurrences(of: ",", with: "."))! <= 0)
+                    .disabled((Double(weightString.replacingOccurrences(of: ",", with: ".")) ?? 0) <= 0)
                     .fontWeight(.semibold)
                 }
             }

@@ -153,7 +153,8 @@ struct WeightChartView: View {
                                     .gesture(
                                         DragGesture(minimumDistance: 0)
                                             .onChanged { value in
-                                                let origin = geometry[proxy.plotFrame!].origin
+                                                guard let plotFrame = proxy.plotFrame else { return }
+                                                let origin = geometry[plotFrame].origin
                                                 let location = CGPoint(
                                                     x: value.location.x - origin.x,
                                                     y: value.location.y - origin.y
@@ -204,9 +205,9 @@ struct WeightChartView: View {
     @ViewBuilder
     private var trendBadge: some View {
         let logs = filteredLogs
-        if logs.count >= 2 {
-            let last = logs[logs.count - 1].weightKg
-            let prev = logs[logs.count - 2].weightKg
+        if logs.count >= 2, let lastLog = logs.last, let prevLog = logs.dropLast().last {
+            let last = lastLog.weightKg
+            let prev = prevLog.weightKg
             let diff = last - prev
             let arrow = diff > 0 ? "arrow.up.right" : (diff < 0 ? "arrow.down.right" : "arrow.right")
             let color: Color = abs(diff) < 0.1 ? .secondary : (diff > 0 ? .orange : .blue)

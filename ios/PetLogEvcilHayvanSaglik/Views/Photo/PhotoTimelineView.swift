@@ -248,7 +248,7 @@ struct PhotoTimelineView: View {
                                         .font(.caption2)
                                         .foregroundStyle(.secondary)
                                 }
-                                Image(systemName: delta >= 0 ? "arrow.right" : "arrow.right")
+                                Image(systemName: delta > 0.05 ? "arrow.up.right" : (delta < -0.05 ? "arrow.down.right" : "arrow.right"))
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                                 VStack(spacing: 2) {

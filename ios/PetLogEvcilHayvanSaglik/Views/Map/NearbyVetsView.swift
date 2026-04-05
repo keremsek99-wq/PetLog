@@ -181,6 +181,15 @@ struct NearbyVetsView: View {
         request.naturalLanguageQuery = "veteriner"
         request.resultTypes = .pointOfInterest
 
+        // Constrain search to a 10km radius from user location if available
+        if let userLocation = CLLocationManager().location?.coordinate {
+            request.region = MKCoordinateRegion(
+                center: userLocation,
+                latitudinalMeters: 10_000,
+                longitudinalMeters: 10_000
+            )
+        }
+
         let search = MKLocalSearch(request: request)
         search.start { response, error in
             DispatchQueue.main.async {

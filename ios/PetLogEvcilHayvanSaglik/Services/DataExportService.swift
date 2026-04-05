@@ -8,7 +8,7 @@ class DataExportService {
     func exportJSON(for pet: Pet, store: PetStore) -> String {
         let data = PetExportData(
             exportDate: Date().ISO8601Format(),
-            appVersion: "1.0.0",
+            appVersion: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0",
             pet: PetData(
                 name: pet.name,
                 species: pet.species.rawValue,
@@ -115,18 +115,25 @@ class DataExportService {
 
     func exportCSV(for pet: Pet) -> String {
         var csv = "Kategori,Tutar,Tarih,Mağaza,Notlar,Düzenli\n"
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
         for expense in pet.expenses.sorted(by: { $0.date > $1.date }) {
             let row = [
                 expense.category.rawValue,
                 String(format: "%.2f", expense.amount),
-                expense.date.formatted(date: .numeric, time: .omitted),
+                dateFormatter.string(from: expense.date),
                 expense.merchant,
                 expense.notes,
                 expense.isRecurring ? "Evet" : "Hayır"
-            ].map { "\"\($0)\"" }.joined(separator: ",")
+            ].map { escapeCSV($0) }.joined(separator: ",")
             csv += row + "\n"
         }
         return csv
+    }
+
+    private func escapeCSV(_ field: String) -> String {
+        let escaped = field.replacingOccurrences(of: "\"", with: "\"\"")
+        return "\"\(escaped)\""
     }
 }
 

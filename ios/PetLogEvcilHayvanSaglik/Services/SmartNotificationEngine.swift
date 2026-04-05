@@ -122,7 +122,7 @@ struct SmartNotificationEngine {
 
             if let reminderDate = Calendar.current.date(from: dateComponents), reminderDate > Date() {
                 scheduleNotification(
-                    id: "smart_activity_\(pet.id)_\(today.timeIntervalSince1970)",
+                    id: "smart_activity_\(pet.id)_\(Calendar.current.component(.dayOfYear, from: today))",
                     title: "🐕 Yürüyüş Zamanı!",
                     body: "\(pet.name) bugün henüz yürüyüşe çıkmadı. Hadi birlikte yürüyelim!",
                     date: reminderDate,
@@ -220,7 +220,12 @@ struct SmartNotificationEngine {
 
     // MARK: - Helpers
 
+    private static func sanitizedID(_ id: String) -> String {
+        id.replacingOccurrences(of: "[^a-zA-Z0-9_\\-.]", with: "_", options: .regularExpression)
+    }
+
     private static func scheduleNotification(id: String, title: String, body: String, date: Date, center: UNUserNotificationCenter) {
+        let safeID = sanitizedID(id)
         guard date > Date() else { return }
 
         let content = UNMutableNotificationContent()
@@ -231,7 +236,7 @@ struct SmartNotificationEngine {
         let triggerDate = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: date)
         let trigger = UNCalendarNotificationTrigger(dateMatching: triggerDate, repeats: false)
 
-        let request = UNNotificationRequest(identifier: id, content: content, trigger: trigger)
+        let request = UNNotificationRequest(identifier: safeID, content: content, trigger: trigger)
         center.add(request)
     }
 

@@ -29,12 +29,12 @@ struct AddBehaviorSheet: View {
                                     )
                                 )
                                 .frame(width: 64, height: 64)
-                            Text(severityEmojis[severity - 1])
+                            Text(severityEmojis[min(max(severity, 1), 5) - 1])
                                 .font(.largeTitle)
                         }
                         .animation(.spring(duration: 0.3), value: severity)
 
-                        Text(severityLabels[severity - 1])
+                        Text(severityLabels[min(max(severity, 1), 5) - 1])
                             .font(.caption.weight(.medium))
                             .foregroundStyle(severityColor(severity))
                             .contentTransition(.numericText())

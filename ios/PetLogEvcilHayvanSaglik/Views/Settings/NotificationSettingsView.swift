@@ -152,7 +152,13 @@ struct NotificationSettingsView: View {
     }
 
     private func applySettings() {
+        // Force re-schedule all notifications with updated settings
+        Task {
+            await notificationService.checkAuthorization()
+            guard notificationService.isAuthorized else { return }
+            // Trigger notification refresh - service reads from AppStorage
+            notificationService.rescheduleAllNotifications()
+        }
         saved = true
-        // NotificationService will re-read AppStorage values on next schedule
     }
 }
