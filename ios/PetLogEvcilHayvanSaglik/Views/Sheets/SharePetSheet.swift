@@ -48,7 +48,7 @@ struct PetShareCardView: View {
             VStack(spacing: 16) {
                 HStack(spacing: 20) {
                     statItem(value: pet.age, label: "Yaş", icon: "birthday.cake.fill")
-                    statItem(value: pet.latestWeight != nil ? String(format: "%.1f kg", pet.latestWeight!) : "—", label: "Kilo", icon: "scalemass.fill")
+                    statItem(value: pet.latestWeight.map { String(format: "%.1f kg", $0) } ?? "—", label: "Kilo", icon: "scalemass.fill")
                     statItem(value: "\(pet.vaccineRecords.count)", label: "Aşı", icon: "syringe.fill")
                     statItem(value: "\(pet.vetVisits.count)", label: "Vet Ziyaret", icon: "cross.case.fill")
                 }

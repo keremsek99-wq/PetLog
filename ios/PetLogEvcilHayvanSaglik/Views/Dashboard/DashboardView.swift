@@ -119,7 +119,7 @@ struct DashboardView: View {
             .padding(.bottom, 24)
         }
         .id(store.refreshID)
-        .onAppear {
+        .task(id: pet.id) {
             SmartNotificationEngine.scheduleAllSmartNotifications(for: pet)
         }
     }
@@ -779,8 +779,8 @@ struct DashboardView: View {
     private func weightTrend(_ pet: Pet) -> some View {
         let sorted = pet.weightLogs.sorted { $0.date < $1.date }
         let trend: String = {
-            guard sorted.count >= 2 else { return "" }
-            let diff = sorted.last!.weightKg - sorted[sorted.count - 2].weightKg
+            guard sorted.count >= 2, let last = sorted.last, let prev = sorted.dropLast().last else { return "" }
+            let diff = last.weightKg - prev.weightKg
             if diff > 0.1 { return "arrow.up.right" }
             if diff < -0.1 { return "arrow.down.right" }
             return "arrow.right"

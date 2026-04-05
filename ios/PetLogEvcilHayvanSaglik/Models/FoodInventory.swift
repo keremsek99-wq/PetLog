@@ -14,8 +14,8 @@ class FoodInventory {
     init(brand: String, bagSizeKg: Double, dailyGrams: Double, startedAt: Date = Date(), reorderLink: String = "") {
         self.id = UUID()
         self.brand = brand
-        self.bagSizeKg = bagSizeKg
-        self.dailyGrams = dailyGrams
+        self.bagSizeKg = max(0, bagSizeKg)
+        self.dailyGrams = max(0, dailyGrams)
         self.startedAt = startedAt
         self.reorderLink = reorderLink
     }
@@ -33,8 +33,9 @@ class FoodInventory {
 
     var percentageRemaining: Double {
         let totalGrams = bagSizeKg * 1000
+        guard totalGrams > 0 else { return 0 }
         let daysSinceStart = Calendar.current.dateComponents([.day], from: startedAt, to: Date()).day ?? 0
-        let consumed = Double(daysSinceStart) * dailyGrams
+        let consumed = Double(max(0, daysSinceStart)) * dailyGrams
         return max(0, min(1, (totalGrams - consumed) / totalGrams))
     }
 }

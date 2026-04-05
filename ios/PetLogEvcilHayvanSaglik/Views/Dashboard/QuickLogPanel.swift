@@ -7,6 +7,7 @@ struct QuickLogPanel: View {
     @State private var showToast = false
     @State private var toastMessage = ""
     @State private var toastIcon = ""
+    @State private var toastDismissWorkItem: DispatchWorkItem?
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -111,31 +112,23 @@ struct QuickLogPanel: View {
     }
     
     private func showQuickToast(icon: String, message: String) {
-        // If toast is already showing, dismiss first then re-show
-        if showToast {
-            withAnimation(.easeOut(duration: 0.15)) {
-                showToast = false
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                toastIcon = icon
-                toastMessage = message
-                withAnimation(.spring(duration: 0.4, bounce: 0.3)) {
-                    showToast = true
-                }
-            }
-        } else {
-            toastIcon = icon
-            toastMessage = message
-            withAnimation(.spring(duration: 0.4, bounce: 0.3)) {
-                showToast = true
-            }
+        // Cancel any pending dismiss
+        toastDismissWorkItem?.cancel()
+
+        toastIcon = icon
+        toastMessage = message
+        withAnimation(.spring(duration: 0.4, bounce: 0.3)) {
+            showToast = true
         }
-        // Auto-dismiss after 2 seconds
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.2) {
+
+        // Schedule auto-dismiss with cancellable work item
+        let workItem = DispatchWorkItem { [self] in
             withAnimation(.easeOut(duration: 0.3)) {
                 showToast = false
             }
         }
+        toastDismissWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.2, execute: workItem)
     }
     
     // MARK: - Toast

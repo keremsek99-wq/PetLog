@@ -380,7 +380,7 @@ struct SickModeOverlayView: View {
 
 struct PulseAnimation: ViewModifier {
     @State private var isPulsing = false
-    
+
     func body(content: Content) -> some View {
         content
             .scaleEffect(isPulsing ? 1.08 : 1.0)
@@ -391,5 +391,6 @@ struct PulseAnimation: ViewModifier {
                 value: isPulsing
             )
             .onAppear { isPulsing = true }
+            .onDisappear { isPulsing = false }
     }
 }
