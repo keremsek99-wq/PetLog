@@ -5,14 +5,23 @@ import SwiftUI
 struct SymptomTimelineView: View {
     let pet: Pet
     
-    @State private var filterSeverity: Int? = nil
-    
+    enum SeverityFilter: Hashable {
+        case all
+        case low      // 1-2
+        case medium   // 3+
+        case high     // 4+
+    }
+
+    @State private var filterSeverity: SeverityFilter = .all
+
     private var filteredLogs: [BehaviorLog] {
         let sorted = pet.behaviorLogs.sorted { $0.date > $1.date }
-        if let severity = filterSeverity {
-            return sorted.filter { $0.severity >= severity }
+        switch filterSeverity {
+        case .all: return sorted
+        case .low: return sorted.filter { $0.severity <= 2 }
+        case .medium: return sorted.filter { $0.severity >= 3 }
+        case .high: return sorted.filter { $0.severity >= 4 }
         }
-        return sorted
     }
     
     private var groupedByDay: [(String, [BehaviorLog])] {
@@ -53,17 +62,17 @@ struct SymptomTimelineView: View {
     private var severityFilter: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
-                FilterChip(label: "Tümü", isSelected: filterSeverity == nil) {
-                    withAnimation { filterSeverity = nil }
+                FilterChip(label: "Tümü", isSelected: filterSeverity == .all) {
+                    withAnimation { filterSeverity = .all }
                 }
-                FilterChip(label: "Düşük (1-2)", color: .yellow, isSelected: filterSeverity == 1) {
-                    withAnimation { filterSeverity = 1 }
+                FilterChip(label: "Düşük (1-2)", color: .yellow, isSelected: filterSeverity == .low) {
+                    withAnimation { filterSeverity = .low }
                 }
-                FilterChip(label: "Orta (3+)", color: .orange, isSelected: filterSeverity == 3) {
-                    withAnimation { filterSeverity = 3 }
+                FilterChip(label: "Orta (3+)", color: .orange, isSelected: filterSeverity == .medium) {
+                    withAnimation { filterSeverity = .medium }
                 }
-                FilterChip(label: "Yüksek (4+)", color: .red, isSelected: filterSeverity == 4) {
-                    withAnimation { filterSeverity = 4 }
+                FilterChip(label: "Yüksek (4+)", color: .red, isSelected: filterSeverity == .high) {
+                    withAnimation { filterSeverity = .high }
                 }
             }
             .padding(.horizontal)

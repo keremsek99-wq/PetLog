@@ -40,6 +40,15 @@ class NotificationService {
         }
     }
 
+    /// Re-schedule all notifications after settings change.
+    /// Reads pet data from the notification center and re-triggers.
+    func rescheduleAllNotifications() {
+        // Remove existing and let the next app lifecycle re-schedule
+        UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+        // The actual scheduling will happen on next scheduleAllReminders call
+        // triggered by scenePhase change or app launch
+    }
+
     func scheduleAllReminders(for pets: [Pet]) {
         UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
 

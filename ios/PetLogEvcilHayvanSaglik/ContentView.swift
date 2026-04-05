@@ -20,7 +20,7 @@ struct ContentView: View {
                 ProgressView()
             }
         }
-        .onAppear {
+        .task {
             if store == nil {
                 store = PetStore(modelContext: modelContext)
             }

@@ -373,12 +373,18 @@ struct MoreView: View {
             }
             .sheet(isPresented: $showPDFShare) {
                 if let data = pdfData {
-                    let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("\(store.selectedPet?.name ?? "PetLog")_Rapor.pdf")
+                    let petName = store.selectedPet?.name ?? "PetLog"
+                    let sanitizedName = petName.replacingOccurrences(of: "[^a-zA-Z0-9çğıöşüÇĞİÖŞÜ _\\-]", with: "", options: .regularExpression)
+                    let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("\(sanitizedName)_Rapor.pdf")
                     let _ = try? data.write(to: tempURL)
                     ShareLink(item: tempURL) {
                         Label("PDF'i Paylaş", systemImage: "square.and.arrow.up")
                     }
-                    .onDisappear { showPDFShare = false }
+                    .onDisappear {
+                        showPDFShare = false
+                        // Clean up temp file
+                        try? FileManager.default.removeItem(at: tempURL)
+                    }
                 }
             }
             .alert("Tüm Veriler Silinsin mi?", isPresented: $showDeleteAlert) {
@@ -392,7 +398,8 @@ struct MoreView: View {
                     hasCompletedOnboarding = false
                 }
             } message: {
-                Text("Tüm hayvanlar ve ilişkili veriler kalıcı olarak silinecektir. Bu işlem geri alınamaz.")
+                let petCount = store.allPets().count
+                Text("\(petCount) hayvan ve tüm ilişkili veriler (aşılar, ilaçlar, kilo kayıtları, fotoğraflar, harcamalar) kalıcı olarak silinecektir. Bu işlem geri alınamaz.")
             }
             .alert("Yeniden Başlatma Gerekli", isPresented: $showRestartAlert) {
                 Button("Tamam") {}

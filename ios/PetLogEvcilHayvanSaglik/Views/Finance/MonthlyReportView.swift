@@ -79,9 +79,9 @@ struct MonthlyReportView: View {
             // Weight
             Section("Kilo Değişimi") {
                 let sorted = pet.weightLogs.sorted { $0.date < $1.date }
-                if sorted.count >= 2 {
-                    let first = sorted.first!.weightKg
-                    let last = sorted.last!.weightKg
+                if sorted.count >= 2, let firstLog = sorted.first, let lastLog = sorted.last {
+                    let first = firstLog.weightKg
+                    let last = lastLog.weightKg
                     let diff = last - first
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {

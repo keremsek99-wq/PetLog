@@ -143,7 +143,7 @@ struct AddExpenseSheet: View {
                     Button("Kaydet") {
                         save()
                     }
-                    .disabled(Double(amountString.replacingOccurrences(of: ",", with: ".")) == nil || Double(amountString.replacingOccurrences(of: ",", with: "."))! <= 0)
+                    .disabled((Double(amountString.replacingOccurrences(of: ",", with: ".")) ?? 0) <= 0)
                     .fontWeight(.semibold)
                 }
             }
