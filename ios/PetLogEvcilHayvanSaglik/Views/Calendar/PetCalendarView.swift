@@ -194,7 +194,11 @@ struct PetCalendarView: View {
     private func dayCell(_ date: Date) -> some View {
         let isSelected = calendar.isDate(date, inSameDayAs: selectedDate)
         let isToday = calendar.isDateInToday(date)
-        let hasEvent = hasEvents(on: date)
+        let dayEvents = eventsFor(date: date)
+        // Show up to 3 distinct event type colors as dots
+        let eventColors: [Color] = Array(Set(dayEvents.map { $0.type }).prefix(3)).map { type in
+            dayEvents.first { $0.type == type }?.color ?? .blue
+        }
 
         return Button {
             withAnimation(.spring(duration: 0.2)) {
@@ -206,10 +210,14 @@ struct PetCalendarView: View {
                     .font(.system(isToday ? .callout : .callout, weight: isToday ? .bold : .regular))
                     .foregroundStyle(isSelected ? .white : (isToday ? .blue : .primary))
 
-                if hasEvent {
-                    Circle()
-                        .fill(isSelected ? .white : .blue)
-                        .frame(width: 4, height: 4)
+                if !eventColors.isEmpty {
+                    HStack(spacing: 2) {
+                        ForEach(Array(eventColors.enumerated()), id: \.offset) { _, color in
+                            Circle()
+                                .fill(isSelected ? .white : color)
+                                .frame(width: 4, height: 4)
+                        }
+                    }
                 } else {
                     Spacer().frame(height: 4)
                 }
@@ -254,7 +262,7 @@ struct PetCalendarView: View {
                         .padding(.horizontal)
                         .padding(.top, 8)
 
-                    ForEach(events, id: \.title) { event in
+                    ForEach(Array(events.enumerated()), id: \.offset) { _, event in
                         HStack(spacing: 12) {
                             RoundedRectangle(cornerRadius: 2)
                                 .fill(event.color)
@@ -290,9 +298,8 @@ struct PetCalendarView: View {
             return []
         }
 
-        // weekday of first day (Monday=1 in TR locale)
-        var weekday = calendar.component(.weekday, from: firstOfMonth) - 2 // Monday = 0
-        if weekday < 0 { weekday += 7 }
+        // Calculate offset so Monday=0 (weekday: Sun=1, Mon=2, ..., Sat=7)
+        let weekday = (calendar.component(.weekday, from: firstOfMonth) + 5) % 7
 
         var days: [Date?] = Array(repeating: nil, count: weekday)
 

@@ -1,7 +1,10 @@
 import Foundation
+import os.log
 
-/// Shared data service for passing data between app and widget via App Group UserDefaults.
-/// This copy lives in the main app target and mirrors PetLogWidget/WidgetDataService.swift
+private let logger = Logger(subsystem: "com.petlog.app", category: "Widget")
+
+/// Shared data service for passing minimal, non-sensitive data between app and widget via App Group UserDefaults.
+/// Only display-oriented data is shared — no medical details, phone numbers, or personal identifiers.
 enum WidgetDataService {
     static let appGroupID = "group.com.petlog.shared"
 

@@ -1,12 +1,19 @@
 import Foundation
 import SwiftData
 import SwiftUI
+import os.log
+
+private let logger = Logger(subsystem: "com.petlog.app", category: "PetStore")
 
 @Observable
 @MainActor
 class PetStore {
     private(set) var modelContext: ModelContext
     var refreshID = UUID()
+
+    // User-facing error state
+    var lastSaveError: String?
+    var showSaveError: Bool = false
 
     var selectedPet: Pet? {
         didSet {
@@ -31,7 +38,9 @@ class PetStore {
             try modelContext.save()
             refreshID = UUID()
         } catch {
-            print("PetStore save error: \(error)")
+            logger.error("Save failed: \(error.localizedDescription)")
+            lastSaveError = "Veri kaydedilemedi. Lütfen tekrar deneyin."
+            showSaveError = true
         }
     }
 

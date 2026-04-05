@@ -164,10 +164,12 @@ struct EmergencyCardView: View {
                 HStack {
                     infoRow(emoji: "📞", label: "Telefon", value: pet.emergencyVetPhone)
                     Spacer()
-                    Link(destination: URL(string: "tel:\(pet.emergencyVetPhone.replacingOccurrences(of: " ", with: ""))")!) {
-                        Image(systemName: "phone.circle.fill")
-                            .font(.title)
-                            .foregroundStyle(.green)
+                    if let phoneURL = URL(string: "tel:\(pet.emergencyVetPhone.filter { $0.isNumber || $0 == "+" })") {
+                        Link(destination: phoneURL) {
+                            Image(systemName: "phone.circle.fill")
+                                .font(.title)
+                                .foregroundStyle(.green)
+                        }
                     }
                 }
             }
@@ -192,10 +194,12 @@ struct EmergencyCardView: View {
                 HStack {
                     infoRow(emoji: "📱", label: "Telefon", value: pet.emergencyContactPhone)
                     Spacer()
-                    Link(destination: URL(string: "tel:\(pet.emergencyContactPhone.replacingOccurrences(of: " ", with: ""))")!) {
-                        Image(systemName: "phone.circle.fill")
-                            .font(.title)
-                            .foregroundStyle(.orange)
+                    if let phoneURL = URL(string: "tel:\(pet.emergencyContactPhone.filter { $0.isNumber || $0 == "+" })") {
+                        Link(destination: phoneURL) {
+                            Image(systemName: "phone.circle.fill")
+                                .font(.title)
+                                .foregroundStyle(.orange)
+                        }
                     }
                 }
             }
@@ -333,26 +337,34 @@ struct EmergencyInfoEditSheet: View {
 
                 Section("Tıbbi Bilgiler") {
                     TextField("Alerjiler (örn: Penisilin, Tavuk)", text: $allergies)
+                        .onChange(of: allergies) { _, v in if v.count > 200 { allergies = String(v.prefix(200)) } }
                     TextField("Kan Grubu", text: $bloodType)
+                        .onChange(of: bloodType) { _, v in if v.count > 20 { bloodType = String(v.prefix(20)) } }
                     TextField("Özel Sağlık Durumları", text: $specialConditions, axis: .vertical)
                         .lineLimit(2...4)
+                        .onChange(of: specialConditions) { _, v in if v.count > 500 { specialConditions = String(v.prefix(500)) } }
                 }
 
                 Section("Kimlik Bilgileri") {
                     TextField("Mikroçip No", text: $microchipID)
                         .keyboardType(.numberPad)
+                        .onChange(of: microchipID) { _, v in if v.count > 30 { microchipID = String(v.prefix(30)) } }
                 }
 
                 Section("Veteriner Bilgileri") {
                     TextField("Veteriner Adı", text: $emergencyVetName)
+                        .onChange(of: emergencyVetName) { _, v in if v.count > 100 { emergencyVetName = String(v.prefix(100)) } }
                     TextField("Veteriner Telefon", text: $emergencyVetPhone)
                         .keyboardType(.phonePad)
+                        .onChange(of: emergencyVetPhone) { _, v in if v.count > 20 { emergencyVetPhone = String(v.prefix(20)) } }
                 }
 
                 Section("Acil İletişim Kişisi") {
                     TextField("Ad Soyad", text: $emergencyContactName)
+                        .onChange(of: emergencyContactName) { _, v in if v.count > 100 { emergencyContactName = String(v.prefix(100)) } }
                     TextField("Telefon", text: $emergencyContactPhone)
                         .keyboardType(.phonePad)
+                        .onChange(of: emergencyContactPhone) { _, v in if v.count > 20 { emergencyContactPhone = String(v.prefix(20)) } }
                 }
             }
             .navigationTitle("Acil Durum Bilgileri")
