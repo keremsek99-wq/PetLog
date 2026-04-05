@@ -62,7 +62,7 @@ struct ActionSuggestionEngine {
             if let lastWalk = walkLogs.first {
                 daysSinceLastWalk = calendar.dateComponents([.day], from: lastWalk.date, to: now).day ?? 0
             } else {
-                daysSinceLastWalk = walkLogs.isEmpty ? 999 : 0
+                daysSinceLastWalk = 999
             }
             
             if daysSinceLastWalk >= 3 && !walkLogs.isEmpty {

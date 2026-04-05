@@ -130,7 +130,7 @@ struct WellnessScoreEngine {
             return (50, "Kilo kaydı yok")
         }
 
-        if let target = pet.weightTargetKg {
+        if let target = pet.weightTargetKg, target > 0 {
             let deviation = abs(current - target) / target
             if deviation < 0.05 { return (100, "Hedef kiloda (\(String(format: "%.1f", current)) kg)") }
             if deviation < 0.10 { return (85, "Hedefe yakın (\(String(format: "%.1f", current)) kg)") }
@@ -139,9 +139,8 @@ struct WellnessScoreEngine {
         }
 
         // No target — score based on having regular recordings
-        let recentLogs = pet.weightLogs.filter {
-            Calendar.current.dateComponents([.month], from: $0.date, to: Date()).month ?? 99 < 3
-        }
+        let threeMonthsAgo = Calendar.current.date(byAdding: .month, value: -3, to: Date()) ?? Date()
+        let recentLogs = pet.weightLogs.filter { $0.date >= threeMonthsAgo }
         if recentLogs.count >= 2 { return (80, "Düzenli takip ediliyor") }
         if recentLogs.count == 1 { return (65, "Son 3 ayda 1 kayıt") }
         return (40, "Uzun süredir kilo kaydı yok")

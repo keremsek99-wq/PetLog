@@ -151,7 +151,7 @@ struct AddMedicationSheet: View {
                     Button("Kaydet") {
                         save()
                     }
-                    .disabled(name.isEmpty)
+                    .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty || dosage.trimmingCharacters(in: .whitespaces).isEmpty)
                     .fontWeight(.semibold)
                 }
             }

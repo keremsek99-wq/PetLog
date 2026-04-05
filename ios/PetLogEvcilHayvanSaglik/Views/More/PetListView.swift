@@ -6,6 +6,7 @@ struct PetListView: View {
     @State private var showAddPet = false
     @State private var showPaywall = false
     @State private var editingPet: Pet? = nil
+    @State private var petToDelete: Pet? = nil
 
     var body: some View {
         List {
@@ -31,7 +32,7 @@ struct PetListView: View {
                 }
                 .swipeActions(edge: .trailing) {
                     Button(role: .destructive) {
-                        store.deletePet(pet)
+                        petToDelete = pet
                     } label: {
                         Label("Sil", systemImage: "trash")
                     }
@@ -67,6 +68,17 @@ struct PetListView: View {
         }
         .sheet(isPresented: $showPaywall) {
             PetLogPaywallView(premiumManager: premiumManager)
+        }
+        .alert("Hayvanı Sil", isPresented: .init(get: { petToDelete != nil }, set: { if !$0 { petToDelete = nil } })) {
+            Button("İptal", role: .cancel) { petToDelete = nil }
+            Button("Sil", role: .destructive) {
+                if let pet = petToDelete {
+                    store.deletePet(pet)
+                    petToDelete = nil
+                }
+            }
+        } message: {
+            Text("\(petToDelete?.name ?? "") ve tüm ilişkili veriler kalıcı olarak silinecektir.")
         }
     }
 

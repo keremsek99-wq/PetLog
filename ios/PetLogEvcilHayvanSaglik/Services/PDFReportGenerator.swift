@@ -195,9 +195,9 @@ class PDFReportGenerator {
     private static func drawBullet(_ text: String, y: CGFloat, margin: CGFloat, contentWidth: CGFloat) -> CGFloat {
         let font = UIFont.systemFont(ofSize: 12, weight: .regular)
         let attr: [NSAttributedString.Key: Any] = [.font: font, .foregroundColor: UIColor.label]
-        let rect = CGRect(x: margin + 8, y: y, width: contentWidth - 16, height: 40)
-        text.draw(with: rect, options: [.usesLineFragmentOrigin], attributes: attr, context: nil)
         let size = (text as NSString).boundingRect(with: CGSize(width: contentWidth - 16, height: .infinity), options: .usesLineFragmentOrigin, attributes: attr, context: nil)
+        let rect = CGRect(x: margin + 8, y: y, width: contentWidth - 16, height: max(size.height, 16))
+        text.draw(with: rect, options: [.usesLineFragmentOrigin], attributes: attr, context: nil)
         return y + size.height + 4
     }
 

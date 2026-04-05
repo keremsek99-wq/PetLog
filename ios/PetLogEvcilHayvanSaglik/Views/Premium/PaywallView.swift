@@ -329,7 +329,7 @@ struct PetLogPaywallView: View {
     // MARK: - Helpers
 
     private func purchaseSelected() async {
-        guard let planID = selectedPlan else { return }
+        guard let planID = selectedPlan, !isPurchasing else { return }
 
         // If products haven't loaded yet, try to load them first
         if premiumManager.products.isEmpty {
