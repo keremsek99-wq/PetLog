@@ -1,6 +1,9 @@
 import Foundation
 import SwiftUI
 import StoreKit
+import os.log
+
+private let logger = Logger(subsystem: "com.petlog.app", category: "Premium")
 
 @Observable
 @MainActor
@@ -56,11 +59,11 @@ class PremiumManager {
             products = storeProducts.sorted { price($0) < price($1) }
             if storeProducts.isEmpty {
                 loadError = "Ürünler yüklenemedi. Lütfen internet bağlantınızı kontrol edip tekrar deneyin."
-                print("PremiumManager: Products loaded but array is empty")
+                logger.warning("Products loaded but array is empty")
             }
         } catch {
             loadError = "Ürünler yüklenemedi. Lütfen internet bağlantınızı kontrol edip tekrar deneyin."
-            print("PremiumManager: Failed to load products: \(error)")
+            logger.error("Failed to load products: \(error.localizedDescription)")
         }
         isLoading = false
     }
@@ -92,7 +95,7 @@ class PremiumManager {
                 return false
             }
         } catch {
-            print("PremiumManager: Purchase failed: \(error)")
+            logger.error("Purchase failed: \(error.localizedDescription)")
             return false
         }
     }

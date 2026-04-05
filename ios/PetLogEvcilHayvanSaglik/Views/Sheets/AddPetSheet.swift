@@ -52,6 +52,9 @@ struct AddPetSheet: View {
                 Section("Temel Bilgiler") {
                     TextField("İsim", text: $name)
                         .font(.body.weight(.medium))
+                        .onChange(of: name) { _, newValue in
+                            if newValue.count > 50 { name = String(newValue.prefix(50)) }
+                        }
 
                     Picker("Tür", selection: $species) {
                         ForEach(PetSpecies.allCases, id: \.self) { s in

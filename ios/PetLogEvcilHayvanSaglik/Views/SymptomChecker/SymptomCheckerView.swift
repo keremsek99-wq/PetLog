@@ -45,6 +45,19 @@ struct SymptomCheckerView: View {
             }
             .padding()
 
+            // Medical disclaimer
+            HStack(spacing: 6) {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .foregroundStyle(.orange)
+                Text("Bu araç bilgilendirme amaçlıdır, veteriner tanısı yerine geçmez. Ciddi belirtilerde derhal veterinere başvurun.")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+            .padding(8)
+            .background(Color.orange.opacity(0.1))
+            .clipShape(.rect(cornerRadius: 8))
+            .padding(.horizontal)
+
             ScrollView {
                 LazyVStack(spacing: 16) {
                     ForEach(filteredSymptoms, id: \.name) { category in

@@ -1,6 +1,9 @@
 import SwiftUI
 import SwiftData
 import WidgetKit
+import os.log
+
+private let logger = Logger(subsystem: "com.petlog.app", category: "App")
 
 @main
 struct PetOSPetHealthFinanceApp: App {
@@ -28,27 +31,38 @@ struct PetOSPetHealthFinanceApp: App {
         ])
 
         let iCloudEnabled = UserDefaults.standard.bool(forKey: "iCloudSyncEnabled")
-        let modelConfiguration: ModelConfiguration
-        if iCloudEnabled {
-            modelConfiguration = ModelConfiguration(
-                schema: schema,
-                isStoredInMemoryOnly: false,
-                cloudKitDatabase: .automatic
-            )
-        } else {
-            modelConfiguration = ModelConfiguration(
-                schema: schema,
-                isStoredInMemoryOnly: false,
-                cloudKitDatabase: .none
-            )
+
+        // Try with user's preferred configuration first
+        if let container = Self.createContainer(schema: schema, iCloudEnabled: iCloudEnabled) {
+            return container
         }
 
+        // Fallback: try without iCloud if iCloud was enabled
+        if iCloudEnabled {
+            logger.warning("iCloud ModelContainer failed, falling back to local-only storage")
+            if let container = Self.createContainer(schema: schema, iCloudEnabled: false) {
+                return container
+            }
+        }
+
+        // Last resort: in-memory container so the app doesn't crash
+        logger.error("All ModelContainer attempts failed, using in-memory storage")
+        let fallbackConfig = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)
         do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
+            return try ModelContainer(for: schema, configurations: [fallbackConfig])
         } catch {
-            fatalError("Could not create ModelContainer: \(error)")
+            fatalError("Could not create even in-memory ModelContainer: \(error)")
         }
     }()
+
+    private static func createContainer(schema: Schema, iCloudEnabled: Bool) -> ModelContainer? {
+        let config = ModelConfiguration(
+            schema: schema,
+            isStoredInMemoryOnly: false,
+            cloudKitDatabase: iCloudEnabled ? .automatic : .none
+        )
+        return try? ModelContainer(for: schema, configurations: [config])
+    }
 
     @State private var appLock = AppLockService.shared
     @Environment(\.scenePhase) private var scenePhase
@@ -98,8 +112,10 @@ struct PetOSPetHealthFinanceApp: App {
            let uuid = UUID(uuidString: savedID),
            let saved = pets.first(where: { $0.id == uuid }) {
             selectedPet = saved
+        } else if let first = pets.first {
+            selectedPet = first
         } else {
-            selectedPet = pets.first!
+            return
         }
 
         let now = Date()

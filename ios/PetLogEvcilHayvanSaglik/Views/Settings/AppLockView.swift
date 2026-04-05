@@ -22,12 +22,23 @@ struct AppLockOverlay: View {
                     VStack(spacing: 8) {
                         Text("PetLog Kilitli")
                             .font(.title2.bold())
-                        Text(appLock.authenticationFailed
-                             ? "Kimlik doğrulama başarısız oldu"
-                             : "Devam etmek için kimliğinizi doğrulayın")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                            .multilineTextAlignment(.center)
+
+                        if appLock.isLockedOut {
+                            Text("Çok fazla başarısız deneme. \(appLock.lockoutRemainingSeconds) saniye bekleyin.")
+                                .font(.subheadline)
+                                .foregroundStyle(.red)
+                                .multilineTextAlignment(.center)
+                        } else if appLock.authenticationFailed {
+                            Text("Kimlik doğrulama başarısız oldu")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
+                        } else {
+                            Text("Devam etmek için kimliğinizi doğrulayın")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
+                        }
                     }
 
                     Spacer()
@@ -44,16 +55,7 @@ struct AppLockOverlay: View {
                                 .padding(.vertical, 14)
                         }
                         .buttonStyle(.borderedProminent)
-
-                        if appLock.authenticationFailed {
-                            Button {
-                                appLock.disableLockDueToError()
-                            } label: {
-                                Text("Kilidi Devre Dışı Bırak")
-                                    .font(.subheadline)
-                                    .foregroundStyle(.red)
-                            }
-                        }
+                        .disabled(appLock.isLockedOut)
                     }
                     .padding(.horizontal, 40)
                     .padding(.bottom, 48)

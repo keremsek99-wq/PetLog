@@ -78,9 +78,16 @@ struct AISymptomAnalysisView: View {
                     Text("Fotoğraf ve açıklama ile ön değerlendirme alın")
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                    Text("⚠️ Profesyonel veteriner tanısı yerine geçmez")
-                        .font(.caption2)
-                        .foregroundStyle(.orange)
+                    HStack(spacing: 6) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundStyle(.orange)
+                        Text("Bu araç profesyonel veteriner tanısı yerine geçmez. Acil durumlarda derhal veterinere başvurun.")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(8)
+                    .background(Color.orange.opacity(0.1))
+                    .clipShape(.rect(cornerRadius: 8))
                 }
                 .padding(.top, 8)
 

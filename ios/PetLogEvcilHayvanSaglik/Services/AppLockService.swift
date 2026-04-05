@@ -1,6 +1,9 @@
 import Foundation
 import LocalAuthentication
 import SwiftUI
+import os.log
+
+private let logger = Logger(subsystem: "com.petlog.app", category: "AppLock")
 
 @Observable
 @MainActor
@@ -16,6 +19,28 @@ class AppLockService {
 
     var biometricType: LABiometryType = .none
     private var isAuthenticating: Bool = false
+
+    // Rate limiting
+    private var failedAttempts: Int = 0
+    private var lastFailedAttempt: Date?
+    private static let maxAttempts = 5
+    private static let lockoutDuration: TimeInterval = 30 // 30 seconds lockout
+
+    // Auto-lock timeout
+    private var lastActiveDate: Date = Date()
+    private static let autoLockTimeout: TimeInterval = 300 // 5 minutes
+
+    var isLockedOut: Bool {
+        guard failedAttempts >= Self.maxAttempts,
+              let lastFailed = lastFailedAttempt else { return false }
+        return Date().timeIntervalSince(lastFailed) < Self.lockoutDuration
+    }
+
+    var lockoutRemainingSeconds: Int {
+        guard let lastFailed = lastFailedAttempt else { return 0 }
+        let elapsed = Date().timeIntervalSince(lastFailed)
+        return max(0, Int(Self.lockoutDuration - elapsed))
+    }
 
     private init() {
         checkBiometricAvailability()
@@ -60,6 +85,14 @@ class AppLockService {
 
     func authenticate() async -> Bool {
         guard isLocked, !isAuthenticating else { return !isLocked }
+
+        // Rate limiting check
+        if isLockedOut {
+            logger.warning("Authentication locked out for \(self.lockoutRemainingSeconds)s after \(self.failedAttempts) failed attempts")
+            authenticationFailed = true
+            return false
+        }
+
         isAuthenticating = true
         defer { isAuthenticating = false }
 
@@ -77,8 +110,7 @@ class AppLockService {
                 localizedReason: "PetLog verilerinize erişmek için kimlik doğrulayın"
             )
             if success {
-                isLocked = false
-                authenticationFailed = false
+                onAuthenticationSuccess()
             }
             return success
         } catch {
@@ -94,16 +126,30 @@ class AppLockService {
                 localizedReason: "PetLog verilerinize erişmek için kimlik doğrulayın"
             )
             if success {
-                isLocked = false
-                authenticationFailed = false
+                onAuthenticationSuccess()
             } else {
-                authenticationFailed = true
+                onAuthenticationFailure()
             }
             return success
         } catch {
-            authenticationFailed = true
+            onAuthenticationFailure()
             return false
         }
+    }
+
+    private func onAuthenticationSuccess() {
+        isLocked = false
+        authenticationFailed = false
+        failedAttempts = 0
+        lastFailedAttempt = nil
+        lastActiveDate = Date()
+    }
+
+    private func onAuthenticationFailure() {
+        authenticationFailed = true
+        failedAttempts += 1
+        lastFailedAttempt = Date()
+        logger.info("Authentication failed. Attempt \(self.failedAttempts)/\(Self.maxAttempts)")
     }
 
     func lockIfNeeded() {
@@ -112,9 +158,20 @@ class AppLockService {
         authenticationFailed = false
     }
 
-    func disableLockDueToError() {
-        isAppLockEnabled = false
-        isLocked = false
-        authenticationFailed = false
+    /// Check if auto-lock timeout has elapsed and lock if needed.
+    /// Call this when the app becomes active.
+    func lockIfTimedOut() {
+        guard isAppLockEnabled, canAuthenticate else { return }
+        let elapsed = Date().timeIntervalSince(lastActiveDate)
+        if elapsed >= Self.autoLockTimeout {
+            isLocked = true
+            authenticationFailed = false
+        }
+        lastActiveDate = Date()
+    }
+
+    /// Record user activity to reset the auto-lock timer.
+    func recordActivity() {
+        lastActiveDate = Date()
     }
 }

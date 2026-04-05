@@ -1,6 +1,9 @@
 import SwiftUI
 import SwiftData
 import EventKit
+import os.log
+
+private let logger = Logger(subsystem: "com.petlog.app", category: "VetAppointment")
 
 struct VetAppointmentView: View {
     let store: PetStore
@@ -39,7 +42,9 @@ struct VetAppointmentView: View {
                         }
                         .onDelete { indexSet in
                             for index in indexSet {
-                                store.modelContext.delete(upcomingAppointments[index])
+                                let appt = upcomingAppointments[index]
+                                removeCalendarEvent(for: appt)
+                                store.modelContext.delete(appt)
                             }
                         }
                     }
@@ -116,11 +121,27 @@ struct VetAppointmentView: View {
             Spacer()
 
             if isUpcoming && !appt.vetPhone.isEmpty {
-                Link(destination: URL(string: "tel:\(appt.vetPhone.replacingOccurrences(of: " ", with: ""))")!) {
-                    Image(systemName: "phone.circle.fill")
-                        .font(.title2)
-                        .foregroundStyle(.green)
+                let sanitizedPhone = appt.vetPhone.filter { $0.isNumber || $0 == "+" }
+                if let phoneURL = URL(string: "tel:\(sanitizedPhone)") {
+                    Link(destination: phoneURL) {
+                        Image(systemName: "phone.circle.fill")
+                            .font(.title2)
+                            .foregroundStyle(.green)
+                    }
                 }
+            }
+        }
+    }
+
+    /// Remove the associated calendar event when deleting an appointment
+    private func removeCalendarEvent(for appointment: VetAppointment) {
+        guard let eventID = appointment.calendarEventID, !eventID.isEmpty else { return }
+        let eventStore = EKEventStore()
+        if let event = eventStore.event(withIdentifier: eventID) {
+            do {
+                try eventStore.remove(event, span: .thisEvent)
+            } catch {
+                logger.warning("Failed to remove calendar event: \(error.localizedDescription)")
             }
         }
     }
@@ -172,16 +193,21 @@ struct AddVetAppointmentSheet: View {
 
                 Section("Randevu Detayları") {
                     TextField("Randevu Başlığı (örn: Aşı kontrolü)", text: $title)
+                        .onChange(of: title) { _, v in if v.count > 100 { title = String(v.prefix(100)) } }
                     DatePicker("Tarih ve Saat", selection: $date, in: Date()...)
                     TextField("Notlar", text: $notes, axis: .vertical)
                         .lineLimit(2...4)
+                        .onChange(of: notes) { _, v in if v.count > 500 { notes = String(v.prefix(500)) } }
                 }
 
                 Section("Veteriner Bilgileri") {
                     TextField("Veteriner Adı", text: $vetName)
+                        .onChange(of: vetName) { _, v in if v.count > 100 { vetName = String(v.prefix(100)) } }
                     TextField("Telefon", text: $vetPhone)
                         .keyboardType(.phonePad)
+                        .onChange(of: vetPhone) { _, v in if v.count > 20 { vetPhone = String(v.prefix(20)) } }
                     TextField("Adres / Konum", text: $location)
+                        .onChange(of: location) { _, v in if v.count > 200 { location = String(v.prefix(200)) } }
                 }
 
                 Section("Hatırlatma") {
@@ -206,7 +232,7 @@ struct AddVetAppointmentSheet: View {
                     Button("Kaydet") {
                         saveAppointment()
                     }
-                    .disabled(title.isEmpty)
+                    .disabled(title.trimmingCharacters(in: .whitespaces).isEmpty)
                     .fontWeight(.semibold)
                 }
             }
@@ -226,7 +252,7 @@ struct AddVetAppointmentSheet: View {
         let phone = vetPhone.isEmpty ? pet.emergencyVetPhone : vetPhone
 
         let appointment = VetAppointment(
-            title: title,
+            title: title.trimmingCharacters(in: .whitespaces),
             date: date,
             vetName: vet,
             vetPhone: phone,
@@ -239,21 +265,23 @@ struct AddVetAppointmentSheet: View {
 
         // Add to iOS Calendar via EventKit
         if addToCalendar {
-            addToDeviceCalendar(appointment: appointment, petName: pet.name)
+            Task {
+                await addToDeviceCalendar(appointment: appointment, petName: pet.name)
+            }
         }
 
         dismiss()
     }
 
-    private func addToDeviceCalendar(appointment: VetAppointment, petName: String) {
+    @MainActor
+    private func addToDeviceCalendar(appointment: VetAppointment, petName: String) async {
         let eventStore = EKEventStore()
 
-        eventStore.requestFullAccessToEvents { granted, error in
-            guard granted, error == nil else {
-                DispatchQueue.main.async {
-                    calendarErrorMessage = "Takvim erişimi reddedildi. Ayarlar > PetLog'dan takvim iznini açın."
-                    showCalendarError = true
-                }
+        do {
+            let granted = try await eventStore.requestFullAccessToEvents()
+            guard granted else {
+                calendarErrorMessage = "Takvim erişimi reddedildi. Ayarlar > PetLog'dan takvim iznini açın."
+                showCalendarError = true
                 return
             }
 
@@ -271,17 +299,11 @@ struct AddVetAppointmentSheet: View {
                 event.addAlarm(alarm)
             }
 
-            do {
-                try eventStore.save(event, span: .thisEvent)
-                DispatchQueue.main.async {
-                    appointment.calendarEventID = event.eventIdentifier
-                }
-            } catch {
-                DispatchQueue.main.async {
-                    calendarErrorMessage = "Takvime eklenemedi: \(error.localizedDescription)"
-                    showCalendarError = true
-                }
-            }
+            try eventStore.save(event, span: .thisEvent)
+            appointment.calendarEventID = event.eventIdentifier
+        } catch {
+            calendarErrorMessage = "Takvime eklenemedi: \(error.localizedDescription)"
+            showCalendarError = true
         }
     }
 }
