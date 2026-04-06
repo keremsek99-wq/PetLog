@@ -79,7 +79,7 @@ class Pet {
 
     var nextVaccineDue: VaccineRecord? {
         vaccineRecords
-            .filter { $0.dueDate != nil && $0.dueDate! > Date() }
+            .filter { guard let due = $0.dueDate else { return false }; return due > Date() }
             .sorted { ($0.dueDate ?? .distantFuture) < ($1.dueDate ?? .distantFuture) }
             .first
     }
