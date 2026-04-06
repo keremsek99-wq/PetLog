@@ -680,7 +680,7 @@ struct HealthView: View {
                         .foregroundStyle(.orange.opacity(0.6))
                     Text("İrk Bazlı Sağlık Analizi")
                         .font(.title3.weight(.semibold))
-                    Text("\(pet.species.rawValue) türüne özel sağlık riskleri, önerilen kontroller ve bakım ipuplarını görün.")
+                    Text("\(pet.species.rawValue) türüne özel sağlık riskleri, önerilen kontroller ve bakım ipuçlarını görün.")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
