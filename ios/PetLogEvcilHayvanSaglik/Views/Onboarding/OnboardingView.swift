@@ -20,7 +20,7 @@ struct OnboardingView: View {
                 .tag(0)
 
                 onboardingPage(
-                    icon: "heart.text.clipboard.fill",
+                    icon: "heart.text.clipboard",
                     iconColor: .green,
                     title: "Sağlığı Takip Edin",
                     subtitle: "Kilo, aşılar, ilaçlar ve veteriner ziyaretlerini izleyin. Hiçbir hatırlatmayı kaçırmayın."
@@ -36,7 +36,7 @@ struct OnboardingView: View {
                 .tag(2)
 
                 onboardingPage(
-                    icon: "brain.head.profile.fill",
+                    icon: "brain.head.profile",
                     iconColor: .purple,
                     title: "Akıllı Öneriler",
                     subtitle: "Yapay zeka destekli öneriler trendleri yakalar, anormallikleri işaret eder ve adımlar önerir."

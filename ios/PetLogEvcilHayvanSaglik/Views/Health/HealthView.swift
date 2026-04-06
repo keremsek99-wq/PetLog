@@ -412,7 +412,7 @@ struct HealthView: View {
                 Label("Beslenme Ekle", systemImage: "fork.knife")
             }
             Button { showAddBehavior = true } label: {
-                Label("Davranış Kaydet", systemImage: "brain.head.profile.fill")
+                Label("Davranış Kaydet", systemImage: "brain.head.profile")
             }
         } label: {
             Image(systemName: "plus.circle.fill")
@@ -453,7 +453,7 @@ struct HealthView: View {
                         .clipShape(Capsule())
                 }
                 Button { showAddBehavior = true } label: {
-                    Label("Davranış", systemImage: "brain.head.profile.fill")
+                    Label("Davranış", systemImage: "brain.head.profile")
                         .font(.caption.weight(.medium))
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)
@@ -544,7 +544,7 @@ struct HealthView: View {
                 let topSymptoms = counts.sorted { $0.value > $1.value }.prefix(5)
 
                 if !topSymptoms.isEmpty {
-                    GlowCard(title: "🧠 Davranış (30 Gün)", icon: "brain.head.profile.fill", iconColor: .orange) {
+                    GlowCard(title: "🧠 Davranış (30 Gün)", icon: "brain.head.profile", iconColor: .orange) {
                         VStack(spacing: 6) {
                             ForEach(Array(topSymptoms), id: \.key) { type, count in
                                 HStack(spacing: 8) {
@@ -675,7 +675,7 @@ struct HealthView: View {
                 }
             } else {
                 VStack(spacing: 16) {
-                    Image(systemName: "heart.text.clipboard.fill")
+                    Image(systemName: "heart.text.clipboard")
                         .font(.system(size: 48))
                         .foregroundStyle(.orange.opacity(0.6))
                     Text("İrk Bazlı Sağlık Analizi")

@@ -35,7 +35,7 @@ nonisolated enum DocumentType: String, Codable, CaseIterable, Sendable {
         switch self {
         case .vaccineCard: return "syringe.fill"
         case .microchip: return "sensor.fill"
-        case .insurance: return "shield.checkered"
+        case .insurance: return "checkmark.shield.fill"
         case .vetReport: return "doc.text.fill"
         case .labResult: return "flask.fill"
         case .passport: return "airplane"

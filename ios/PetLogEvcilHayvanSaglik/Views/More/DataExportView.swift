@@ -25,7 +25,7 @@ struct DataExportFullView: View {
                     StatRow(label: "Harcamalar", value: "\(pet.expenses.count)", icon: "turkishlirasign.circle.fill", iconColor: .orange)
                     StatRow(label: "Aktiviteler", value: "\(pet.activityLogs.count)", icon: "figure.walk", iconColor: .cyan)
                     StatRow(label: "Beslenme", value: "\(pet.feedingLogs.count)", icon: "fork.knife", iconColor: .green)
-                    StatRow(label: "Davranış", value: "\(pet.behaviorLogs.count)", icon: "brain.head.profile.fill", iconColor: .orange)
+                    StatRow(label: "Davranış", value: "\(pet.behaviorLogs.count)", icon: "brain.head.profile", iconColor: .orange)
                     StatRow(label: "Belgeler", value: "\(pet.documents.count)", icon: "doc.text.fill", iconColor: .teal)
                 }
 
