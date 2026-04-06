@@ -7,7 +7,7 @@ enum BreedTipsDatabase {
     static func dailyTip(species: PetSpecies, breed: String) -> BreedTip {
         let tips = allTips(for: species, breed: breed)
         guard !tips.isEmpty else {
-            return BreedTip(emoji: "🐾", title: "Günlük Bakım", message: "Evcil hayvanınıza sevgi ve ilgi göstermeyi unutmayın!")
+            return BreedTip(emoji: "🐾", title: "Günlük Bakım", body: "Evcil hayvanınıza sevgi ve ilgi göstermeyi unutmayın!", category: .care)
         }
         let dayOfYear = Calendar.current.ordinality(of: .day, in: .year, for: Date()) ?? 0
         let index = dayOfYear % tips.count
