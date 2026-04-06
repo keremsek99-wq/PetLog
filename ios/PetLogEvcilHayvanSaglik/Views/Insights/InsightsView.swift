@@ -157,7 +157,7 @@ struct InsightsView: View {
     }
 
     private func globalInsightIndex(for insight: Insight) -> Int {
-        insights.firstIndex(where: { $0.id == insight.id }) ?? 0
+        insights.firstIndex(where: { $0.id == insight.id }) ?? insights.count
     }
 
     private var disclaimerView: some View {

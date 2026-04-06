@@ -57,7 +57,7 @@ struct AddVetVisitSheet: View {
     }
 
     private func save() {
-        let cost = Double(costString.replacingOccurrences(of: ",", with: ".")) ?? 0
+        let cost = max(0, Double(costString.replacingOccurrences(of: ",", with: ".")) ?? 0)
         store.addVetVisit(to: pet, date: date, reason: reason, diagnosis: diagnosis, cost: cost, vet: veterinarian, notes: notes)
         dismiss()
     }

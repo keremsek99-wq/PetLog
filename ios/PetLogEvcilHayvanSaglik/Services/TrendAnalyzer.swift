@@ -193,6 +193,7 @@ struct TrendAnalyzer {
         if recentWeights.count >= 2 {
             let latest = recentWeights[0].weightKg
             let previous = recentWeights[1].weightKg
+            guard previous > 0 else { return alerts }
             let changePercent = ((latest - previous) / previous) * 100
             if abs(changePercent) >= 10 {
                 let direction = changePercent > 0 ? "arttı" : "azaldı"

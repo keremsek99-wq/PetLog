@@ -271,7 +271,7 @@ struct VetPrepView: View {
                     Spacer()
                 }
                 
-                Text("Günlük ortalama: \(String(format: "%.1f", Double(recentFeedings.count) / Double(selectedDays))) öğün")
+                Text("Günlük ortalama: \(String(format: "%.1f", selectedDays > 0 ? Double(recentFeedings.count) / Double(selectedDays) : 0)) öğün")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -296,7 +296,7 @@ struct VetPrepView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Toplam: \(recentActivities.count) aktivite, \(totalMinutes) dk")
                             .font(.subheadline)
-                        Text("Günlük ortalama: \(String(format: "%.0f", Double(totalMinutes) / Double(selectedDays))) dk")
+                        Text("Günlük ortalama: \(String(format: "%.0f", selectedDays > 0 ? Double(totalMinutes) / Double(selectedDays) : 0)) dk")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
