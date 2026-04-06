@@ -1,7 +1,7 @@
 {
   "apps": [
     {
-      "name": "iOS",
+      "name": "Pet Log Evcil Hayvan Saglik",
       "path": "ios",
       "framework": "swift"
     }
