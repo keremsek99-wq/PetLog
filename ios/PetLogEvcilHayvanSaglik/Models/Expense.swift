@@ -41,7 +41,7 @@ nonisolated enum ExpenseCategory: String, Codable, CaseIterable, Sendable {
         case .medication: return "pills.fill"
         case .grooming: return "scissors"
         case .supplies: return "bag.fill"
-        case .insurance: return "shield.checkered"
+        case .insurance: return "checkmark.shield.fill"
         case .training: return "figure.walk"
         case .boarding: return "house.fill"
         case .other: return "ellipsis.circle.fill"

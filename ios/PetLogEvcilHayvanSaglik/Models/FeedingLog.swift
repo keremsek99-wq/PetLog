@@ -33,7 +33,7 @@ nonisolated enum MealType: String, Codable, CaseIterable, Sendable {
         case .breakfast: return "sunrise.fill"
         case .lunch: return "sun.max.fill"
         case .dinner: return "moon.fill"
-        case .snack: return "carrot.fill"
+        case .snack: return "leaf.fill"
         case .water: return "drop.fill"
         }
     }

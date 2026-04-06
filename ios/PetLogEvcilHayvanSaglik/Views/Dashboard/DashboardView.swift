@@ -616,16 +616,16 @@ struct DashboardView: View {
                     QuickActionButton(title: "Beslenme", icon: "fork.knife", color: .orange, emoji: "🍽") { activeSheet = .addFeeding }
                     QuickActionButton(title: "Kilo", icon: "scalemass.fill", color: .green, emoji: "⚖️") { activeSheet = .addWeight }
                     QuickActionButton(title: "Harcama", icon: "turkishlirasign.circle.fill", color: .orange, emoji: "💰") { activeSheet = .addExpense }
-                    QuickActionButton(title: "Davranış", icon: "brain.head.profile.fill", color: .purple, emoji: "🧠") { activeSheet = .addBehavior }
+                    QuickActionButton(title: "Davranış", icon: "brain.head.profile", color: .purple, emoji: "🧠") { activeSheet = .addBehavior }
                 case .bird:
                     QuickActionButton(title: "Beslenme", icon: "fork.knife", color: .orange, emoji: "🍽") { activeSheet = .addFeeding }
                     QuickActionButton(title: "Harcama", icon: "turkishlirasign.circle.fill", color: .orange, emoji: "💰") { activeSheet = .addExpense }
-                    QuickActionButton(title: "Davranış", icon: "brain.head.profile.fill", color: .purple, emoji: "🧠") { activeSheet = .addBehavior }
+                    QuickActionButton(title: "Davranış", icon: "brain.head.profile", color: .purple, emoji: "🧠") { activeSheet = .addBehavior }
                     QuickActionButton(title: "Veteriner", icon: "cross.case.fill", color: .red, emoji: "🏥") { activeSheet = .addVetVisit }
                 case .fish:
                     QuickActionButton(title: "Harcama", icon: "turkishlirasign.circle.fill", color: .orange, emoji: "💰") { activeSheet = .addExpense }
                     QuickActionButton(title: "Veteriner", icon: "cross.case.fill", color: .red, emoji: "🏥") { activeSheet = .addVetVisit }
-                    QuickActionButton(title: "Davranış", icon: "brain.head.profile.fill", color: .teal, emoji: "🐟") { activeSheet = .addBehavior }
+                    QuickActionButton(title: "Davranış", icon: "brain.head.profile", color: .teal, emoji: "🐟") { activeSheet = .addBehavior }
                     QuickActionButton(title: "Belge", icon: "doc.text.fill", color: .blue, emoji: "📄") { activeSheet = .addDocument }
                 default:
                     QuickActionButton(title: "Beslenme", icon: "fork.knife", color: .orange, emoji: "🍽") { activeSheet = .addFeeding }
@@ -709,7 +709,7 @@ struct DashboardView: View {
                 Label("Aşı Ekle", systemImage: "syringe.fill")
             }
             Button { activeSheet = .addBehavior } label: {
-                Label("Davranış Kaydet", systemImage: "brain.head.profile.fill")
+                Label("Davranış Kaydet", systemImage: "brain.head.profile")
             }
             Divider()
             Button { activeSheet = .addWeight } label: {

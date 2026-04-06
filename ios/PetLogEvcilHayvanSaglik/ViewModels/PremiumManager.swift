@@ -201,10 +201,10 @@ nonisolated enum PremiumFeature: String, CaseIterable, Sendable {
 
     var icon: String {
         switch self {
-        case .unlimitedInsights: return "brain.head.profile.fill"
+        case .unlimitedInsights: return "brain.head.profile"
         case .foodPrediction: return "chart.line.uptrend.xyaxis"
         case .annualProjection: return "calendar.badge.clock"
-        case .breedHealth: return "heart.text.clipboard.fill"
+        case .breedHealth: return "heart.text.clipboard"
         case .pdfExport: return "doc.richtext.fill"
         case .advancedReminders: return "bell.badge.fill"
         case .multiPet: return "pawprint.fill"
